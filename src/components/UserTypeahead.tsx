@@ -1,0 +1,105 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { Search, User as UserIcon, Check } from 'lucide-react';
+
+interface User {
+  id: string;
+  name: string;
+  type: string;
+}
+
+interface UserTypeaheadProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  icon: React.ReactNode;
+  users: User[];
+  placeholder?: string;
+  required?: boolean;
+}
+
+export default function UserTypeahead({ label, value, onChange, icon, users, placeholder, required }: UserTypeaheadProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState(value);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    onChange(val); // Allow free text if they want, but show suggestions
+
+    if (val.length > 0) {
+      const filtered = users.filter(user => 
+        user.name.toLowerCase().includes(val.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+      setIsOpen(true);
+    } else {
+      setFilteredUsers([]);
+      setIsOpen(false);
+    }
+  };
+
+  const handleSelect = (user: User) => {
+    setQuery(user.name);
+    onChange(user.name);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="form-group" ref={containerRef} style={{ position: 'relative' }}>
+      <label>{icon} {label}</label>
+      <div className="typeahead-input-wrapper">
+        <input
+          required={required}
+          value={query}
+          onChange={handleInputChange}
+          onFocus={() => {
+            if (users.length > 0) {
+               setFilteredUsers(users.filter(u => u.name.toLowerCase().includes(query.toLowerCase())));
+               setIsOpen(true);
+            }
+          }}
+          placeholder={placeholder || `Search ${label}...`}
+        />
+        <div className="typeahead-icon">
+          <Search size={14} />
+        </div>
+      </div>
+
+      {isOpen && filteredUsers.length > 0 && (
+        <div className="typeahead-dropdown fade-in">
+          {filteredUsers.map(user => (
+            <div 
+              key={user.id} 
+              className="typeahead-item"
+              onClick={() => handleSelect(user)}
+            >
+              <div className="user-info">
+                <span className="user-name">{user.name}</span>
+                <span className={`user-type-tag ${user.type}`}>{user.type}</span>
+              </div>
+              {query === user.name && <Check size={14} className="check-icon" />}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

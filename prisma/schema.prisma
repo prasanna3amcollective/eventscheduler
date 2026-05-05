@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id             String   @id @default(uuid()) // sys_id
+  name           String
+  leader         String
+  guide          String
+  observer       String
+  startDateTime  DateTime
+  endDateTime    DateTime
+  duration       Int      // in minutes
+  isRecurring    Boolean  @default(false)
+  recurrenceRule String?
+  participants   Participant[]
+
+  // System Columns (ServiceNow Style)
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
+model Participant {
+  id      String @id @default(uuid())
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([eventId, userId])
+  @@map("participants")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  username String @unique
+  phone    String
+  email    String @unique
+  password String
+  type     String // core, team, inhouse
+  groups   UserGroupM2M[]
+  roles    UserRole[]
+  events   Participant[]
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
+model Group {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  category    String
+  users       UserGroupM2M[]
+  roles       RoleGroupM2M[]
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
+model UserGroupM2M {
+  id      String @id @default(uuid())
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([userId, groupId])
+  @@map("user_group_m2m")
+}
+
+model Role {
+  id          String @id @default(uuid())
+  name        String
+  description String
+  groups      RoleGroupM2M[]
+  users       UserRole[]
+  acls        AccessControlList[]
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([userId, roleId])
+  @@map("user_role")
+}
+
+model RoleGroupM2M {
+  id      String @id @default(uuid())
+  role    Role   @relation(fields: [roleId], references: [id])
+  roleId  String
+  group   Group  @relation(fields: [groupId], references: [id])
+  groupId String
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([roleId, groupId])
+  @@map("role_group_m2m")
+}
+
+model AccessControlList {
+  id          String @id @default(uuid())
+  table       String
+  operation   String // read, write, create, delete
+  role        Role   @relation(fields: [roleId], references: [id])
+  roleId      String
+  description String?
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@map("sys_acl")
+}

@@ -1,0 +1,61 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+
+export async function GET() {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        phone: true,
+        type: true
+        // Exclude password
+      },
+      orderBy: { name: 'asc' }
+    });
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { name, username, phone, email, type, password } = body;
+
+    // Simple sanitization - remove HTML tags to prevent XSS
+    const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '');
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name: sanitize(name),
+        username: sanitize(username),
+        phone: sanitize(phone),
+        email: sanitize(email),
+        type: sanitize(type),
+        password: hashedPassword
+      }
+    });
+
+    // Don't return password in response
+    const { password: _, ...userWithoutPassword } = user;
+    return NextResponse.json(userWithoutPassword);
+  } catch (error: any) {
+    console.error("Error creating user:", error);
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'Username or Email already exists' }, { status: 400 });
+    }
+    return NextResponse.json({ 
+      error: 'Internal Server Error', 
+      details: error.message,
+      stack: error.stack
+    }, { status: 500 });
+  }
+}
