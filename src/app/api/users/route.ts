@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { signToken } from '@/lib/jwt';
+import { cookies } from 'next/headers';
 
 export async function GET() {
   try {
@@ -42,6 +44,17 @@ export async function POST(request: Request) {
         type: sanitize(type),
         password: hashedPassword
       }
+    });
+
+    // Set JWT Session Cookie immediately
+    const token = await signToken({ sub: user.id });
+    const cookieStore = await cookies();
+    cookieStore.set('session_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 // 24 hours
     });
 
     // Don't return password in response

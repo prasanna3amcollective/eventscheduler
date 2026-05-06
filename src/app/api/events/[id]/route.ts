@@ -14,7 +14,7 @@ export async function PUT(
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
 
-    const event = await withAuth(() => prisma.event.update({
+    const event = await withAuth(() => (prisma as any).event.update({
       where: { id: baseId },
       data: {
         name,
@@ -26,7 +26,8 @@ export async function PUT(
         duration: Number(duration),
         isRecurring: Boolean(isRecurring),
         recurrenceRule: isRecurring ? recurrenceRule : null,
-      }
+      },
+      _context: securityContext
     }), securityContext);
 
     return NextResponse.json(event);
@@ -46,18 +47,26 @@ export async function DELETE(
   try {
     const { id } = await params;
     const securityContext = await getSessionContext();
+    
+    if (!securityContext) {
+      return NextResponse.json({ error: 'Session expired or missing. Please log in again.' }, { status: 401 });
+    }
+
     const baseId = id.split('_inst_')[0];
 
-    await withAuth(() => prisma.event.delete({
-      where: { id: baseId }
+    await withAuth(() => (prisma as any).event.delete({
+      where: { id: baseId },
+      _context: securityContext
     }), securityContext);
 
     return NextResponse.json({ message: 'Event deleted' });
   } catch (error: any) {
     console.error("Error deleting event:", error);
+    
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    
+    return NextResponse.json({ error: 'An error occurred during deletion: ' + error.message }, { status: 500 });
   }
 }

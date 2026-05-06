@@ -24,8 +24,8 @@ async function seed() {
   });
   console.log('🗑️  Cleared old event ACLs');
 
-  // 3. Create new ACLs: both admin AND inhouse can create/write/delete events
-  const adminRole = await prisma.role.findFirst({ where: { name: 'admin' } });
+  // 3. Create new ACLs: both core AND inhouse can create/write/delete events
+  const coreRole = await prisma.role.findFirst({ where: { name: 'core' } });
   const operations = ['create', 'write', 'delete'];
 
   for (const op of operations) {
@@ -39,19 +39,19 @@ async function seed() {
       }
     });
 
-    // admin can also do it
-    if (adminRole) {
+    // core can also do it
+    if (coreRole) {
       await prisma.accessControlList.create({
         data: {
           table: 'event',
           operation: op,
-          roleId: adminRole.id,
+          roleId: coreRole.id,
           description: `Admins can ${op} events`
         }
       });
     }
   }
-  console.log('✅ Created event ACLs for "inhouse" and "admin" roles');
+  console.log('✅ Created event ACLs for "inhouse" and "core" roles');
 
   // 4. Find user prasanna and assign the inhouse role
   const prasanna = await prisma.user.findFirst({
@@ -74,7 +74,7 @@ async function seed() {
   }
 
   console.log('\n🎉 Done! ACL policy:');
-  console.log('   Event create/write/delete → inhouse, admin');
+  console.log('   Event create/write/delete → inhouse, core');
   console.log('   Event read → open to all (no ACL = open)');
 }
 

@@ -29,7 +29,7 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
         if (res.ok) {
           const data = await res.json();
           const today = startOfDay(new Date());
-          
+
           // Show everything from the start of today onwards
           const future = data
             .filter((e: any) => {
@@ -63,7 +63,7 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
       <div className="carousel-header">
         <div className="carousel-title">
           <ArrowRight size={18} className="pulse-icon" />
-          <h3>Event Highlights</h3>
+          <h3>Upcoming Events</h3>
         </div>
         {upcomingEvents.length > 3 && (
           <div className="carousel-controls">
@@ -77,9 +77,9 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
         {upcomingEvents.length > 0 ? (
           <>
             {visibleEvents.map((event) => (
-              <div 
-                key={event.id} 
-                className="carousel-card clickable" 
+              <div
+                key={event.id}
+                className="carousel-card clickable"
                 onClick={() => onEventClick?.(event)}
               >
                 <div className="card-accent"></div>

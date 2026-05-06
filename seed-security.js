@@ -3,56 +3,56 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function seed() {
-  console.log('🔧 Bootstrapping admin user...\n');
+  console.log('🔧 Bootstrapping core user...\n');
 
-  // 1. Create or find the admin role
-  let adminRole = await prisma.role.findFirst({ where: { name: 'admin' } });
-  if (!adminRole) {
-    adminRole = await prisma.role.create({
+  // 1. Create or find the core role
+  let coreRole = await prisma.role.findFirst({ where: { name: 'core' } });
+  if (!coreRole) {
+    coreRole = await prisma.role.create({
       data: {
-        id: 'admin-role-id',
-        name: 'admin',
+        id: 'core-role-id',
+        name: 'core',
         description: 'System Administrator - Full access to all tables'
       }
     });
-    console.log('✅ Created admin role');
+    console.log('✅ Created core role');
   } else {
-    console.log('ℹ️  Admin role already exists:', adminRole.id);
+    console.log('ℹ️  Admin role already exists:', coreRole.id);
   }
 
-  // 2. Create the admin user
-  const hashedPassword = await bcrypt.hash('admin123', 10);
-  let adminUser;
+  // 2. Create the core user
+  const hashedPassword = await bcrypt.hash('core123', 10);
+  let coreUser;
   try {
-    adminUser = await prisma.user.create({
+    coreUser = await prisma.user.create({
       data: {
         name: 'Admin',
-        username: 'admin',
+        username: 'core',
         phone: '0000000000',
-        email: 'admin@system.local',
+        email: 'core@system.local',
         password: hashedPassword,
         type: 'core'
       }
     });
-    console.log('✅ Created admin user (username: admin, password: admin123)');
+    console.log('✅ Created core user (username: core, password: core123)');
   } catch (e) {
     if (e.code === 'P2002') {
-      adminUser = await prisma.user.findUnique({ where: { username: 'admin' } });
-      console.log('ℹ️  Admin user already exists:', adminUser.id);
+      coreUser = await prisma.user.findUnique({ where: { username: 'core' } });
+      console.log('ℹ️  Admin user already exists:', coreUser.id);
     } else {
       throw e;
     }
   }
 
-  // 3. Assign admin role to user
+  // 3. Assign core role to user
   try {
     await prisma.userRole.create({
       data: {
-        userId: adminUser.id,
-        roleId: adminRole.id
+        userId: coreUser.id,
+        roleId: coreRole.id
       }
     });
-    console.log('✅ Assigned admin role to admin user');
+    console.log('✅ Assigned core role to core user');
   } catch (e) {
     if (e.code === 'P2002') {
       console.log('ℹ️  Admin role already assigned');
@@ -61,27 +61,27 @@ async function seed() {
     }
   }
 
-  // 4. Seed ACLs for Event table (only admins can create/write/delete)
+  // 4. Seed ACLs for Event table (only cores can create/write/delete)
   const eventOps = ['create', 'write', 'delete'];
   for (const op of eventOps) {
     const existing = await prisma.accessControlList.findFirst({
-      where: { table: 'event', operation: op, roleId: adminRole.id }
+      where: { table: 'event', operation: op, roleId: coreRole.id }
     });
     if (!existing) {
       await prisma.accessControlList.create({
         data: {
           table: 'event',
           operation: op,
-          roleId: adminRole.id,
-          description: `Only admins can ${op} events`
+          roleId: coreRole.id,
+          description: `Only cores can ${op} events`
         }
       });
-      console.log(`✅ Created ACL: event.${op} → admin`);
+      console.log(`✅ Created ACL: event.${op} → core`);
     }
   }
 
   console.log('\n🎉 Bootstrap complete!');
-  console.log('   Login with: username=admin, password=admin123');
+  console.log('   Login with: username=core, password=core123');
 }
 
 seed()

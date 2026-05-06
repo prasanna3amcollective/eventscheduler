@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle } from 'lucide-react';
 
 interface RegisterFormProps {
-  onSuccess?: () => void;
+  onSuccess?: (user: any) => void;
+  pendingEventId?: string | null;
 }
 
-export default function RegisterForm({ onSuccess }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, pendingEventId }: RegisterFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -39,8 +40,22 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       if (res.ok) {
         setSuccess(true);
         setFormData({ name: '', username: '', email: '', phone: '', password: '', type: 'team' });
+        
+        // Auto-enroll if there's a pending event
+        if (pendingEventId) {
+          try {
+            await fetch(`/api/events/${pendingEventId}/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: data.id })
+            });
+          } catch (e) {
+            console.error("Auto-enrollment failed", e);
+          }
+        }
+
         if (onSuccess) {
-          setTimeout(onSuccess, 2000); // Redirect after 2 seconds
+          setTimeout(() => onSuccess(data), 2000); // Redirect after 2 seconds
         }
       } else {
         setError(data.error || 'Registration failed');

@@ -14,8 +14,14 @@ const createPrismaClient = () => {
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
-          // 1. Get user context from AsyncLocalStorage (no args pollution)
-          const userContext = userContextStorage.getStore();
+          // 1. Get user context (Try AsyncLocalStorage first, then args fallback)
+          const userContext = userContextStorage.getStore() || (args as any)._context;
+
+          // Clean up the custom context arg so it doesn't hit the DB
+          if ((args as any)._context) {
+            const { _context, ...cleanArgs } = args as any;
+            args = cleanArgs;
+          }
 
           // 2. SYSTEM TABLE BYPASS
           const systemTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant'];
@@ -67,7 +73,7 @@ const createPrismaClient = () => {
           return query(args);
         }
       },
-      // AUTOMATED ROLE SYNC (ServiceNow Business Rule)
+      // AUTOMATED ROLE SYNC
       userGroupM2M: {
         async create({ args, query }) {
           const result = await query(args);

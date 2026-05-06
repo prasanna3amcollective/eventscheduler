@@ -32,9 +32,9 @@ model Event {
 
 model Participant {
   id      String @id @default(uuid())
-  event   Event  @relation(fields: [eventId], references: [id])
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId String
-  user    User   @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
 
   // System Columns
@@ -83,9 +83,9 @@ model Group {
 
 model UserGroupM2M {
   id      String @id @default(uuid())
-  user    User   @relation(fields: [userId], references: [id])
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
-  group   Group  @relation(fields: [groupId], references: [id])
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId String
 
   // System Columns
@@ -115,9 +115,9 @@ model Role {
 
 model UserRole {
   id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  role   Role   @relation(fields: [roleId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId String
 
   // System Columns
@@ -132,9 +132,9 @@ model UserRole {
 
 model RoleGroupM2M {
   id      String @id @default(uuid())
-  role    Role   @relation(fields: [roleId], references: [id])
+  role    Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId  String
-  group   Group  @relation(fields: [groupId], references: [id])
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId String
 
   // System Columns
@@ -151,7 +151,7 @@ model AccessControlList {
   id          String @id @default(uuid())
   table       String
   operation   String // read, write, create, delete
-  role        Role   @relation(fields: [roleId], references: [id])
+  role        Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId      String
   description String?
 

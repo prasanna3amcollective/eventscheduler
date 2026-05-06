@@ -25,6 +25,7 @@ export default function Home() {
 
   const [detailEvent, setDetailEvent] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [pendingEventId, setPendingEventId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -56,6 +57,7 @@ export default function Home() {
         setUserRoles(data.roles || []);
       }
     } catch (e) { /* ignore */ }
+    setPendingEventId(null);
   };
 
   const handleLogout = async () => {
@@ -74,8 +76,36 @@ export default function Home() {
 
   const handleSelectEvent = (event: any) => {
     if (event.isHoliday) return;
-    setSelectedEvent(event);
-    setIsModalOpen(true);
+
+    // Authorization Check: Only core/inhouse can edit
+    if (userRoles.includes('core') || userRoles.includes('inhouse')) {
+      setSelectedEvent(event);
+      setIsModalOpen(true);
+    } else {
+      // Regular users get the detailed read-only view
+      setDetailEvent(event);
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleSelectSlot = (slotInfo: any) => {
+    // Only core/inhouse can create via double-click
+    if (!userRoles.includes('core') && !userRoles.includes('inhouse')) return;
+
+    // Check for double click or selection
+    if (slotInfo.action === 'select' || slotInfo.action === 'doubleClick') {
+      const newEvent = {
+        startDateTime: slotInfo.start,
+        endDateTime: slotInfo.end || new Date(slotInfo.start.getTime() + 60 * 60 * 1000),
+        name: '',
+        leader: '',
+        guide: '',
+        observer: '',
+        duration: 60
+      };
+      setSelectedEvent(newEvent);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCarouselClick = (event: any) => {
@@ -97,7 +127,7 @@ export default function Home() {
         <header className="dashboard-header">
           <div className="header-brand">
             <Layout size={24} />
-            <h1>Event Portal</h1>
+            <h1>3AM Collective Movement</h1>
           </div>
         </header>
 
@@ -110,9 +140,12 @@ export default function Home() {
                 <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Login</button>
                 <button className={authMode === 'register' ? 'active' : ''} onClick={() => setAuthMode('register')}>Register</button>
               </div>
-              {authMode === 'login' 
-                ? <LoginForm onLoginSuccess={handleLoginSuccess} onSwitchToRegister={() => setAuthMode('register')} /> 
-                : <RegisterForm onSuccess={() => setAuthMode('login')} />
+              {authMode === 'login'
+                ? <LoginForm onLoginSuccess={handleLoginSuccess} onSwitchToRegister={() => setAuthMode('register')} />
+                : <RegisterForm
+                  onSuccess={handleLoginSuccess}
+                  pendingEventId={pendingEventId}
+                />
               }
             </div>
           </div>
@@ -121,7 +154,7 @@ export default function Home() {
             <div className="info-card">
               <Info size={32} color="var(--primary-color)" />
               <h2>Explore Events</h2>
-              <p>Welcome to our professional event portal. Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
+              <p>Welcome to the 3AM Collective Movement. Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
               <ul className="feature-list">
                 <li>Click on any carousel item above to view details</li>
                 <li>Register to participate in upcoming events</li>
@@ -137,7 +170,14 @@ export default function Home() {
           onClose={() => setIsDetailOpen(false)}
           isLoggedIn={false}
           currentUser={null}
-          onRegisterSuccess={() => {}}
+          onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
+          onSwitchToRegister={() => {
+            setPendingEventId(detailEvent.originalId || detailEvent.id);
+            setAuthMode('register');
+            setIsDetailOpen(false);
+            // Smooth scroll to auth section
+            document.querySelector('.auth-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
         />
       </div>
     );
@@ -148,7 +188,7 @@ export default function Home() {
       <header className="dashboard-header">
         <div className="header-brand">
           <Layout size={24} />
-          <h1>Event Scheduler</h1>
+          <h1>3AM Collective</h1>
         </div>
         <div className="header-user">
           <div className="user-badge">
@@ -165,12 +205,12 @@ export default function Home() {
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
           <CalendarDays size={18} /> Calendar View
         </button>
-        {(userRoles.includes('admin') || userRoles.includes('inhouse')) && (
+        {(userRoles.includes('core') || userRoles.includes('inhouse')) && (
           <button className={`nav-tab ${activeTab === 'scheduler' ? 'active' : ''}`} onClick={() => setActiveTab('scheduler')}>
             <PlusCircle size={18} /> Create Event
           </button>
         )}
-        {userRoles.includes('admin') && (
+        {userRoles.includes('core') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
             <ShieldCheck size={18} /> Administration
           </button>
@@ -180,7 +220,11 @@ export default function Home() {
       <main className="app-container">
         {activeTab === 'calendar' && (
           <div className="content-section">
-            <CalendarView refreshTrigger={refreshTrigger} onSelectEvent={handleSelectEvent} />
+            <CalendarView
+              refreshTrigger={refreshTrigger}
+              onSelectEvent={handleSelectEvent}
+              onSelectSlot={handleSelectSlot}
+            />
           </div>
         )}
         {activeTab === 'scheduler' && (
@@ -193,7 +237,11 @@ export default function Home() {
         )}
       </main>
 
-      <EventModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setSelectedEvent(null); }} title="Edit Event">
+      <EventModal
+        isOpen={isModalOpen}
+        onClose={() => { setIsModalOpen(false); setSelectedEvent(null); }}
+        title={selectedEvent?.id ? "Edit Event" : "Create New Event"}
+      >
         {selectedEvent && (
           <EventForm
             initialData={selectedEvent}
@@ -210,6 +258,7 @@ export default function Home() {
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
         onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
+        onSwitchToRegister={() => { }}
       />
     </div>
   );
