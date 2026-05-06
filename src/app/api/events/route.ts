@@ -16,13 +16,49 @@ export async function GET(request: Request) {
     const securityContext = await getSessionContext();
 
     const dbEvents: any[] = await withAuth(
-      () => prisma.event.findMany(),
+      () => prisma.event.findMany({
+        include: {
+          participants: {
+            include: {
+              user: true
+            }
+          }
+        }
+      }),
       securityContext
     );
 
     const expandedEvents: any[] = [];
 
     for (const event of dbEvents) {
+      // Build a set of participant user IDs (from Participant records)
+      const participantUserIds = new Set<string>();
+      const participantUserNames = new Set<string>();
+
+      for (const p of event.participants) {
+        participantUserIds.add(p.userId);
+        if (p.user) {
+          participantUserNames.add(p.user.name);
+        }
+      }
+
+      // Add leader, guide, observer as participants (if they exist)
+      const staffNames = [event.leader, event.guide, event.observer].filter(Boolean);
+      for (const name of staffNames) {
+        participantUserNames.add(name);
+      }
+
+      // Calculate total unique participants
+      // Count = registered participants + staff members not already in participants
+      let totalCount = participantUserIds.size;
+      for (const name of staffNames) {
+        // If this staff member is not already counted via participants
+        const isStaffInParticipants = event.participants.some((p: any) => p.user && p.user.name === name);
+        if (!isStaffInParticipants) {
+          totalCount++;
+        }
+      }
+
       if (event.isRecurring && event.recurrenceRule) {
         try {
           const rule = rrulestr(event.recurrenceRule);
@@ -33,7 +69,8 @@ export async function GET(request: Request) {
               id: `${event.id}_inst_${date.getTime()}`,
               originalId: event.id,
               startDateTime: date,
-              endDateTime: addMinutes(date, event.duration)
+              endDateTime: addMinutes(date, event.duration),
+              participantCount: totalCount
             });
           }
         } catch (e) {
@@ -41,7 +78,10 @@ export async function GET(request: Request) {
         }
       } else {
         if (event.endDateTime >= rangeStart && event.startDateTime <= rangeEnd) {
-          expandedEvents.push(event);
+          expandedEvents.push({
+            ...event,
+            participantCount: totalCount
+          });
         }
       }
     }

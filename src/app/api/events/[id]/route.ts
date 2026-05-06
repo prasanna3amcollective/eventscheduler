@@ -2,6 +2,45 @@ import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const securityContext = await getSessionContext();
+    if (!securityContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const baseId = id.split('_inst_')[0];
+
+    const event = await withAuth(() => prisma.event.findUnique({
+      where: { id: baseId },
+      include: {
+        participants: {
+          include: {
+            user: true
+          }
+        }
+      }
+    }), securityContext);
+
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(event);
+  } catch (error: any) {
+    console.error("Error fetching event:", error);
+    if (error.message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -47,7 +86,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const securityContext = await getSessionContext();
-    
+
     if (!securityContext) {
       return NextResponse.json({ error: 'Session expired or missing. Please log in again.' }, { status: 401 });
     }
@@ -62,11 +101,11 @@ export async function DELETE(
     return NextResponse.json({ message: 'Event deleted' });
   } catch (error: any) {
     console.error("Error deleting event:", error);
-    
+
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
-    
+
     return NextResponse.json({ error: 'An error occurred during deletion: ' + error.message }, { status: 500 });
   }
 }

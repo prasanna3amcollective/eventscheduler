@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, User as UserIcon, Check } from 'lucide-react';
+import { Search, User as UserIcon, Check } from '@/components/Icons';
 
 interface User {
   id: string;

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import CalendarView from '@/components/CalendarView';
 import EventForm from '@/components/EventForm';
 import EventModal from '@/components/EventModal';
@@ -9,9 +10,12 @@ import LoginForm from '@/components/LoginForm';
 import EventCarousel from '@/components/EventCarousel';
 import EventDetailModal from '@/components/EventDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
-import { CalendarDays, PlusCircle, LogOut, Layout, Info, ShieldCheck } from 'lucide-react';
+import ProfileModal from '@/components/ProfileModal';
+import { CalendarDays, PlusCircle, LogOut, Layout, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
-export default function Home() {
+function HomeContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
@@ -26,6 +30,8 @@ export default function Home() {
   const [detailEvent, setDetailEvent] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -36,6 +42,28 @@ export default function Home() {
           setCurrentUser(data.user);
           setUserRoles(data.roles || []);
           setIsLoggedIn(true);
+
+          // Check if we need to open scheduler tab with edit event
+          const tabParam = searchParams.get('tab');
+          const editEventId = sessionStorage.getItem('editEventId');
+
+          if (tabParam === 'scheduler' && editEventId) {
+            sessionStorage.removeItem('editEventId');
+            setActiveTab('scheduler');
+            // Set up the event form to load the event for editing
+            try {
+              const eventRes = await fetch(`/api/events/${editEventId}`);
+              if (eventRes.ok) {
+                const eventData = await eventRes.json();
+                setSelectedEvent(eventData);
+                setIsModalOpen(true);
+              }
+            } catch (e) {
+              console.error('Failed to load event for editing:', e);
+            }
+            // Clean up URL
+            router.replace('/');
+          }
         }
       } catch (e) {
         console.error("Session check failed");
@@ -44,7 +72,15 @@ export default function Home() {
       }
     };
     checkSession();
-  }, []);
+  }, [searchParams, router]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowProfileDropdown(false);
+    if (showProfileDropdown) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showProfileDropdown]);
 
   const handleLoginSuccess = async (user: any) => {
     setCurrentUser(user);
@@ -77,15 +113,21 @@ export default function Home() {
   const handleSelectEvent = (event: any) => {
     if (event.isHoliday) return;
 
-    // Authorization Check: Only core/inhouse can edit
-    if (userRoles.includes('core') || userRoles.includes('inhouse')) {
-      setSelectedEvent(event);
-      setIsModalOpen(true);
-    } else {
-      // Regular users get the detailed read-only view
-      setDetailEvent(event);
-      setIsDetailOpen(true);
-    }
+    // Map CalendarEvent format (from react-big-calendar) to EventData format (expected by EventDetailModal)
+    // CalendarEvent has: title, start (Date), end (Date), leader, guide, observer
+    // EventData expects: name, startDateTime (string), endDateTime (string), leader, guide, observer
+    const mappedEvent = {
+      id: event.id,
+      name: event.title,
+      startDateTime: event.start instanceof Date ? event.start.toISOString() : event.start,
+      endDateTime: event.end instanceof Date ? event.end.toISOString() : event.end,
+      leader: event.leader,
+      guide: event.guide,
+      observer: event.observer,
+    };
+
+    setDetailEvent(mappedEvent);
+    setIsDetailOpen(true);
   };
 
   const handleSelectSlot = (slotInfo: any) => {
@@ -191,10 +233,35 @@ export default function Home() {
           <h1>3AM Collective</h1>
         </div>
         <div className="header-user">
-          <div className="user-badge">
-            <span className="user-name-label">{currentUser?.name}</span>
-            <span className={`user-type-tag ${currentUser?.type}`}>{currentUser?.type}</span>
+          <div className="user-menu-container">
+            <button
+              className="user-trigger"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowProfileDropdown(!showProfileDropdown);
+              }}
+            >
+              <div className="user-avatar">
+                <User size={20} />
+              </div>
+              <span className="user-name">{currentUser?.name}</span>
+              <ChevronDown size={14} />
+            </button>
+            {showProfileDropdown && (
+              <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowProfileDropdown(false);
+                    setIsProfileOpen(true);
+                  }}
+                >
+                  Edit Profile
+                </button>
+              </div>
+            )}
           </div>
+          <span className={`user-type-tag ${currentUser?.type}`}>{currentUser?.type}</span>
           <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
         </div>
       </header>
@@ -212,7 +279,7 @@ export default function Home() {
         )}
         {userRoles.includes('core') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-            <ShieldCheck size={18} /> Administration
+            <ShieldCheck size={18} /> Core Administration
           </button>
         )}
       </nav>
@@ -257,9 +324,29 @@ export default function Home() {
         onClose={() => setIsDetailOpen(false)}
         isLoggedIn={isLoggedIn}
         currentUser={currentUser}
+        userRoles={userRoles}
         onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
         onSwitchToRegister={() => { }}
       />
+
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        currentUser={currentUser}
+        onProfileUpdate={setCurrentUser}
+      />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
+        <div className="spinner" style={{ width: 40, height: 40, border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

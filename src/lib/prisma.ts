@@ -9,7 +9,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.userContextStorage = 
 
 const createPrismaClient = () => {
   const client = new PrismaClient();
-  
+
   return client.$extends({
     query: {
       $allModels: {
@@ -48,11 +48,11 @@ const createPrismaClient = () => {
 
           if (acls.length > 0) {
             if (!userContext) {
-               if (model === 'User' && aclOp === 'create') {
-                  // Allow public registration
-               } else {
-                  throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
-               }
+              if (model === 'User' && aclOp === 'create') {
+                // Allow public registration
+              } else {
+                throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
+              }
             } else {
               const hasRole = acls.some(acl => userContext.roles.includes(acl.roleId));
               if (!hasRole) {
@@ -63,13 +63,13 @@ const createPrismaClient = () => {
 
           // 5. BUSINESS RULE: SYSTEM COLUMNS
           if (userContext && (operation === 'create' || operation === 'update')) {
-             const data = args.data as any;
-             if (data) {
-               if (operation === 'create') data.sys_created_by = userContext.id;
-               data.sys_updated_by = userContext.id;
-             }
+            const argsWithData = args as any;
+            if (argsWithData.data) {
+              if (operation === 'create') argsWithData.data.sys_created_by = userContext.id;
+              argsWithData.data.sys_updated_by = userContext.id;
+            }
           }
-          
+
           return query(args);
         }
       },
