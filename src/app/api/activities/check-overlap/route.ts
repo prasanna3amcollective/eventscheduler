@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { rrulestr } from 'rrule';
 import { addMinutes } from 'date-fns';
+import { checkOverlapSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { startDateTime, endDateTime, isRecurring, recurrenceRule, duration } = body;
+    const { startDateTime, endDateTime, isRecurring, recurrenceRule, duration } = checkOverlapSchema.parse(body);
 
     const newStart = new Date(startDateTime);
     const newEnd = new Date(endDateTime);
@@ -71,8 +73,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ overlap: false, activities: [] });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error checking overlap:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

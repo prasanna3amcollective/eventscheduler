@@ -3,6 +3,8 @@ import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { rrulestr } from 'rrule';
 import { addMinutes } from 'date-fns';
+import { activitySchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -99,7 +101,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = body;
+    const parsedData = activitySchema.parse(body);
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -143,6 +146,9 @@ export async function POST(request: Request) {
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {
     console.error("Error creating activity:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

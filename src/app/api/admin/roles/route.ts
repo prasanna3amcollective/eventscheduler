@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
+import { roleSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET() {
   try {
@@ -27,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description } = body;
+    const { name, description } = roleSchema.parse(body);
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
@@ -45,6 +47,9 @@ export async function POST(request: Request) {
     return NextResponse.json(role, { status: 201 });
   } catch (error: any) {
     console.error("Error creating role:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

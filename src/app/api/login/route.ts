@@ -3,10 +3,13 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
+import { loginSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function POST(request: Request) {
   try {
-    const { username, password } = await request.json();
+    const body = await request.json();
+    const { username, password } = loginSchema.parse(body);
 
     const user = await prisma.user.findUnique({
       where: { username }
@@ -35,8 +38,11 @@ export async function POST(request: Request) {
 
     const { password: _, ...userWithoutPassword } = user;
     return NextResponse.json({ user: userWithoutPassword });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

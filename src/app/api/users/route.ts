@@ -3,6 +3,8 @@ import { prisma, withAuth } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
+import { userRegistrationSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET() {
   try {
@@ -28,20 +30,17 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, phone, email, type, password } = body;
-
-    // Simple sanitization - remove HTML tags to practivity XSS
-    const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '');
+    const { name, username, phone, email, type, password } = userRegistrationSchema.parse(body);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
-        name: sanitize(name),
-        username: sanitize(username),
-        phone: sanitize(phone),
-        email: sanitize(email),
-        type: sanitize(type),
+        name,
+        username,
+        phone,
+        email,
+        type,
         password: hashedPassword
       }
     });
@@ -73,13 +72,14 @@ export async function POST(request: Request) {
     return NextResponse.json(userWithoutPassword);
   } catch (error: any) {
     console.error("Error creating user:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'Username or Email already exists' }, { status: 400 });
     }
     return NextResponse.json({ 
-      error: 'Internal Server Error', 
-      details: error.message,
-      stack: error.stack
+      error: 'Internal Server Error'
     }, { status: 500 });
   }
 }

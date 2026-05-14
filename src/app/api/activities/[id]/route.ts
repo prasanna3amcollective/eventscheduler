@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
+import { activitySchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET(
   request: Request,
@@ -48,7 +50,8 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = body;
+    const parsedData = activitySchema.parse(body);
+    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
 
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
@@ -69,6 +72,9 @@ export async function PUT(
     return NextResponse.json(activity);
   } catch (error: any) {
     console.error("Error updating activity:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

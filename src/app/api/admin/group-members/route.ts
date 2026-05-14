@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
+import { groupMemberSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -37,7 +39,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, groupId } = body;
+    const { userId, groupId } = groupMemberSchema.parse(body);
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
@@ -59,6 +61,9 @@ export async function POST(request: Request) {
     return NextResponse.json(member, { status: 201 });
   } catch (error: any) {
     console.error("Error adding group member:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'User is already a member of this group' }, { status: 400 });
     }
