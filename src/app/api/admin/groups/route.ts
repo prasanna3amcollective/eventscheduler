@@ -35,7 +35,10 @@ export async function POST(request: Request) {
     }
 
     const group = await withAuth(
-      () => prisma.group.create({ data: { name, description, category: category || 'Default' } }),
+      () => (prisma as any).group.create({ 
+        data: { name, description, category: category || 'Default' },
+        _context: securityContext
+      }),
       securityContext
     );
 

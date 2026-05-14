@@ -45,12 +45,13 @@ export async function POST(request: Request) {
     }
 
     const assignment = await withAuth(
-      () => prisma.roleGroupM2M.create({
+      () => (prisma as any).roleGroupM2M.create({
         data: { roleId, groupId },
         include: {
           role: true,
           group: { select: { id: true, name: true } }
-        }
+        },
+        _context: securityContext
       }),
       securityContext
     );

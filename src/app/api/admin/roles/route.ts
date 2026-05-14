@@ -35,7 +35,10 @@ export async function POST(request: Request) {
     }
 
     const role = await withAuth(
-      () => prisma.role.create({ data: { name, description } }),
+      () => (prisma as any).role.create({ 
+        data: { name, description },
+        _context: securityContext
+      }),
       securityContext
     );
 

@@ -38,9 +38,10 @@ export async function POST(request: Request) {
     }
 
     const acl = await withAuth(
-      () => prisma.accessControlList.create({
+      () => (prisma as any).accessControlList.create({
         data: { table, operation, roleId, description },
-        include: { role: true }
+        include: { role: true },
+        _context: securityContext
       }),
       securityContext
     );
