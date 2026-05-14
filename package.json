@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:security": "node prisma/seed/seed-security.js",
+    "seed:acl": "node prisma/seed/seed-inhouse-acl.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
