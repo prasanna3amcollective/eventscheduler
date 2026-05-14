@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   try {
     const securityContext = await getSessionContext();
 
-    const dbEvents: any[] = await withAuth(
+    const dbActivities: any[] = await withAuth(
       () => prisma.activity.findMany({
         include: {
           participants: {
@@ -28,14 +28,14 @@ export async function GET(request: Request) {
       securityContext
     );
 
-    const expandedEvents: any[] = [];
+    const expandedActivities: any[] = [];
 
-    for (const event of dbEvents) {
+    for (const activity of dbActivities) {
       // Build a set of participant user IDs (from Participant records)
       const participantUserIds = new Set<string>();
       const participantUserNames = new Set<string>();
 
-      for (const p of event.participants) {
+      for (const p of activity.participants) {
         participantUserIds.add(p.userId);
         if (p.user) {
           participantUserNames.add(p.user.name);
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       }
 
       // Add leader, guide, observer as participants (if they exist)
-      const staffNames = [event.leader, event.guide, event.observer].filter(Boolean);
+      const staffNames = [activity.leader, activity.guide, activity.observer].filter(Boolean);
       for (const name of staffNames) {
         participantUserNames.add(name);
       }
@@ -53,42 +53,42 @@ export async function GET(request: Request) {
       let totalCount = participantUserIds.size;
       for (const name of staffNames) {
         // If this staff member is not already counted via participants
-        const isStaffInParticipants = event.participants.some((p: any) => p.user && p.user.name === name);
+        const isStaffInParticipants = activity.participants.some((p: any) => p.user && p.user.name === name);
         if (!isStaffInParticipants) {
           totalCount++;
         }
       }
 
-      if (event.isRecurring && event.recurrenceRule) {
+      if (activity.isRecurring && activity.recurrenceRule) {
         try {
-          const rule = rrulestr(event.recurrenceRule);
+          const rule = rrulestr(activity.recurrenceRule);
           const occurrences = rule.between(rangeStart, rangeEnd, true);
           for (const date of occurrences) {
-            expandedEvents.push({
-              ...event,
-              id: `${event.id}_inst_${date.getTime()}`,
-              originalId: event.id,
+            expandedActivities.push({
+              ...activity,
+              id: `${activity.id}_inst_${date.getTime()}`,
+              originalId: activity.id,
               startDateTime: date,
-              endDateTime: addMinutes(date, event.duration),
+              endDateTime: addMinutes(date, activity.duration),
               participantCount: totalCount
             });
           }
         } catch (e) {
-          console.error("Error parsing rrule for event", event.id, e);
+          console.error("Error parsing rrule for event", activity.id, e);
         }
       } else {
-        if (event.endDateTime >= rangeStart && event.startDateTime <= rangeEnd) {
-          expandedEvents.push({
-            ...event,
+        if (activity.endDateTime >= rangeStart && activity.startDateTime <= rangeEnd) {
+          expandedActivities.push({
+            ...activity,
             participantCount: totalCount
           });
         }
       }
     }
 
-    return NextResponse.json(expandedEvents);
+    return NextResponse.json(expandedActivities);
   } catch (error: any) {
-    console.error("Error fetching events:", error);
+    console.error("Error fetching activities:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
 
     const securityContext = await getSessionContext();
 
-    const event = await withAuth(async () => {
+    const activity = await withAuth(async () => {
       const evt = await prisma.activity.create({
         data: {
           name,
@@ -140,9 +140,9 @@ export async function POST(request: Request) {
       return evt;
     }, securityContext);
 
-    return NextResponse.json(event, { status: 201 });
+    return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating event:", error);
+    console.error("Error creating activity:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

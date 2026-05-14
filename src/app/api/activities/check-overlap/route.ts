@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const newStart = new Date(startDateTime);
     const newEnd = new Date(endDateTime);
 
-    const dbEvents = await prisma.activity.findMany();
+    const dbActivities = await prisma.activity.findMany();
     const overlaps = [];
 
     let newInstances: { start: Date, end: Date }[] = [];
@@ -31,13 +31,13 @@ export async function POST(request: Request) {
       newInstances = [{ start: newStart, end: newEnd }];
     }
 
-    for (const event of dbEvents) {
+    for (const activity of dbActivities) {
       if (overlaps.length >= 5) break;
 
       let eventInstances: { start: Date, end: Date }[] = [];
-      if (event.isRecurring && event.recurrenceRule) {
+      if (activity.isRecurring && activity.recurrenceRule) {
         try {
-          const rule = rrulestr(event.recurrenceRule);
+          const rule = rrulestr(activity.recurrenceRule);
           // Only check instances around the new event's time range
           const checkStart = new Date(newStart);
           checkStart.setMonth(checkStart.getMonth() - 1);
@@ -46,11 +46,11 @@ export async function POST(request: Request) {
           
           eventInstances = rule.between(checkStart, checkEnd, true).map(d => ({
             start: d,
-            end: addMinutes(d, event.duration)
+            end: addMinutes(d, activity.duration)
           }));
         } catch (e) {}
       } else {
-        eventInstances = [{ start: event.startDateTime, end: event.endDateTime }];
+        eventInstances = [{ start: activity.startDateTime, end: activity.endDateTime }];
       }
 
       let hasOverlap = false;
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         if (hasOverlap) break;
         for (const ei of eventInstances) {
           if (ni.start < ei.end && ni.end > ei.start) {
-            overlaps.push(event);
+            overlaps.push(activity);
             hasOverlap = true;
             break;
           }
@@ -67,10 +67,10 @@ export async function POST(request: Request) {
     }
 
     if (overlaps.length > 0) {
-      return NextResponse.json({ overlap: true, events: overlaps.slice(0, 5) });
+      return NextResponse.json({ overlap: true, activities: overlaps.slice(0, 5) });
     }
 
-    return NextResponse.json({ overlap: false, events: [] });
+    return NextResponse.json({ overlap: false, activities: [] });
   } catch (error) {
     console.error("Error checking overlap:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

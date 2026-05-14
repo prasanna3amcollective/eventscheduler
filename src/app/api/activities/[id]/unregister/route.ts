@@ -14,7 +14,7 @@ export async function POST(
        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Determine the true event ID. Recurring events have composite IDs like "originalId_inst_timestamp"
+    // Determine the true activity ID. Recurring activities have composite IDs like "originalId_inst_timestamp"
     const originalEventId = id.includes('_inst_') ? id.split('_inst_')[0] : id;
 
     // Delete the participant record

@@ -30,7 +30,7 @@ interface User {
   type: string;
 }
 
-interface EventData {
+interface ActivityData {
   id: string;
   originalId?: string;
   name: string;
@@ -44,9 +44,9 @@ interface EventData {
   recurrenceRule?: string | null;
 }
 
-interface EventFormProps {
-  onEventCreated: () => void;
-  initialData?: EventData;
+interface ActivityFormProps {
+  onActivityCreated: () => void;
+  initialData?: ActivityData;
   onCancel?: () => void;
 }
 
@@ -89,7 +89,7 @@ function buildRrule(
   isRecurring: boolean,
   recurrenceDays: string[],
   recurrenceFreq: string,
-  initialData?: EventData,
+  initialData?: ActivityData,
 ): string {
   if (!isRecurring || recurrenceDays.length === 0) return '';
 
@@ -157,10 +157,10 @@ function DaySelector({
 }
 
 // ---------------------------------------------------------------------------
-// EventForm
+// ActivityForm
 // ---------------------------------------------------------------------------
 
-export default function EventForm({ onEventCreated, initialData, onCancel }: EventFormProps) {
+export default function ActivityForm({ onActivityCreated, initialData, onCancel }: ActivityFormProps) {
   const isEditing = !!initialData;
   const isInstance = !!initialData?.originalId;
 
@@ -211,7 +211,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
     return () => { cancelled = true; };
   }, []);
 
-  // Check for overlapping events
+  // Check for overlapping activities
   const checkOverlap = useCallback(
     async (start: Date, end: Date) => {
       setOverlapWarning(null);
@@ -240,15 +240,15 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
         const data = await res.json();
         if (!data.overlap) return;
 
-        const otherEvents = isEditing
-          ? data.events.filter(
-            (e: EventData) =>
+        const otherActivities = isEditing
+          ? data.activities.filter(
+            (e: ActivityData) =>
               e.id !== initialData.originalId && e.id !== initialData.id,
           )
-          : data.events;
+          : data.activities;
 
-        if (otherEvents.length > 0) {
-          const names = (otherEvents as EventData[]).map((e) => e.name).join(', ');
+        if (otherActivities.length > 0) {
+          const names = (otherActivities as ActivityData[]).map((e) => e.name).join(', ');
           setOverlapWarning(`Warning: This schedule overlaps with: ${names}`);
         }
       } catch (e) {
@@ -342,7 +342,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
           if (!res.ok) throw new Error(ERROR_SAVING_EVENT);
         }
 
-        onEventCreated();
+        onActivityCreated();
         setIsSubmitting(false);
       } catch (err) {
         console.error(err);
@@ -350,7 +350,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
         setIsSubmitting(false);
       }
     },
-    [formData, isEditing, isInstance, saveMode, initialData, onEventCreated],
+    [formData, isEditing, isInstance, saveMode, initialData, onActivityCreated],
   );
 
   const handleDelete = useCallback(async () => {
@@ -383,26 +383,26 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
         );
       }
 
-      onEventCreated();
+      onActivityCreated();
     } catch (err) {
       console.error(err);
       alert(ERROR_DELETING_EVENT);
     }
-  }, [isInstance, saveMode, formData.startDateTime, initialData, onEventCreated]);
+  }, [isInstance, saveMode, formData.startDateTime, initialData, onActivityCreated]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <form className="event-form" onSubmit={handleSubmit}>
+    <form className="activity-form" onSubmit={handleSubmit}>
       <div className="form-header">
-        <h2>{isEditing ? 'Edit Event' : 'New Event'}</h2>
+        <h2>{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
       </div>
 
       <OverlapWarningBanner message={overlapWarning} />
 
       <div className="form-group">
         <label>
-          <Tag size={16} /> Event Name
+          <Tag size={16} /> Activity Name
         </label>
         <input
           required
@@ -522,7 +522,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
               onClick={() => setSaveMode('all')}
               style={{ flex: 1, justifyContent: 'center' }}
             >
-              All events in series
+              All activities in series
             </button>
           </div>
         </div>

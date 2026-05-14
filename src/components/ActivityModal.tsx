@@ -3,14 +3,14 @@
 import { X } from '@/components/Icons';
 import { ReactNode, useEffect } from 'react';
 
-interface EventModalProps {
+interface ActivityModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
   title: string;
 }
 
-export default function EventModal({ isOpen, onClose, children, title }: EventModalProps) {
+export default function ActivityModal({ isOpen, onClose, children, title }: ActivityModalProps) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

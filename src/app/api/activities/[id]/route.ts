@@ -16,7 +16,7 @@ export async function GET(
 
     const baseId = id.split('_inst_')[0];
 
-    const event = await withAuth(() => prisma.activity.findUnique({
+    const activity = await withAuth(() => prisma.activity.findUnique({
       where: { id: baseId },
       include: {
         participants: {
@@ -27,13 +27,13 @@ export async function GET(
       }
     }), securityContext);
 
-    if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    if (!activity) {
+      return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
     }
 
-    return NextResponse.json(event);
+    return NextResponse.json(activity);
   } catch (error: any) {
-    console.error("Error fetching event:", error);
+    console.error("Error fetching activity:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -48,24 +48,15 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = body;
+    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = body;
 
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
 
-    // First, get the current event to see what leader/guide/observer values existed before
-    const currentEvent = await withAuth(() => prisma.activity.findUnique({
-      where: { id: baseId },
-      select: { leader: true, guide: true, observer: true }
-    }), securityContext) as { leader: string; guide: string; observer: string } | null;
-
-    const event = await withAuth(() => (prisma as any).event.update({
+    const activity = await withAuth(() => (prisma as any).activity.update({
       where: { id: baseId },
       data: {
         name,
-        leader,
-        guide,
-        observer,
         startDateTime: new Date(startDateTime),
         endDateTime: new Date(endDateTime),
         duration: Number(duration),
@@ -75,64 +66,9 @@ export async function PUT(
       _context: securityContext
     }), securityContext);
 
-    // Update participant records based on leader/guide/observer changes
-    try {
-      // Get current staff names from the updated event
-      const newStaffNames = [leader, guide, observer].filter(Boolean);
-      
-      // Get previous staff names from the current event before update
-      const prevStaffNames = currentEvent ? 
-        [currentEvent.leader, currentEvent.guide, currentEvent.observer].filter(Boolean) : 
-        [];
-
-      // Find users for new staff names (select only id for efficiency)
-      const newStaffUsers = await prisma.user.findMany({
-        where: { name: { in: newStaffNames } },
-        select: { id: true }
-      });
-
-      // Find users for previous staff names (select only id for efficiency)
-      const prevStaffUsers = await prisma.user.findMany({
-        where: { name: { in: prevStaffNames } },
-        select: { id: true }
-      });
-
-      // Determine which users to remove (were in prev but not in new)
-      const prevStaffUserIds = new Set(prevStaffUsers.map((u: { id: string }) => u.id));
-      const newStaffUserIds = new Set(newStaffUsers.map((u: { id: string }) => u.id));
-      const userIdsToRemove = [...prevStaffUserIds].filter(id => !newStaffUserIds.has(id));
-
-      // Determine which users to add (are in new but not in prev)
-      const userIdsToAdd = [...newStaffUserIds].filter(id => !prevStaffUserIds.has(id));
-
-      // Remove participants for users no longer in leader/guide/observer
-      if (userIdsToRemove.length > 0) {
-        await prisma.participant.deleteMany({
-          where: {
-            activityId: baseId,
-            userId: { in: userIdsToRemove }
-          }
-        });
-      }
-
-      // Add participants for newly added leader/guide/observer
-      if (userIdsToAdd.length > 0) {
-        await prisma.participant.createMany({
-          data: Array.from(userIdsToAdd).map(userId => ({
-            activityId: baseId,
-            userId
-          })),
-          skipDuplicates: true
-        });
-      }
-    } catch (participantError) {
-      console.error("Error updating participant records:", participantError);
-      // Don't fail the whole request if participant update fails
-    }
-
-    return NextResponse.json(event);
+    return NextResponse.json(activity);
   } catch (error: any) {
-    console.error("Error updating event:", error);
+    console.error("Error updating activity:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -154,14 +90,14 @@ export async function DELETE(
 
     const baseId = id.split('_inst_')[0];
 
-    await withAuth(() => (prisma as any).event.delete({
+    await withAuth(() => (prisma as any).activity.delete({
       where: { id: baseId },
       _context: securityContext
     }), securityContext);
 
-    return NextResponse.json({ message: 'Event deleted' });
+    return NextResponse.json({ message: 'Activity deleted' });
   } catch (error: any) {
-    console.error("Error deleting event:", error);
+    console.error("Error deleting activity:", error);
 
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });

@@ -9,7 +9,7 @@ import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, Check
 // Types
 // ---------------------------------------------------------------------------
 
-interface EventData {
+interface ActivityData {
   id: string;
   originalId?: string;
   name: string;
@@ -29,8 +29,8 @@ interface UserData {
   email?: string;
 }
 
-interface EventDetailModalProps {
-  event: EventData | null;
+interface ActivityDetailModalProps {
+  activity: ActivityData | null;
   isOpen: boolean;
   onClose: () => void;
   isLoggedIn: boolean;
@@ -62,13 +62,13 @@ function toGoogleCalendarDate(date: Date): string {
   return date.toISOString().replace(/[-:]|\.\d{3}/g, '');
 }
 
-function buildGoogleCalendarUrl(event: EventData, isLoggedIn: boolean): string {
-  const startDate = new Date(event.startDateTime);
+function buildGoogleCalendarUrl(activity: ActivityData, isLoggedIn: boolean): string {
+  const startDate = new Date(activity.startDateTime);
   if (isNaN(startDate.getTime())) return '';
 
-  const durationMs = (event.duration ?? 60) * 60_000;
-  const endMs = event.endDateTime
-    ? new Date(event.endDateTime).getTime()
+  const durationMs = (activity.duration ?? 60) * 60_000;
+  const endMs = activity.endDateTime
+    ? new Date(activity.endDateTime).getTime()
     : startDate.getTime() + durationMs;
   const endDate = new Date(endMs);
 
@@ -76,13 +76,11 @@ function buildGoogleCalendarUrl(event: EventData, isLoggedIn: boolean): string {
   const end = toGoogleCalendarDate(endDate);
   if (!start || !end) return '';
 
-  const details = isLoggedIn
-    ? `Leader: ${event.leader}\nGuide: ${event.guide}\nObserver: ${event.observer}`
-    : '';
+  const details = '';
 
   const query = [
     'action=TEMPLATE',
-    `text=${encodeURIComponent(event.name)}`,
+    `text=${encodeURIComponent(activity.name)}`,
     `dates=${start}/${end}`,
     details ? `details=${encodeURIComponent(details)}` : '',
     `location=${encodeURIComponent(GOOGLE_MAPS_LINK)}`,
@@ -149,8 +147,8 @@ function ParticipantCount({ count }: { count: number }) {
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function EventDetailModal({
-  event,
+export default function ActivityDetailModal({
+  activity,
   isOpen,
   onClose,
   isLoggedIn,
@@ -158,31 +156,31 @@ export default function EventDetailModal({
   userRoles = [],
   onRegisterSuccess,
   onSwitchToRegister,
-}: EventDetailModalProps) {
+}: ActivityDetailModalProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const activityId = event ? event.originalId ?? event.id : '';
+  const activityId = activity ? activity.originalId ?? activity.id : '';
   const canEdit = userRoles.includes('core') || userRoles.includes('inhouse');
   const isLeader = false;
   const googleCalendarUrl = useMemo(
-    () => (event ? buildGoogleCalendarUrl(event, isLoggedIn) : ''),
-    [event, isLoggedIn],
+    () => (activity ? buildGoogleCalendarUrl(activity, isLoggedIn) : ''),
+    [activity, isLoggedIn],
   );
 
   const startDate = useMemo(
-    () => (event ? new Date(event.startDateTime) : new Date()),
-    [event?.startDateTime],
+    () => (activity ? new Date(activity.startDateTime) : new Date()),
+    [activity?.startDateTime],
   );
 
   
   
   
-  const isStaffForEvent = false;
+  const isStaffForActivity = false;
 
-  const isRegistered = isLoggedIn && event?.participants?.some(p => p.userId === currentUser?.id);
+  const isRegistered = isLoggedIn && activity?.participants?.some(p => p.userId === currentUser?.id);
 
   const handleRegister = useCallback(async () => {
     if (!isLoggedIn) {
@@ -264,17 +262,17 @@ export default function EventDetailModal({
     }
   }, [googleCalendarUrl]);
 
-  if (!isOpen || !event) return null;
+  if (!isOpen || !activity) return null;
 
   return (
     <div className="modal-overlay fade-in" onClick={onClose}>
       <div
-        className="modal-content event-detail-card"
+        className="modal-content activity-detail-card"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
           {canEdit && (
-            <button onClick={handleEdit} className="edit-btn-flat" title="Edit Event">
+            <button onClick={handleEdit} className="edit-btn-flat" title="Edit Activity">
               <Edit size={20} />
             </button>
           )}
@@ -283,12 +281,12 @@ export default function EventDetailModal({
           </button>
         </div>
 
-        {/* ---------- Intimate header: no colored block, just event name ---------- */}
+        {/* ---------- Intimate header: no colored block, just activity name ---------- */}
         <div className="detail-header-flat">
           <div className="detail-header-row">
-            <div className="detail-category">Event</div>
+            <div className="detail-category">Activity</div>
           </div>
-          <h2 className="detail-title">{event.name}</h2>
+          <h2 className="detail-title">{activity.name}</h2>
         </div>
 
         {/* ---------- Body ---------- */}
@@ -296,12 +294,64 @@ export default function EventDetailModal({
           {/* Date & time — inline, no big separator */}
           <div className="detail-datetime-row">
             <span className="detail-label"><Clock size={12} /> {format(startDate, 'EEEE')}</span>
-            <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({event.duration} mins)</span>
+            <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({activity.duration} mins)</span>
           </div>
 
           {/* Staff — compact, no icons */}
-          {isLoggedIn && (
-            <>
-              
+          {isLoggedIn && activity.participantCount !== undefined && (
+            <ParticipantCount count={activity.participantCount} />
+          )}
+
+          {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
+        </div>
+
+        {/* ---------- Footer / actions ---------- */}
+        <div className="detail-footer-flat">
+          {successMessage && (
+            <div style={{
+              flex: '0 0 100%',
+              textAlign: 'center',
+              color: '#22c55e',
+              fontSize: '14px',
+              fontWeight: 500,
+              marginBottom: '8px'
+            }}>
+              {successMessage}
+            </div>
+          )}
+
+          <button
+            onClick={handleSyncCalendar}
+            className="btn-outline"
+            disabled={!googleCalendarUrl}
+          >
+            <Calendar size={16} /> Sync
+          </button>
+
+          {isLeader && (
+            <a href={`/activities/${activityId}`} className="btn-outline">
+              <Users size={16} /> Manage
+            </a>
+          )}
+
+          {isStaffForActivity ? (
+            <button className="btn-secondary" onClick={() => {
+              onClose();
+            }}>
+              Switch Responsibility
+            </button>
+          ) : isRegistered ? (
+            <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting}>
+              {isSubmitting ? 'Unregistering...' : 'Unregister'}
+            </button>
+          ) : (
+            <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
+              {isSubmitting ? 'Registering...' : 'Register'}
+              <CheckCircle size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

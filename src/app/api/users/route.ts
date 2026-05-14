@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, username, phone, email, type, password } = body;
 
-    // Simple sanitization - remove HTML tags to prevent XSS
+    // Simple sanitization - remove HTML tags to practivity XSS
     const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '');
 
     const hashedPassword = await bcrypt.hash(password, 10);

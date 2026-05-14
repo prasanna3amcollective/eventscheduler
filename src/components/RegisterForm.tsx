@@ -110,7 +110,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
 
-  // ── Auto-enroll user in a pending event ────────────────────────────────
+  // ── Auto-enroll user in a pending activity ────────────────────────────────
 
   const autoEnroll = useCallback(
     async (userId: string) => {
@@ -171,7 +171,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           setSuccess(true);
           setFormData({ ...EMPTY_FORM });
 
-          // Auto-enroll if there's a pending event
+          // Auto-enroll if there's a pending activity
           await autoEnroll(data.id);
 
           if (onSuccess) {
@@ -209,7 +209,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
       };
 
   return (
-    <form className="event-form" onSubmit={handleSubmit}>
+    <form className="activity-form" onSubmit={handleSubmit}>
       <div className="form-header">
         <h2>User Registration</h2>
         <p>Create a new user account for the system</p>

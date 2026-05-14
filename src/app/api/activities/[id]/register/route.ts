@@ -14,7 +14,7 @@ export async function POST(
        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Determine the true event ID. Recurring events have composite IDs like "originalId_inst_timestamp"
+    // Determine the true activity ID. Recurring activities have composite IDs like "originalId_inst_timestamp"
     const originalEventId = id.includes('_inst_') ? id.split('_inst_')[0] : id;
 
     const registration = await withAuth(() => prisma.participant.create({
@@ -28,7 +28,7 @@ export async function POST(
   } catch (error: any) {
     console.error("Registration error:", error);
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'You are already registered for this event' }, { status: 400 });
+      return NextResponse.json({ error: 'You are already registered for this activity' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }

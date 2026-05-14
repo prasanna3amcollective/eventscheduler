@@ -38,8 +38,8 @@ const localizer = dateFnsLocalizer({
 // Types
 // ---------------------------------------------------------------------------
 
-/** The shape of an event returned by the API (before formatting). */
-interface ApiEvent {
+/** The shape of an activity returned by the API (before formatting). */
+interface ApiActivity {
   id: string;
   name: string;
   startDateTime: string;
@@ -52,7 +52,7 @@ interface ApiEvent {
 }
 
 /** The shape used internall by react-big-calendar. */
-interface CalendarEvent {
+interface CalendarActivity {
   id: string;
   title: string;
   start: Date;
@@ -71,7 +71,7 @@ interface CalendarEvent {
 
 // ── Toolbar ───────────────────────────────────────────────────────────────
 
-function CustomToolbar(props: ToolbarProps<CalendarEvent, object>): JSX.Element {
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object>): JSX.Element {
   const { label, onNavigate, onView, view } = props;
 
   return (
@@ -108,35 +108,35 @@ function CustomToolbar(props: ToolbarProps<CalendarEvent, object>): JSX.Element 
 // ── Agenda table (paginated, with leader/guide/observer) ────────────────
 
 interface CustomAgendaProps {
-  events: CalendarEvent[];
-  onSelectEvent: (event: CalendarEvent) => void;
+  activities: CalendarActivity[];
+  onSelectActivity: (activity: CalendarActivity) => void;
 }
 
-function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element {
+function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0);
 
   const now = useMemo(() => new Date(), []);
   const sixMonthsFromNow = useMemo(() => addMonths(now, 6), [now]);
 
-  const filteredEvents = useMemo(
+  const filteredActivities = useMemo(
     () =>
-      events
+      activities
         .filter((e) => {
           const d = e.start;
           return isAfter(d, now) && isBefore(d, sixMonthsFromNow);
         })
         .sort((a, b) => a.start.getTime() - b.start.getTime()),
-    [events, now, sixMonthsFromNow],
+    [activities, now, sixMonthsFromNow],
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / AGENDA_PAGE_SIZE));
-  const paginatedEvents = useMemo(
+  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / AGENDA_PAGE_SIZE));
+  const paginatedActivities = useMemo(
     () =>
-      filteredEvents.slice(
+      filteredActivities.slice(
         currentPage * AGENDA_PAGE_SIZE,
         (currentPage + 1) * AGENDA_PAGE_SIZE,
       ),
-    [filteredEvents, currentPage],
+    [filteredActivities, currentPage],
   );
 
   const goBack = useCallback(
@@ -225,7 +225,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
           </tr>
         </thead>
         <tbody>
-          {paginatedEvents.length === 0 ? (
+          {paginatedActivities.length === 0 ? (
             <tr>
               <td
                 colSpan={6}
@@ -235,15 +235,15 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                   color: 'var(--text-secondary)',
                 }}
               >
-                No upcoming events found within the next 6 months
+                No upcoming activities found within the next 6 months
               </td>
             </tr>
           ) : (
-            paginatedEvents.map((event) => (
+            paginatedActivities.map((activity) => (
               <tr
-                key={event.id}
+                key={activity.id}
                 className="agenda-row clickable-row"
-                onClick={() => onSelectEvent(event)}
+                onClick={() => onSelectActivity(activity)}
                 style={{
                   background: 'var(--surface-color)',
                   borderRadius: '8px',
@@ -260,7 +260,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                     fontWeight: 600,
                   }}
                 >
-                  {format(event.start, 'MMM dd, yyyy')}
+                  {format(activity.start, 'MMM dd, yyyy')}
                 </td>
                 <td
                   style={{
@@ -268,7 +268,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                     color: 'var(--text-secondary)',
                   }}
                 >
-                  {format(event.start, 'hh:mm aa')}
+                  {format(activity.start, 'hh:mm aa')}
                 </td>
                 <td
                   style={{
@@ -277,7 +277,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                     color: 'var(--primary-color)',
                   }}
                 >
-                  {event.title}
+                  {activity.title}
                 </td>
                 <td style={{ padding: '12px' }}>
                   <span
@@ -287,7 +287,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                       color: 'var(--primary-color)',
                     }}
                   >
-                    {event.leader ?? '-'}
+                    {activity.leader ?? '-'}
                   </span>
                 </td>
                 <td style={{ padding: '12px' }}>
@@ -298,7 +298,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                       color: '#10b981',
                     }}
                   >
-                    {event.guide ?? '-'}
+                    {activity.guide ?? '-'}
                   </span>
                 </td>
                 <td
@@ -315,7 +315,7 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                       color: 'var(--text-secondary)',
                     }}
                   >
-                    {event.observer ?? '-'}
+                    {activity.observer ?? '-'}
                   </span>
                 </td>
               </tr>
@@ -327,13 +327,13 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
   );
 }
 
-// ─── Calendar event renderer (used by react-big-calendar component prop) ─
+// ─── Calendar activity renderer (used by react-big-calendar component prop) ─
 
-function CalendarEventRenderer({ event }: { event: CalendarEvent }): JSX.Element {
+function CalendarEventRenderer({ event: activity }: { event: CalendarActivity }): JSX.Element {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      {event.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
-      <span>{event.title}</span>
+      {activity.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
+      <span>{activity.title}</span>
     </div>
   );
 }
@@ -344,17 +344,17 @@ function CalendarEventRenderer({ event }: { event: CalendarEvent }): JSX.Element
 
 interface CalendarViewProps {
   refreshTrigger: number;
-  onSelectEvent: (event: CalendarEvent) => void;
+  onSelectActivity: (activity: CalendarActivity) => void;
   onSelectSlot: (slotInfo: { start: Date; end: Date }) => void;
 }
 
 export default function CalendarView({
   refreshTrigger,
-  onSelectEvent,
+  onSelectActivity,
   onSelectSlot,
 }: CalendarViewProps) {
   // -- State --
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
@@ -363,20 +363,20 @@ export default function CalendarView({
   const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
   const onView = useCallback((newView: View) => setView(newView), []);
 
-  // -- Fetch events --
+  // -- Fetch activities --
   useEffect(() => {
     let cancelled = false;
 
-    const fetchEvents = async () => {
+    const fetchActivities = async () => {
       try {
         const res = await fetch(
           `/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`,
         );
         if (!res.ok) return;
-        const data: ApiEvent[] = await res.json();
+        const data: ApiActivity[] = await res.json();
         if (cancelled) return;
 
-        const formatted: CalendarEvent[] = data.map((e) => ({
+        const formatted: CalendarActivity[] = data.map((e) => ({
           id: e.id,
           title: e.name,
           start: new Date(e.startDateTime),
@@ -387,13 +387,13 @@ export default function CalendarView({
           observer: e.observer,
           participants: e.participants,
         }));
-        setEvents(formatted);
+        setActivities(formatted);
       } catch (err) {
-        console.error('Failed to fetch events', err);
+        console.error('Failed to fetch activities', err);
       }
     };
 
-    fetchEvents();
+    fetchActivities();
     return () => { cancelled = true; };
   }, [refreshTrigger]);
 
@@ -410,10 +410,10 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, []);
 
-  // -- Derived: combined calendar events --
-  const calendarEvents = useMemo<CalendarEvent[]>(
+  // -- Derived: combined calendar activities --
+  const calendarActivities = useMemo<CalendarActivity[]>(
     () => [
-      ...events,
+      ...activities,
       ...holidays.map((h) => ({
         id: h.id,
         title: h.name,
@@ -423,7 +423,7 @@ export default function CalendarView({
         isHoliday: true,
       })),
     ],
-    [events, holidays],
+    [activities, holidays],
   );
 
   // -- Day styling --
@@ -448,9 +448,9 @@ export default function CalendarView({
     [holidays],
   );
 
-  // -- Event styling --
-  const eventPropGetter = useCallback((event: CalendarEvent) => {
-    if (event.isHoliday) {
+  // -- Activity styling --
+  const eventPropGetter = useCallback((activity: CalendarActivity) => {
+    if (activity.isHoliday) {
       return {
         style: {
           backgroundColor: 'rgba(16, 185, 129, 0.6)',
@@ -476,7 +476,7 @@ export default function CalendarView({
   }, []);
 
   // -- View options --
-  const views: ViewsProps<CalendarEvent> = useMemo(
+  const views: ViewsProps<CalendarActivity> = useMemo(
     () => ({
       month: true,
       week: true,
@@ -499,14 +499,14 @@ export default function CalendarView({
   return (
     <div className="calendar-wrapper">
       <div className={view === Views.AGENDA ? 'hidden-calendar-view' : ''}>
-        <Calendar<CalendarEvent>
+        <Calendar<CalendarActivity>
           localizer={localizer}
-          events={calendarEvents}
+          events={calendarActivities}
           startAccessor="start"
           endAccessor="end"
           selectable
           onSelectSlot={onSelectSlot}
-          onSelectEvent={onSelectEvent}
+          onSelectEvent={onSelectActivity}
           view={view}
           onView={onView}
           date={date}
@@ -523,8 +523,8 @@ export default function CalendarView({
       {view === Views.AGENDA && (
         <div className="custom-agenda-container fade-in">
           <CustomAgenda
-            events={calendarEvents.filter((e) => !e.isHoliday)}
-            onSelectEvent={onSelectEvent}
+            activities={calendarActivities.filter((e) => !e.isHoliday)}
+            onSelectActivity={onSelectActivity}
           />
         </div>
       )}

@@ -12,7 +12,7 @@
   --primary-glow: rgba(180, 83, 61, 0.15);
   --border-color: #d6cbbc;
   --hover-color: #e8dfd2;
-  --event-color: #b4533d;
+  --activity-color: #b4533d;
   --holiday-color: #b88a3d;
   --error-color: #a13a2a;
   --success-color: #5a7a4a;
@@ -153,7 +153,7 @@ h4 {
 }
 
 /* Form Styling - Premium Material */
-.event-form {
+.activity-form {
   max-width: 800px;
   margin: 0 auto;
   background: var(--surface-color);
@@ -201,7 +201,7 @@ h4 {
   position: absolute;
   left: 14px;
   color: var(--text-secondary);
-  pointer-events: none;
+  pointer-activities: none;
 }
 
 input:not([type="checkbox"]),
@@ -304,7 +304,7 @@ input:not([type="checkbox"]):focus {
   border-bottom: 2px solid var(--border-color) !important;
 }
 
-.rbc-event {
+.rbc-activity {
   border-radius: 4px !important;
   padding: 3px 6px !important;
   font-size: 12px !important;
@@ -774,7 +774,7 @@ input:not([type="checkbox"]):focus {
   position: absolute;
   right: 12px;
   color: var(--text-secondary);
-  pointer-events: none;
+  pointer-activities: none;
 }
 
 .typeahead-dropdown {
@@ -1236,8 +1236,8 @@ input:not([type="checkbox"]):focus {
   }
 }
 
-/* ── Event Detail Modal: flat, intimate, no colored block ────────────── */
-.event-detail-card {
+/* ── Activity Detail Modal: flat, intimate, no colored block ────────────── */
+.activity-detail-card {
   max-width: 460px !important;
   padding: 0 !important;
   overflow: hidden;
@@ -2069,7 +2069,7 @@ input:not([type="checkbox"]):focus {
   margin-top: 24px;
 }
 
-/* ===== EVENT MANAGEMENT PAGE ===== */
+/* ===== ACTIVITY MANAGEMENT PAGE ===== */
 .back-button {
   display: flex;
   align-items: center;
@@ -2088,7 +2088,7 @@ input:not([type="checkbox"]):focus {
   color: var(--primary-color);
 }
 
-.event-card {
+.activity-card {
   background: var(--surface-color);
   border-radius: var(--radius-lg);
   padding: 32px;
@@ -2096,14 +2096,14 @@ input:not([type="checkbox"]):focus {
   box-shadow: var(--shadow-lg);
 }
 
-.event-card-header {
+.activity-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
 }
 
-.event-title {
+.activity-title {
   font-size: 28px;
   font-weight: 700;
   color: var(--text-primary);
@@ -2121,7 +2121,7 @@ input:not([type="checkbox"]):focus {
   letter-spacing: 0.5px;
 }
 
-.event-datetime {
+.activity-datetime {
   display: flex;
   gap: 32px;
 }

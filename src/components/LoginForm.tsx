@@ -122,10 +122,10 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
   );
 
   return (
-    <form className="event-form" onSubmit={handleSubmit}>
+    <form className="activity-form" onSubmit={handleSubmit}>
       <div className="form-header">
         <h2>Welcome Back</h2>
-        <p>Login to access your event scheduler</p>
+        <p>Login to access your activity scheduler</p>
       </div>
 
       <ErrorBanner error={error ?? ''} onSwitchToRegister={onSwitchToRegister} />

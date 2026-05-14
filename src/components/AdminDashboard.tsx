@@ -65,7 +65,7 @@ type AdminTab = 'roles' | 'user-roles' | 'groups' | 'group-members' | 'group-rol
 
 const GROUPS_CATEGORIES = ['Security', 'Operations', 'Management', 'Custom'] as const;
 const ACL_TABLES = [
-  'event', 'user', 'group', 'role', 'participant',
+  'activity', 'user', 'group', 'role', 'participant',
   'userrole', 'usergroupm2m', 'rolegroupm2m', 'accesscontrollist',
 ] as const;
 const ACL_OPERATIONS = ['read', 'write', 'create', 'delete'] as const;
@@ -604,7 +604,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         <form className="admin-form" onSubmit={handleCreateGroup}>
           <h4>Create New Group</h4>
           <input
-            placeholder="Group Name (e.g. Event Admins)"
+            placeholder="Group Name (e.g. Activity Admins)"
             value={newGroupName}
             onChange={(e) => setNewGroupName(e.target.value)}
             required
@@ -901,7 +901,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         <h3>Access Control Lists</h3>
         <p className="panel-subtitle">
           Define table-level permissions for roles (e.g., who can read/write
-          events).
+          activities).
         </p>
 
         <div className="table-container">

@@ -5,20 +5,20 @@ import { format, startOfDay } from 'date-fns';
 import { Clock, CalendarDays, Users } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
-interface Event {
+interface Activity {
   id: string;
   name: string;
   startDateTime: string;
   participantCount?: number;
 }
 
-interface EventCarouselProps {
+interface ActivityCarouselProps {
   refreshTrigger: number;
-  onEventClick?: (event: Event) => void;
+  onActivityClick?: (activity: any) => void;
 }
 
-export default function EventCarousel({ refreshTrigger, onEventClick }: EventCarouselProps) {
-  const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+export default function ActivityCarousel({ refreshTrigger, onActivityClick }: ActivityCarouselProps) {
+  const [upcomingActivities, setUpcomingActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -37,10 +37,10 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
             })
             .sort((a: any, b: any) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
             .slice(0, 12);
-          setUpcomingEvents(future);
+          setUpcomingActivities(future);
         }
       } catch (err) {
-        console.error('Failed to fetch upcoming events', err);
+        console.error('Failed to fetch upcoming activities', err);
       } finally {
         setLoading(false);
       }
@@ -55,36 +55,36 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
       <div className="carousel-header">
         <div className="carousel-title">
           <span className="carousel-dot pulse-icon" />
-          <h3>Upcoming Events</h3>
+          <h3>Upcoming Activities</h3>
         </div>
-        <span className="carousel-count">{upcomingEvents.length} events</span>
+        <span className="carousel-count">{upcomingActivities.length} activities</span>
       </div>
 
       <div className="carousel-strip-wrapper">
         <div className="carousel-strip" ref={scrollRef}>
-          {upcomingEvents.length > 0 ? (
-            upcomingEvents.map((event) => (
+          {upcomingActivities.length > 0 ? (
+            upcomingActivities.map((activity) => (
               <div
-                key={event.id}
+                key={activity.id}
                 className="carousel-card clickable"
-                onClick={() => onEventClick?.(event)}
+                onClick={() => onActivityClick?.(activity)}
               >
                 <div className="card-accent"></div>
                 <div className="card-content">
                   <div className="card-date-badge">
-                    <span className="day">{format(new Date(event.startDateTime), 'dd')}</span>
-                    <span className="month">{format(new Date(event.startDateTime), 'MMM')}</span>
+                    <span className="day">{format(new Date(activity.startDateTime), 'dd')}</span>
+                    <span className="month">{format(new Date(activity.startDateTime), 'MMM')}</span>
                   </div>
                   <div className="card-info">
-                    <h4>{event.name}</h4>
+                    <h4>{activity.name}</h4>
                     <div className="card-meta">
-                      <span><Clock size={12} /> {format(new Date(event.startDateTime), 'hh:mm aa')}</span>
+                      <span><Clock size={12} /> {format(new Date(activity.startDateTime), 'hh:mm aa')}</span>
                     </div>
                   </div>
-                  {event.participantCount !== undefined && (
+                  {activity.participantCount !== undefined && (
                     <div className="participant-count">
                       <Users size={14} />
-                      <span>{event.participantCount}</span>
+                      <span>{activity.participantCount}</span>
                     </div>
                   )}
                 </div>

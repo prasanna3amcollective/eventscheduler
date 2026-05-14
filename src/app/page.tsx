@@ -3,12 +3,12 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CalendarView from '@/components/CalendarView';
-import EventForm from '@/components/EventForm';
-import EventModal from '@/components/EventModal';
+import ActivityForm from '@/components/ActivityForm';
+import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
 import LoginForm from '@/components/LoginForm';
-import EventCarousel from '@/components/EventCarousel';
-import EventDetailModal from '@/components/EventDetailModal';
+import ActivityCarousel from '@/components/ActivityCarousel';
+import ActivityDetailModal from '@/components/ActivityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import { CalendarDays, PlusCircle, LogOut, Layout, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
@@ -24,10 +24,10 @@ function HomeContent() {
 
   const [activeTab, setActiveTab] = useState<'calendar' | 'scheduler' | 'admin'>('calendar');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [detailEvent, setDetailEvent] = useState<any>(null);
+  const [detailActivity, setDetailActivity] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -43,23 +43,23 @@ function HomeContent() {
           setUserRoles(data.roles || []);
           setIsLoggedIn(true);
 
-          // Check if we need to open scheduler tab with edit event
+          // Check if we need to open scheduler tab with edit activity
           const tabParam = searchParams.get('tab');
           const editEventId = sessionStorage.getItem('editEventId');
 
           if (tabParam === 'scheduler' && editEventId) {
             sessionStorage.removeItem('editEventId');
             setActiveTab('scheduler');
-            // Set up the event form to load the event for editing
+            // Set up the activity form to load the activity for editing
             try {
-              const eventRes = await fetch(`/api/activities/${editEventId}`);
-              if (eventRes.ok) {
-                const eventData = await eventRes.json();
-                setSelectedEvent(eventData);
+              const activityRes = await fetch(`/api/activities/${editEventId}`);
+              if (activityRes.ok) {
+                const activityData = await activityRes.json();
+                setSelectedActivity(activityData);
                 setIsModalOpen(true);
               }
             } catch (e) {
-              console.error('Failed to load event for editing:', e);
+              console.error('Failed to load activity for editing:', e);
             }
             // Clean up URL
             router.replace('/');
@@ -103,31 +103,31 @@ function HomeContent() {
     setUserRoles([]);
   };
 
-  const handleEventCreated = () => {
+  const handleActivityCreated = () => {
     setRefreshTrigger(prev => prev + 1);
     setIsModalOpen(false);
-    setSelectedEvent(null);
+    setSelectedActivity(null);
     if (activeTab === 'scheduler') setActiveTab('calendar');
   };
 
-  const handleSelectEvent = (event: any) => {
-    if (event.isHoliday) return;
+  const handleSelectActivity = (activity: any) => {
+    if (activity.isHoliday) return;
 
-    // Map CalendarEvent format (from react-big-calendar) to EventData format (expected by EventDetailModal)
-    // CalendarEvent has: title, start (Date), end (Date), leader, guide, observer
-    // EventData expects: name, startDateTime (string), endDateTime (string), leader, guide, observer
-    const mappedEvent = {
-      id: event.id,
-      name: event.title,
-      startDateTime: event.start instanceof Date ? event.start.toISOString() : event.start,
-      endDateTime: event.end instanceof Date ? event.end.toISOString() : event.end,
-      leader: event.leader,
-      guide: event.guide,
-      observer: event.observer,
-      participants: event.participants,
+    // Map CalendarActivity format (from react-big-calendar) to ActivityData format (expected by ActivityDetailModal)
+    // CalendarActivity has: title, start (Date), end (Date), leader, guide, observer
+    // ActivityData expects: name, startDateTime (string), endDateTime (string), leader, guide, observer
+    const mappedActivity = {
+      id: activity.id,
+      name: activity.title,
+      startDateTime: activity.start instanceof Date ? activity.start.toISOString() : activity.start,
+      endDateTime: activity.end instanceof Date ? activity.end.toISOString() : activity.end,
+      leader: activity.leader,
+      guide: activity.guide,
+      observer: activity.observer,
+      participants: activity.participants,
     };
 
-    setDetailEvent(mappedEvent);
+    setDetailActivity(mappedActivity);
     setIsDetailOpen(true);
   };
 
@@ -137,7 +137,7 @@ function HomeContent() {
 
     // Check for double click or selection
     if (slotInfo.action === 'select' || slotInfo.action === 'doubleClick') {
-      const newEvent = {
+      const newActivity = {
         startDateTime: slotInfo.start,
         endDateTime: slotInfo.end || new Date(slotInfo.start.getTime() + 60 * 60 * 1000),
         name: '',
@@ -146,13 +146,13 @@ function HomeContent() {
         observer: '',
         duration: 60
       };
-      setSelectedEvent(newEvent);
+      setSelectedActivity(newActivity);
       setIsModalOpen(true);
     }
   };
 
-  const handleCarouselClick = (event: any) => {
-    setDetailEvent(event);
+  const handleCarouselClick = (activity: any) => {
+    setDetailActivity(activity);
     setIsDetailOpen(true);
   };
 
@@ -174,7 +174,7 @@ function HomeContent() {
           </div>
         </header>
 
-        <EventCarousel refreshTrigger={refreshTrigger} onEventClick={handleCarouselClick} />
+        <ActivityCarousel refreshTrigger={refreshTrigger} onActivityClick={handleCarouselClick} />
 
         <div className="landing-content">
           <div className="auth-section">
@@ -196,26 +196,26 @@ function HomeContent() {
           <div className="info-section">
             <div className="info-card">
               <Info size={32} color="var(--primary-color)" />
-              <h2>Explore Events</h2>
+              <h2>Explore Activities</h2>
               <p>Welcome to the 3AM Collective Movement. Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
               <ul className="feature-list">
                 <li>Click on any carousel item above to view details</li>
-                <li>Register to participate in upcoming events</li>
+                <li>Register to participate in upcoming activities</li>
                 <li>Manage your schedule with our interactive calendar</li>
               </ul>
             </div>
           </div>
         </div>
 
-        <EventDetailModal
-          event={detailEvent}
+        <ActivityDetailModal
+          activity={detailActivity}
           isOpen={isDetailOpen}
           onClose={() => setIsDetailOpen(false)}
           isLoggedIn={false}
           currentUser={null}
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
           onSwitchToRegister={() => {
-            setPendingEventId(detailEvent.originalId || detailEvent.id);
+            setPendingEventId(detailActivity.originalId || detailActivity.id);
             setAuthMode('register');
             setIsDetailOpen(false);
             // Smooth scroll to auth section
@@ -267,7 +267,7 @@ function HomeContent() {
         </div>
       </header>
 
-      <EventCarousel refreshTrigger={refreshTrigger} onEventClick={handleCarouselClick} />
+      <ActivityCarousel refreshTrigger={refreshTrigger} onActivityClick={handleCarouselClick} />
 
       <nav className="nav-container">
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
@@ -275,7 +275,7 @@ function HomeContent() {
         </button>
         {(userRoles.includes('core') || userRoles.includes('inhouse')) && (
           <button className={`nav-tab ${activeTab === 'scheduler' ? 'active' : ''}`} onClick={() => setActiveTab('scheduler')}>
-            <PlusCircle size={18} /> Create Event
+            <PlusCircle size={18} /> Create Activity
           </button>
         )}
         {userRoles.includes('core') && (
@@ -290,14 +290,14 @@ function HomeContent() {
           <div className="content-section">
             <CalendarView
               refreshTrigger={refreshTrigger}
-              onSelectEvent={handleSelectEvent}
+              onSelectActivity={handleSelectActivity}
               onSelectSlot={handleSelectSlot}
             />
           </div>
         )}
         {activeTab === 'scheduler' && (
           <div className="content-section">
-            <EventForm onEventCreated={handleEventCreated} />
+            <ActivityForm onActivityCreated={handleActivityCreated} />
           </div>
         )}
         {activeTab === 'admin' && (
@@ -305,22 +305,22 @@ function HomeContent() {
         )}
       </main>
 
-      <EventModal
+      <ActivityModal
         isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setSelectedEvent(null); }}
-        title={selectedEvent?.id ? "Edit Event" : "Create New Event"}
+        onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+        title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
       >
-        {selectedEvent && (
-          <EventForm
-            initialData={selectedEvent}
-            onEventCreated={handleEventCreated}
-            onCancel={() => { setIsModalOpen(false); setSelectedEvent(null); }}
+        {selectedActivity && (
+          <ActivityForm
+            initialData={selectedActivity}
+            onActivityCreated={handleActivityCreated}
+            onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
           />
         )}
-      </EventModal>
+      </ActivityModal>
 
-      <EventDetailModal
-        event={detailEvent}
+      <ActivityDetailModal
+        activity={detailActivity}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         isLoggedIn={isLoggedIn}
