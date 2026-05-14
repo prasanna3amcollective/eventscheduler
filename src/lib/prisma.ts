@@ -23,45 +23,46 @@ const createPrismaClient = () => {
             args = cleanArgs;
           }
 
-          // 2. SYSTEM TABLE BYPASS
-          const systemTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant'];
-          if (systemTables.includes(model)) {
-            return query(args);
+          // 2. ACL BYPASS for internal/junction tables (no ACL rows exist for these)
+          // NOTE: System column stamping still runs below for ALL tables.
+          const aclBypassTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant'];
+          const skipAcl = aclBypassTables.includes(model);
+
+          if (!skipAcl) {
+            // 3. OPERATION MAPPING
+            const opMap: Record<string, string> = {
+              findMany: 'read', findUnique: 'read', findFirst: 'read',
+              create: 'create', update: 'write', delete: 'delete', upsert: 'write',
+            };
+
+            const aclOp = opMap[operation];
+            if (aclOp) {
+              // 4. ACL ENFORCEMENT
+              const acls = await client.accessControlList.findMany({
+                where: {
+                  table: model.toLowerCase(),
+                  operation: aclOp
+                }
+              });
+
+              if (acls.length > 0) {
+                if (!userContext) {
+                  if (model === 'User' && aclOp === 'create') {
+                    // Allow public registration
+                  } else {
+                    throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
+                  }
+                } else {
+                  const hasRole = acls.some(acl => userContext.roles.includes(acl.roleId));
+                  if (!hasRole) {
+                    throw new Error(`Security Restricted: User does not have the required role for ${model}.${aclOp}`);
+                  }
+                }
+              }
+            }
           }
 
-          // 3. OPERATION MAPPING
-          const opMap: Record<string, string> = {
-            findMany: 'read', findUnique: 'read', findFirst: 'read',
-            create: 'create', update: 'write', delete: 'delete', upsert: 'write',
-          };
-
-          const aclOp = opMap[operation];
-          if (!aclOp) return query(args);
-
-          // 4. ACL ENFORCEMENT
-          const acls = await client.accessControlList.findMany({
-            where: {
-              table: model.toLowerCase(),
-              operation: aclOp
-            }
-          });
-
-          if (acls.length > 0) {
-            if (!userContext) {
-              if (model === 'User' && aclOp === 'create') {
-                // Allow public registration
-              } else {
-                throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
-              }
-            } else {
-              const hasRole = acls.some(acl => userContext.roles.includes(acl.roleId));
-              if (!hasRole) {
-                throw new Error(`Security Restricted: User does not have the required role for ${model}.${aclOp}`);
-              }
-            }
-          }
-
-          // 5. BUSINESS RULE: SYSTEM COLUMNS
+          // 5. BUSINESS RULE: SYSTEM COLUMNS (applies to ALL tables, including junction tables)
           if (userContext && (operation === 'create' || operation === 'update')) {
             const argsWithData = args as any;
             if (argsWithData.data) {

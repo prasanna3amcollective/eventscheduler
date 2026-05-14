@@ -354,9 +354,7 @@ input:not([type="checkbox"]):focus {
 }
 
 .modal-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: static;
   background: var(--hover-color);
   border: none;
   width: 36px;
@@ -368,6 +366,7 @@ input:not([type="checkbox"]):focus {
   cursor: pointer;
   z-index: 10;
   transition: all 0.2s;
+  margin: 0;
 }
 
 .modal-close:hover {
@@ -1278,8 +1277,8 @@ input:not([type="checkbox"]):focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 4px;
   background: transparent;
   color: var(--text-secondary);
