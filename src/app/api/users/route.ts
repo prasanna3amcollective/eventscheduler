@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withAuth } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
@@ -45,6 +45,17 @@ export async function POST(request: Request) {
         password: hashedPassword
       }
     });
+
+    // Stamp sys_created_by / sys_updated_by with the new user's own ID.
+    // We can't do this inside the create above because the ID doesn't exist yet,
+    // and there is no session context available during public registration.
+    await withAuth(
+      () => prisma.user.update({
+        where: { id: user.id },
+        data: { sys_created_by: user.id, sys_updated_by: user.id }
+      }),
+      { id: user.id, roles: [] }
+    );
 
     // Set JWT Session Cookie immediately
     const token = await signToken({ sub: user.id });
