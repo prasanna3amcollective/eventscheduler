@@ -11,9 +11,9 @@ async function renameAdminRole() {
   if (role) {
     await prisma.role.update({
       where: { id: role.id },
-      data: { 
+      data: {
         name: 'core',
-        description: 'Core Administrator - Full access to all tables'
+        description: 'Full access'
       }
     });
     console.log('✅ Successfully renamed "admin" to "core".');

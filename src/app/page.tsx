@@ -279,7 +279,7 @@ function HomeContent() {
         )}
         {userRoles.includes('core') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-            <ShieldCheck size={18} /> Core Administration
+            <ShieldCheck size={18} /> Core
           </button>
         )}
       </nav>
