@@ -16,7 +16,7 @@ export async function GET(
 
     const baseId = id.split('_inst_')[0];
 
-    const event = await withAuth(() => prisma.event.findUnique({
+    const event = await withAuth(() => prisma.activity.findUnique({
       where: { id: baseId },
       include: {
         participants: {
@@ -54,7 +54,7 @@ export async function PUT(
     const baseId = id.split('_inst_')[0];
 
     // First, get the current event to see what leader/guide/observer values existed before
-    const currentEvent = await withAuth(() => prisma.event.findUnique({
+    const currentEvent = await withAuth(() => prisma.activity.findUnique({
       where: { id: baseId },
       select: { leader: true, guide: true, observer: true }
     }), securityContext) as { leader: string; guide: string; observer: string } | null;
@@ -109,7 +109,7 @@ export async function PUT(
       if (userIdsToRemove.length > 0) {
         await prisma.participant.deleteMany({
           where: {
-            eventId: baseId,
+            activityId: baseId,
             userId: { in: userIdsToRemove }
           }
         });
@@ -119,7 +119,7 @@ export async function PUT(
       if (userIdsToAdd.length > 0) {
         await prisma.participant.createMany({
           data: Array.from(userIdsToAdd).map(userId => ({
-            eventId: baseId,
+            activityId: baseId,
             userId
           })),
           skipDuplicates: true

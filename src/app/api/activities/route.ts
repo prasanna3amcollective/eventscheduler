@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     const securityContext = await getSessionContext();
 
     const dbEvents: any[] = await withAuth(
-      () => prisma.event.findMany({
+      () => prisma.activity.findMany({
         include: {
           participants: {
             include: {
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
     const securityContext = await getSessionContext();
 
     const event = await withAuth(async () => {
-      const evt = await prisma.event.create({
+      const evt = await prisma.activity.create({
         data: {
           name,
           leader,
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
          if (staffUsers.length > 0) {
            await prisma.participant.createMany({
              data: staffUsers.map((user: { id: string }) => ({
-               eventId: evt.id,
+               activityId: evt.id,
                userId: user.id
              })),
              skipDuplicates: true

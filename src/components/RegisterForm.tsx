@@ -116,7 +116,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
     async (userId: string) => {
       if (!pendingEventId) return;
       try {
-        await fetch(`/api/events/${pendingEventId}/register`, {
+        await fetch(`/api/activities/${pendingEventId}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId }),

@@ -25,7 +25,7 @@ export default function EventCarousel({ refreshTrigger, onEventClick }: EventCar
   useEffect(() => {
     const fetchUpcoming = async () => {
       try {
-        const res = await secureFetch('/api/events');
+        const res = await secureFetch('/api/activities');
         if (res.ok) {
           const data = await res.json();
           const today = startOfDay(new Date());

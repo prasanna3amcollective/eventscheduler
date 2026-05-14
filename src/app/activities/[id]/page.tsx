@@ -22,9 +22,9 @@ interface Participant {
 interface Event {
     id: string;
     name: string;
-    leader: string;
-    guide: string;
-    observer: string;
+    
+    
+    
     startDateTime: string;
     endDateTime: string;
     duration: number;
@@ -36,7 +36,7 @@ interface Event {
 export default function EventManagementPage() {
     const params = useParams();
     const router = useRouter();
-    const eventId = params.id as string;
+    const activityId = params.id as string;
 
     const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
@@ -58,110 +58,13 @@ export default function EventManagementPage() {
                 }
 
                 // Get event details with participants
-                const eventRes = await secureFetch(`/api/events/${eventId}`);
+                const eventRes = await secureFetch(`/api/activities/${activityId}`);
                 if (eventRes.ok) {
                     const eventData = await eventRes.json();
                     setEvent(eventData);
 
                     // Check if current user is the leader
-                    if (userData?.user) {
-                        setIsLeader(eventData.leader === userData.user.name);
-                    }
-                } else {
-                    setError('Event not found or access denied');
-                }
-            } catch (err) {
-                setError('Failed to load event details');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadData();
-    }, [eventId]);
-
-    const handleRefresh = async () => {
-        setLoading(true);
-        try {
-            const eventRes = await secureFetch(`/api/events/${eventId}`);
-            if (eventRes.ok) {
-                const eventData = await eventRes.json();
-                setEvent(eventData);
-            }
-        } catch (err) {
-            console.error('Failed to refresh', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const filteredParticipants = event?.participants.filter(p => {
-        const matchesSearch = p.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.user.username.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = typeFilter === 'all' || p.user.type === typeFilter;
-        return matchesSearch && matchesType;
-    }) || [];
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="loading-spinner" />
-                    <p className="loading-text">Loading event details...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !event) {
-        return (
-            <div className="min-h-screen bg-[var(--bg-color)] flex items-center justify-center">
-                <div className="error-container">
-                    <XCircle size={48} className="error-icon" />
-                    <h2 className="error-title">Access Denied</h2>
-                    <p className="error-message">{error || 'Event not found'}</p>
-                    <button onClick={() => router.push('/')} className="btn-primary">
-                        <ArrowLeft size={18} />
-                        Back to Home
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-[var(--bg-color)]">
-            {/* Header */}
-            <header className="dashboard-header">
-                <div className="header-brand">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="back-button"
-                    >
-                        <ArrowLeft size={20} />
-                        <span>Back to Home</span>
-                    </button>
-                </div>
-                <div className="header-user">
-                    {currentUser && (
-                        <>
-                            <span className="user-name">{currentUser.name}</span>
-                            <span className={`user-type-tag ${currentUser.type}`}>{currentUser.type}</span>
-                        </>
-                    )}
-                </div>
-            </header>
-
-            <main className="max-w-6xl mx-auto px-6 py-8">
-                {/* Event Header Card */}
-                <div className="event-card">
-                    <div className="event-card-header">
-                        <div className="event-info">
-                            <div className="leader-badge-container">
-                                {isLeader && (
-                                    <span className="leader-badge">You are the Leader</span>
-                                )}
+                    
                             </div>
                             <h1 className="event-title">{event.name}</h1>
                             <div className="event-datetime">
@@ -198,38 +101,7 @@ export default function EventManagementPage() {
                         </button>
                     </div>
 
-                    {/* Staff Section */}
-                    <div className="staff-section">
-                        <h3 className="section-title">Event Staff</h3>
-                        <div className="staff-grid">
-                            <div className="staff-item">
-                                <div className="staff-icon leader">
-                                    <User size={18} />
-                                </div>
-                                <div className="staff-info">
-                                    <p className="staff-label">Leader</p>
-                                    <p className="staff-value">{event.leader}</p>
-                                </div>
-                            </div>
-                            <div className="staff-item">
-                                <div className="staff-icon guide">
-                                    <Users size={18} />
-                                </div>
-                                <div className="staff-info">
-                                    <p className="staff-label">Guide</p>
-                                    <p className="staff-value">{event.guide || 'Not assigned'}</p>
-                                </div>
-                            </div>
-                            <div className="staff-item">
-                                <div className="staff-icon observer">
-                                    <Eye size={18} />
-                                </div>
-                                <div className="staff-info">
-                                    <p className="staff-label">Observer</p>
-                                    <p className="staff-value">{event.observer || 'Not assigned'}</p>
-                                </div>
-                            </div>
-                        </div>
+                    
                     </div>
                 </div>
 

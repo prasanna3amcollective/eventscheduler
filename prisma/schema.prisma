@@ -10,12 +10,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Event {
+model Activity {
   id             String   @id @default(uuid()) // sys_id
   name           String
-  leader         String
-  guide          String
-  observer       String
   startDateTime  DateTime
   endDateTime    DateTime
   duration       Int      // in minutes
@@ -30,12 +27,28 @@ model Event {
   sys_updated_at DateTime @updatedAt
 }
 
+model Responsibility {
+  id             String   @id @default(uuid()) // sys_id
+  name           String
+  startDateTime  DateTime
+  endDateTime    DateTime
+  duration       Int      // in minutes
+  isRecurring    Boolean  @default(false)
+  recurrenceRule String?
+
+  // System Columns (ServiceNow Style)
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
 model Participant {
-  id      String @id @default(uuid())
-  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  String
+  id         String   @id @default(uuid())
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
 
   // System Columns
   sys_created_by String?
@@ -43,7 +56,7 @@ model Participant {
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
 
-  @@unique([eventId, userId])
+  @@unique([activityId, userId])
   @@map("participants")
 }
 
@@ -57,7 +70,7 @@ model User {
   type     String // core, team, inhouse
   groups   UserGroupM2M[]
   roles    UserRole[]
-  events   Participant[]
+  activities Participant[]
 
   // System Columns
   sys_created_by String?

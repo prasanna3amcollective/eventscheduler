@@ -20,7 +20,7 @@ export async function POST(
     // Delete the participant record
     await withAuth(() => prisma.participant.deleteMany({
       where: {
-        eventId: originalEventId,
+        activityId: originalEventId,
         userId: securityContext.id
       }
     }), securityContext);

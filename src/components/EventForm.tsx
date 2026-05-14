@@ -224,7 +224,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
           initialData,
         );
 
-        const res = await secureFetch('/api/events/check-overlap', {
+        const res = await secureFetch('/api/activities/check-overlap', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -312,7 +312,7 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
       try {
         if (isInstance && saveMode === 'this') {
           // Create a non-recurring copy of this specific occurrence
-          const createRes = await fetch('/api/events', {
+          const createRes = await fetch('/api/activities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...payload, isRecurring: false, recurrenceRule: null }),
@@ -323,15 +323,15 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
           const exdate = toIcalDtstart(start);
           const newRRule = initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
 
-          await fetch(`/api/events/${initialData!.originalId}`, {
+          await fetch(`/api/activities/${initialData!.originalId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
           });
         } else {
           const url = isEditing
-            ? `/api/events/${initialData!.originalId || initialData!.id}`
-            : '/api/events';
+            ? `/api/activities/${initialData!.originalId || initialData!.id}`
+            : '/api/activities';
           const method = isEditing ? 'PUT' : 'POST';
 
           const res = await secureFetch(url, {
@@ -371,14 +371,14 @@ export default function EventForm({ onEventCreated, initialData, onCancel }: Eve
         const newRRule =
           initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
 
-        await secureFetch(`/api/events/${initialData!.originalId}`, {
+        await secureFetch(`/api/activities/${initialData!.originalId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
         });
       } else {
         await secureFetch(
-          `/api/events/${initialData!.originalId || initialData!.id}`,
+          `/api/activities/${initialData!.originalId || initialData!.id}`,
           { method: 'DELETE' },
         );
       }

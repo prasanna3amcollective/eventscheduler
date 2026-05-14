@@ -16,9 +16,9 @@ interface EventData {
   startDateTime: string;
   endDateTime?: string;
   duration?: number;
-  leader?: string;
-  guide?: string;
-  observer?: string;
+  
+  
+  
   participantCount?: number;
   participants?: { userId: string }[];
 }
@@ -164,9 +164,9 @@ export default function EventDetailModal({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const eventId = event ? event.originalId ?? event.id : '';
+  const activityId = event ? event.originalId ?? event.id : '';
   const canEdit = userRoles.includes('core') || userRoles.includes('inhouse');
-  const isLeader = isLoggedIn && currentUser?.name === event?.leader;
+  const isLeader = false;
   const googleCalendarUrl = useMemo(
     () => (event ? buildGoogleCalendarUrl(event, isLoggedIn) : ''),
     [event, isLoggedIn],
@@ -177,10 +177,10 @@ export default function EventDetailModal({
     [event?.startDateTime],
   );
 
-  const isLeaderRole = currentUser?.name === event?.leader;
-  const isGuideRole = currentUser?.name === event?.guide;
-  const isObserverRole = currentUser?.name === event?.observer;
-  const isStaffForEvent = isLoggedIn && (isLeaderRole || isGuideRole || isObserverRole);
+  
+  
+  
+  const isStaffForEvent = false;
 
   const isRegistered = isLoggedIn && event?.participants?.some(p => p.userId === currentUser?.id);
 
@@ -194,7 +194,7 @@ export default function EventDetailModal({
     setSuccessMessage(null);
     let succeeded = false;
     try {
-      const res = await fetch(`/api/events/${eventId}/register`, {
+      const res = await fetch(`/api/activities/${activityId}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser!.id }),
@@ -218,7 +218,7 @@ export default function EventDetailModal({
         setIsSubmitting(false);
       }
     }
-  }, [isLoggedIn, eventId, currentUser, onRegisterSuccess, onClose]);
+  }, [isLoggedIn, activityId, currentUser, onRegisterSuccess, onClose]);
 
   const handleUnregister = useCallback(async () => {
     if (!isLoggedIn) return;
@@ -227,7 +227,7 @@ export default function EventDetailModal({
     setSuccessMessage(null);
     let succeeded = false;
     try {
-      const res = await fetch(`/api/events/${eventId}/unregister`, {
+      const res = await fetch(`/api/activities/${activityId}/unregister`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -249,14 +249,14 @@ export default function EventDetailModal({
         setIsSubmitting(false);
       }
     }
-  }, [isLoggedIn, eventId, onRegisterSuccess, onClose]);
+  }, [isLoggedIn, activityId, onRegisterSuccess, onClose]);
 
 
   const handleEdit = useCallback(() => {
     onClose();
-    sessionStorage.setItem('editEventId', eventId);
+    sessionStorage.setItem('editEventId', activityId);
     router.push('/?tab=scheduler');
-  }, [eventId, onClose, router]);
+  }, [activityId, onClose, router]);
 
   const handleSyncCalendar = useCallback(() => {
     if (googleCalendarUrl) {
@@ -302,77 +302,6 @@ export default function EventDetailModal({
           {/* Staff — compact, no icons */}
           {isLoggedIn && (
             <>
-              <div className="detail-staff-flat">
-                <div className="detail-staff-row">
-                  <span className="detail-label">Leader</span>
-                  <span className="detail-value">{event.leader}</span>
-                </div>
-                <div className="detail-staff-row">
-                  <span className="detail-label">Guide</span>
-                  <span className="detail-value">{event.guide}</span>
-                </div>
-                <div className="detail-staff-row">
-                  <span className="detail-label">Observer</span>
-                  <span className="detail-value">{event.observer}</span>
-                </div>
-              </div>
-
-              {event.participantCount !== undefined && (
-                <ParticipantCount count={event.participantCount} />
-              )}
-            </>
-          )}
-
-          {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
-        </div>
-
-        {/* ---------- Footer / actions ---------- */}
-        <div className="detail-footer-flat">
-          {successMessage && (
-            <div style={{
-              flex: '0 0 100%',
-              textAlign: 'center',
-              color: '#22c55e',
-              fontSize: '14px',
-              fontWeight: 500,
-              marginBottom: '8px'
-            }}>
-              {successMessage}
-            </div>
-          )}
-
-          <button
-            onClick={handleSyncCalendar}
-            className="btn-outline"
-            disabled={!googleCalendarUrl}
-          >
-            <Calendar size={16} /> Sync
-          </button>
-
-          {isLeader && (
-            <a href={`/events/${eventId}`} className="btn-outline">
-              <Users size={16} /> Manage
-            </a>
-          )}
-
-          {isStaffForEvent ? (
-            <button className="btn-secondary" onClick={() => {
-              onClose();
-            }}>
-              Switch Responsibility
-            </button>
-          ) : isRegistered ? (
-            <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting}>
-              {isSubmitting ? 'Unregistering...' : 'Unregister'}
-            </button>
-          ) : (
-            <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
-              {isSubmitting ? 'Registering...' : 'Register'}
-              <CheckCircle size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+              
   );
 }

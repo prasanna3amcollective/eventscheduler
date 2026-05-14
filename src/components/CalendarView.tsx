@@ -370,7 +370,7 @@ export default function CalendarView({
     const fetchEvents = async () => {
       try {
         const res = await fetch(
-          `/api/events?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`,
+          `/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`,
         );
         if (!res.ok) return;
         const data: ApiEvent[] = await res.json();

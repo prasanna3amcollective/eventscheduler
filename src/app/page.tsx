@@ -52,7 +52,7 @@ function HomeContent() {
             setActiveTab('scheduler');
             // Set up the event form to load the event for editing
             try {
-              const eventRes = await fetch(`/api/events/${editEventId}`);
+              const eventRes = await fetch(`/api/activities/${editEventId}`);
               if (eventRes.ok) {
                 const eventData = await eventRes.json();
                 setSelectedEvent(eventData);

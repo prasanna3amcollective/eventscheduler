@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const newStart = new Date(startDateTime);
     const newEnd = new Date(endDateTime);
 
-    const dbEvents = await prisma.event.findMany();
+    const dbEvents = await prisma.activity.findMany();
     const overlaps = [];
 
     let newInstances: { start: Date, end: Date }[] = [];

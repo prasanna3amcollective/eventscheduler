@@ -19,7 +19,7 @@ export async function POST(
 
     const registration = await withAuth(() => prisma.participant.create({
       data: {
-        eventId: originalEventId,
+        activityId: originalEventId,
         userId: securityContext.id
       }
     }), securityContext);
