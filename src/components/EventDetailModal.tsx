@@ -272,7 +272,7 @@ export default function EventDetailModal({
         className="modal-content event-detail-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header-actions">
+        <div className="modal-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
           {canEdit && (
             <button onClick={handleEdit} className="edit-btn-flat" title="Edit Event">
               <Edit size={20} />
