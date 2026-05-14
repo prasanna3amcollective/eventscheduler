@@ -20,6 +20,7 @@ interface EventData {
   guide?: string;
   observer?: string;
   participantCount?: number;
+  participants?: { userId: string }[];
 }
 
 interface UserData {
@@ -46,6 +47,7 @@ interface EventDetailModalProps {
 const ERROR_MESSAGES = {
   NOT_LOGGED_IN: 'Please login to register.',
   REGISTRATION_FAILED: 'Registration failed',
+  UNREGISTER_FAILED: 'Unregister failed',
   NETWORK_ERROR: 'An error occurred',
 } as const;
 
@@ -160,6 +162,7 @@ export default function EventDetailModal({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const eventId = event ? event.originalId ?? event.id : '';
   const canEdit = userRoles.includes('core') || userRoles.includes('inhouse');
@@ -174,6 +177,13 @@ export default function EventDetailModal({
     [event?.startDateTime],
   );
 
+  const isLeaderRole = currentUser?.name === event?.leader;
+  const isGuideRole = currentUser?.name === event?.guide;
+  const isObserverRole = currentUser?.name === event?.observer;
+  const isStaffForEvent = isLoggedIn && (isLeaderRole || isGuideRole || isObserverRole);
+
+  const isRegistered = isLoggedIn && event?.participants?.some(p => p.userId === currentUser?.id);
+
   const handleRegister = useCallback(async () => {
     if (!isLoggedIn) {
       setError(ERROR_MESSAGES.NOT_LOGGED_IN);
@@ -181,6 +191,8 @@ export default function EventDetailModal({
     }
     setIsSubmitting(true);
     setError(null);
+    setSuccessMessage(null);
+    let succeeded = false;
     try {
       const res = await fetch(`/api/events/${eventId}/register`, {
         method: 'POST',
@@ -189,7 +201,12 @@ export default function EventDetailModal({
       });
       if (res.ok) {
         onRegisterSuccess();
-        onClose();
+        setSuccessMessage('Registered successfully!');
+        succeeded = true;
+        setIsSubmitting(false);
+        setTimeout(() => {
+          onClose();
+        }, 1500);
       } else {
         const data = await res.json();
         setError(data.error ?? ERROR_MESSAGES.REGISTRATION_FAILED);
@@ -197,9 +214,43 @@ export default function EventDetailModal({
     } catch (_err) {
       setError(ERROR_MESSAGES.NETWORK_ERROR);
     } finally {
-      setIsSubmitting(false);
+      if (!succeeded) {
+        setIsSubmitting(false);
+      }
     }
   }, [isLoggedIn, eventId, currentUser, onRegisterSuccess, onClose]);
+
+  const handleUnregister = useCallback(async () => {
+    if (!isLoggedIn) return;
+    setIsSubmitting(true);
+    setError(null);
+    setSuccessMessage(null);
+    let succeeded = false;
+    try {
+      const res = await fetch(`/api/events/${eventId}/unregister`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        onRegisterSuccess();
+        setSuccessMessage('Unregistered successfully!');
+        succeeded = true;
+        setIsSubmitting(false);
+        setTimeout(() => {
+          onClose();
+        }, 1500);
+      } else {
+        const data = await res.json();
+        setError(data.error ?? ERROR_MESSAGES.UNREGISTER_FAILED);
+      }
+    } catch (_err) {
+      setError(ERROR_MESSAGES.NETWORK_ERROR);
+    } finally {
+      if (!succeeded) {
+        setIsSubmitting(false);
+      }
+    }
+  }, [isLoggedIn, eventId, onRegisterSuccess, onClose]);
+
 
   const handleEdit = useCallback(() => {
     onClose();
@@ -221,19 +272,21 @@ export default function EventDetailModal({
         className="modal-content event-detail-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
+        <div className="modal-header-actions">
+          {canEdit && (
+            <button onClick={handleEdit} className="edit-btn-flat" title="Edit Event">
+              <Edit size={20} />
+            </button>
+          )}
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
 
         {/* ---------- Intimate header: no colored block, just event name ---------- */}
         <div className="detail-header-flat">
           <div className="detail-header-row">
             <div className="detail-category">Event</div>
-            {canEdit && (
-              <button onClick={handleEdit} className="edit-btn-flat" title="Edit Event">
-                <Edit size={16} />
-              </button>
-            )}
           </div>
           <h2 className="detail-title">{event.name}</h2>
         </div>
@@ -275,6 +328,19 @@ export default function EventDetailModal({
 
         {/* ---------- Footer / actions ---------- */}
         <div className="detail-footer-flat">
+          {successMessage && (
+            <div style={{
+              flex: '0 0 100%',
+              textAlign: 'center',
+              color: '#22c55e',
+              fontSize: '14px',
+              fontWeight: 500,
+              marginBottom: '8px'
+            }}>
+              {successMessage}
+            </div>
+          )}
+
           <button
             onClick={handleSyncCalendar}
             className="btn-outline"
@@ -289,10 +355,22 @@ export default function EventDetailModal({
             </a>
           )}
 
-          <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
-            {isSubmitting ? 'Registering...' : 'Register'}
-            <CheckCircle size={16} />
-          </button>
+          {isStaffForEvent ? (
+            <button className="btn-secondary" onClick={() => {
+              onClose();
+            }}>
+              Switch Responsibility
+            </button>
+          ) : isRegistered ? (
+            <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting}>
+              {isSubmitting ? 'Unregistering...' : 'Unregister'}
+            </button>
+          ) : (
+            <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
+              {isSubmitting ? 'Registering...' : 'Register'}
+              <CheckCircle size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>

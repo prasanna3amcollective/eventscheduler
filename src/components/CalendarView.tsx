@@ -48,6 +48,7 @@ interface ApiEvent {
   guide?: string;
   observer?: string;
   participantCount?: number;
+  participants?: { userId: string }[];
 }
 
 /** The shape used internall by react-big-calendar. */
@@ -61,6 +62,7 @@ interface CalendarEvent {
   leader?: string;
   guide?: string;
   observer?: string;
+  participants?: { userId: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -383,6 +385,7 @@ export default function CalendarView({
           leader: e.leader,
           guide: e.guide,
           observer: e.observer,
+          participants: e.participants,
         }));
         setEvents(formatted);
       } catch (err) {

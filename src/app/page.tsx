@@ -124,6 +124,7 @@ function HomeContent() {
       leader: event.leader,
       guide: event.guide,
       observer: event.observer,
+      participants: event.participants,
     };
 
     setDetailEvent(mappedEvent);

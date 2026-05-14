@@ -118,24 +118,24 @@ export async function POST(request: Request) {
         }
       });
 
-      // Auto-populate participants
-      try {
-        const staffNames = [leader, guide, observer].filter(Boolean);
-        const staffUsers = await prisma.user.findMany({
-          where: { name: { in: staffNames } }
-        });
-        if (staffUsers.length > 0) {
-          await prisma.participant.createMany({
-            data: staffUsers.map((user: any) => ({
-              eventId: evt.id,
-              userId: user.id
-            })),
-            skipDuplicates: true
-          });
-        }
-      } catch (e) {
-        console.error("Error auto-populating participants", e);
-      }
+       // Auto-populate participants
+       try {
+         const staffNames = [leader, guide, observer].filter(Boolean);
+         const staffUsers = await prisma.user.findMany({
+           where: { name: { in: staffNames } }
+         });
+         if (staffUsers.length > 0) {
+           await prisma.participant.createMany({
+             data: staffUsers.map((user: { id: string }) => ({
+               eventId: evt.id,
+               userId: user.id
+             })),
+             skipDuplicates: true
+           });
+         }
+       } catch (e) {
+         console.error("Error auto-populating participants", e);
+       }
 
       return evt;
     }, securityContext);

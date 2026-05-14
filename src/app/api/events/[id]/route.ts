@@ -53,6 +53,12 @@ export async function PUT(
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
 
+    // First, get the current event to see what leader/guide/observer values existed before
+    const currentEvent = await withAuth(() => prisma.event.findUnique({
+      where: { id: baseId },
+      select: { leader: true, guide: true, observer: true }
+    }), securityContext) as { leader: string; guide: string; observer: string } | null;
+
     const event = await withAuth(() => (prisma as any).event.update({
       where: { id: baseId },
       data: {
@@ -68,6 +74,61 @@ export async function PUT(
       },
       _context: securityContext
     }), securityContext);
+
+    // Update participant records based on leader/guide/observer changes
+    try {
+      // Get current staff names from the updated event
+      const newStaffNames = [leader, guide, observer].filter(Boolean);
+      
+      // Get previous staff names from the current event before update
+      const prevStaffNames = currentEvent ? 
+        [currentEvent.leader, currentEvent.guide, currentEvent.observer].filter(Boolean) : 
+        [];
+
+      // Find users for new staff names (select only id for efficiency)
+      const newStaffUsers = await prisma.user.findMany({
+        where: { name: { in: newStaffNames } },
+        select: { id: true }
+      });
+
+      // Find users for previous staff names (select only id for efficiency)
+      const prevStaffUsers = await prisma.user.findMany({
+        where: { name: { in: prevStaffNames } },
+        select: { id: true }
+      });
+
+      // Determine which users to remove (were in prev but not in new)
+      const prevStaffUserIds = new Set(prevStaffUsers.map((u: { id: string }) => u.id));
+      const newStaffUserIds = new Set(newStaffUsers.map((u: { id: string }) => u.id));
+      const userIdsToRemove = [...prevStaffUserIds].filter(id => !newStaffUserIds.has(id));
+
+      // Determine which users to add (are in new but not in prev)
+      const userIdsToAdd = [...newStaffUserIds].filter(id => !prevStaffUserIds.has(id));
+
+      // Remove participants for users no longer in leader/guide/observer
+      if (userIdsToRemove.length > 0) {
+        await prisma.participant.deleteMany({
+          where: {
+            eventId: baseId,
+            userId: { in: userIdsToRemove }
+          }
+        });
+      }
+
+      // Add participants for newly added leader/guide/observer
+      if (userIdsToAdd.length > 0) {
+        await prisma.participant.createMany({
+          data: Array.from(userIdsToAdd).map(userId => ({
+            eventId: baseId,
+            userId
+          })),
+          skipDuplicates: true
+        });
+      }
+    } catch (participantError) {
+      console.error("Error updating participant records:", participantError);
+      // Don't fail the whole request if participant update fails
+    }
 
     return NextResponse.json(event);
   } catch (error: any) {
