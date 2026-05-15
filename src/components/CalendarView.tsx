@@ -304,7 +304,6 @@ function CalendarEventRenderer({ event: activity }: { event: CalendarActivity })
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
       {activity.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
-      <span style={{ fontSize: '11px', opacity: 0.8, marginRight: '4px' }}>[{activity.category || 'Gen'}]</span>
       <span>{activity.title}</span>
     </div>
   );

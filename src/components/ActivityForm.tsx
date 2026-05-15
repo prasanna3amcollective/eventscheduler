@@ -405,42 +405,44 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
       <OverlapWarningBanner message={overlapWarning} />
 
-      <div className="form-group">
-        <label>
-          <Tag size={16} /> Activity Name
-        </label>
-        <input
-          required
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          placeholder="e.g. Project Sync-up"
-        />
-      </div>
+      <div className="form-row" style={{ gridTemplateColumns: '3fr 1fr' }}>
+        <div className="form-group">
+          <label>
+            <Tag size={16} /> Activity Name
+          </label>
+          <input
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="e.g. Project Sync-up"
+          />
+        </div>
 
-      <div className="form-group">
-        <label>
-          <Tag size={16} /> Category
-        </label>
-        <select
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          className="premium-select"
-          style={{
-            width: '100%',
-            padding: '12px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-color)',
-            background: 'var(--surface-color)',
-            color: 'var(--text-primary)',
-            fontSize: '14px'
-          }}
-        >
-          {ACTIVITY_CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+        <div className="form-group">
+          <label>
+            <Tag size={16} /> Category
+          </label>
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            className="premium-select"
+            style={{
+              width: '100%',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--surface-color)',
+              color: 'var(--text-primary)',
+              fontSize: '14px'
+            }}
+          >
+            {ACTIVITY_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="form-row">
