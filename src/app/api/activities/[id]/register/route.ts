@@ -17,12 +17,16 @@ export async function POST(
     // Determine the true activity ID. Recurring activities have composite IDs like "originalId_inst_timestamp"
     const originalEventId = id.includes('_inst_') ? id.split('_inst_')[0] : id;
 
-    const registration = await withAuth(() => prisma.participant.create({
-      data: {
-        activityId: originalEventId,
-        userId: securityContext.id
+    const registration = await withAuth(securityContext, () => ({
+      model: 'participant',
+      operation: 'create',
+      args: {
+        data: {
+          activityId: originalEventId,
+          userId: securityContext.id
+        }
       }
-    }), securityContext);
+    }));
 
     return NextResponse.json(registration, { status: 201 });
   } catch (error: any) {

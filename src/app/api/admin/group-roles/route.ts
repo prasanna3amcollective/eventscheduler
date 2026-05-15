@@ -14,17 +14,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const roleAssignments = await withAuth(
-      () => prisma.roleGroupM2M.findMany({
+    const roleAssignments = await withAuth(securityContext, () => ({
+      model: 'roleGroupM2M',
+      operation: 'findMany',
+      args: {
         where: groupId ? { groupId } : undefined,
         include: {
           role: true,
           group: { select: { id: true, name: true } }
         },
         orderBy: { sys_created_at: 'desc' }
-      }),
-      securityContext
-    );
+      }
+    }));
     
     return NextResponse.json(roleAssignments);
   } catch (error: any) {
@@ -46,17 +47,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const assignment = await withAuth(
-      () => (prisma as any).roleGroupM2M.create({
+    const assignment = await withAuth(securityContext, () => ({
+      model: 'roleGroupM2M',
+      operation: 'create',
+      args: {
         data: { roleId, groupId },
         include: {
           role: true,
           group: { select: { id: true, name: true } }
         },
         _context: securityContext
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(assignment, { status: 201 });
   } catch (error: any) {

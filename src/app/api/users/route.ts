@@ -46,13 +46,14 @@ export async function POST(request: Request) {
     // Stamp sys_created_by / sys_updated_by with the new user's own ID.
     // We can't do this inside the create above because the ID doesn't exist yet,
     // and there is no session context available during public registration.
-    await withAuth(
-      () => prisma.user.update({
+    await withAuth({ id: user.id, roles: [] }, () => ({
+      model: 'user',
+      operation: 'update',
+      args: {
         where: { id: user.id },
         data: { sys_created_by: user.id, sys_updated_by: user.id }
-      }),
-      { id: user.id, roles: [] }
-    );
+      }
+    }));
 
     // Set JWT Session Cookie immediately
     const token = await signToken({ sub: user.id });

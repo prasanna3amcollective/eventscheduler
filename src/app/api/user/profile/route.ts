@@ -14,12 +14,14 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await withAuth(async () => {
-      return await prisma.user.update({
-        where: { id: securityContext.id },
-        data: { name, email, phone },
-      });
-    }, securityContext);
+     const user = await withAuth(securityContext, () => ({
+       model: 'user',
+       operation: 'update',
+       args: {
+         where: { id: securityContext.id },
+         data: { name, email, phone }
+       }
+     }));
 
     return NextResponse.json({
       id: user.id,

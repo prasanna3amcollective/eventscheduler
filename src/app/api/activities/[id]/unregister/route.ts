@@ -18,12 +18,16 @@ export async function POST(
     const originalEventId = id.includes('_inst_') ? id.split('_inst_')[0] : id;
 
     // Delete the participant record
-    await withAuth(() => prisma.participant.deleteMany({
-      where: {
-        activityId: originalEventId,
-        userId: securityContext.id
-      }
-    }), securityContext);
+     await withAuth(securityContext, () => ({
+       model: 'participant',
+       operation: 'deleteMany',
+       args: {
+         where: {
+           activityId: originalEventId,
+           userId: securityContext.id
+         }
+       }
+     }));
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {

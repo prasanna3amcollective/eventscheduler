@@ -11,13 +11,14 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const acls = await withAuth(
-      () => prisma.accessControlList.findMany({
+    const acls = await withAuth(securityContext, () => ({
+      model: 'accessControlList',
+      operation: 'findMany',
+      args: {
         include: { role: true },
         orderBy: { table: 'asc' }
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(acls);
   } catch (error: any) {
@@ -39,14 +40,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const acl = await withAuth(
-      () => (prisma as any).accessControlList.create({
+    const acl = await withAuth(securityContext, () => ({
+      model: 'accessControlList',
+      operation: 'create',
+      args: {
         data: { table, operation, roleId, description },
         include: { role: true },
         _context: securityContext
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(acl, { status: 201 });
   } catch (error: any) {

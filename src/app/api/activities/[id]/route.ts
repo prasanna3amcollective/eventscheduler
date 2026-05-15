@@ -18,16 +18,20 @@ export async function GET(
 
     const baseId = id.split('_inst_')[0];
 
-    const activity = await withAuth(() => prisma.activity.findUnique({
-      where: { id: baseId },
-      include: {
-        participants: {
-          include: {
-            user: true
+    const activity = await withAuth(securityContext, () => ({
+      model: 'activity',
+      operation: 'findUnique',
+      args: {
+        where: { id: baseId },
+        include: {
+          participants: {
+            include: {
+              user: true
+            }
           }
         }
       }
-    }), securityContext);
+    }));
 
     if (!activity) {
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
@@ -70,8 +74,10 @@ export async function PUT(
 
     const securityContext = await getSessionContext();
 
-    const activity = await withAuth(async () => {
-      const updated = await (prisma as any).activity.update({
+    const activity = await withAuth(securityContext, () => ({
+      model: 'activity',
+      operation: 'update',
+      args: {
         where: { id: baseId },
         data: {
           name,
@@ -83,43 +89,43 @@ export async function PUT(
           category: category || 'General',
         },
         _context: securityContext
+      }
+    }));
+
+    // Update staff participants
+    const staffRoles = [
+      { names: leader, type: 'Leader' },
+      { names: guide, type: 'Guide' },
+      { names: observer, type: 'Observer' }
+    ];
+
+    const addedUserIds = new Set<string>();
+    for (const role of staffRoles) {
+      await prisma.participant.deleteMany({
+        where: {
+          activityId: baseId,
+          type: role.type
+        }
       });
 
-      // Update staff participants
-      const staffRoles = [
-        { names: leader, type: 'Leader' },
-        { names: guide, type: 'Guide' },
-        { names: observer, type: 'Observer' }
-      ];
-
-      const addedUserIds = new Set<string>();
-      for (const role of staffRoles) {
-        await prisma.participant.deleteMany({
-          where: {
-            activityId: baseId,
-            type: role.type
-          }
+      for (const name of role.names) {
+        const user = await prisma.user.findFirst({
+          where: { name: name }
         });
-
-        for (const name of role.names) {
-          const user = await prisma.user.findFirst({
-            where: { name: name }
+        if (user && !addedUserIds.has(user.id)) {
+          await prisma.participant.create({
+            data: {
+              activityId: baseId,
+              userId: user.id,
+              type: role.type
+            }
           });
-          if (user && !addedUserIds.has(user.id)) {
-            await prisma.participant.create({
-              data: {
-                activityId: baseId,
-                userId: user.id,
-                type: role.type
-              }
-            });
-            addedUserIds.add(user.id);
-          }
+          addedUserIds.add(user.id);
         }
       }
+    }
 
-      return updated;
-    }, securityContext);
+    return updated;
 
     return NextResponse.json(activity);
   } catch (error: any) {
@@ -148,10 +154,14 @@ export async function DELETE(
 
     const baseId = id.split('_inst_')[0];
 
-    await withAuth(() => (prisma as any).activity.delete({
-      where: { id: baseId },
-      _context: securityContext
-    }), securityContext);
+    await withAuth(securityContext, () => ({
+      model: 'activity',
+      operation: 'delete',
+      args: {
+        where: { id: baseId },
+        _context: securityContext
+      }
+    }));
 
     return NextResponse.json({ message: 'Activity deleted' });
   } catch (error: any) {

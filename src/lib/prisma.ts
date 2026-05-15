@@ -47,8 +47,8 @@ const createPrismaClient = () => {
 
               if (acls.length > 0) {
                 if (!userContext) {
-                  if (model === 'User' && aclOp === 'create') {
-                    // Allow public registration
+                  if (model === 'User' && (aclOp === 'create' || aclOp === 'read')) {
+                    // Allow public registration and login (reading user by username/email)
                   } else {
                     throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
                   }

@@ -14,17 +14,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const members = await withAuth(
-      () => prisma.userGroupM2M.findMany({
+    const members = await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'findMany',
+      args: {
         where: groupId ? { groupId } : undefined,
         include: {
           user: { select: { id: true, name: true, username: true, type: true } },
           group: { select: { id: true, name: true, category: true } }
         },
         orderBy: { sys_created_at: 'desc' }
-      }),
-      securityContext
-    );
+      }
+    }));
     
     return NextResponse.json(members);
   } catch (error: any) {
@@ -46,17 +47,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const member = await withAuth(
-      () => (prisma as any).userGroupM2M.create({
+    const member = await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'create',
+      args: {
         data: { userId, groupId },
         include: {
           user: { select: { id: true, name: true, username: true } },
           group: { select: { id: true, name: true } }
         },
         _context: securityContext
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(member, { status: 201 });
   } catch (error: any) {
@@ -88,10 +90,11 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await withAuth(
-      () => prisma.userGroupM2M.delete({ where: { id } }),
-      securityContext
-    );
+    await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'delete',
+      args: { where: { id } }
+    }));
 
     return NextResponse.json({ message: 'Member removed from group' });
   } catch (error: any) {

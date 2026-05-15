@@ -9,15 +9,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const participants = await withAuth(() => prisma.participant.findMany({
-      include: {
-        user: true,
-        activity: true,
-      },
-      orderBy: {
-        sys_created_at: 'desc',
-      },
-    }), securityContext);
+     const participants = await withAuth(securityContext, () => ({
+       model: 'participant',
+       operation: 'findMany',
+       args: {
+         include: {
+           user: true,
+           activity: true,
+         },
+         orderBy: {
+           sys_created_at: 'desc',
+         },
+       }
+     }));
 
     return NextResponse.json(participants);
   } catch (error: any) {
@@ -43,9 +47,13 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await withAuth(() => (prisma as any).participant.delete({
-      where: { id },
-    }), securityContext);
+    await withAuth(securityContext, () => ({
+      model: 'participant',
+      operation: 'delete',
+      args: {
+        where: { id }
+      }
+    }));
 
     return NextResponse.json({ message: 'Participant removed' });
   } catch (error: any) {

@@ -11,10 +11,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const roles = await withAuth(
-      () => prisma.role.findMany({ orderBy: { name: 'asc' } }),
-      securityContext
-    );
+    const roles = await withAuth(securityContext, () => ({
+      model: 'role',
+      operation: 'findMany',
+      args: { orderBy: { name: 'asc' } }
+    }));
     
     return NextResponse.json(roles);
   } catch (error: any) {
@@ -36,13 +37,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const role = await withAuth(
-      () => (prisma as any).role.create({ 
+    const role = await withAuth(securityContext, () => ({
+      model: 'role',
+      operation: 'create',
+      args: {
         data: { name, description },
         _context: securityContext
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(role, { status: 201 });
   } catch (error: any) {

@@ -17,18 +17,19 @@ export async function GET(request: Request) {
   try {
     const securityContext = await getSessionContext();
 
-    const dbActivities: any[] = await withAuth(
-      () => prisma.activity.findMany({
-        include: {
-          participants: {
-            include: {
-              user: true
-            }
-          }
-        }
-      }),
-      securityContext
-    );
+     const dbActivities: any[] = await withAuth(securityContext, () => ({
+       model: 'activity',
+       operation: 'findMany',
+       args: {
+         include: {
+           participants: {
+             include: {
+               user: true
+             }
+           }
+         }
+       }
+     }));
 
     const expandedActivities: any[] = [];
 
@@ -108,51 +109,21 @@ export async function POST(request: Request) {
 
     const securityContext = await getSessionContext();
 
-    const activity = await withAuth(async () => {
-      const evt = await prisma.activity.create({
-        data: {
-          name,
-          startDateTime: new Date(startDateTime),
-          endDateTime: new Date(endDateTime),
-          duration: Number(duration),
-          isRecurring: Boolean(isRecurring),
-          recurrenceRule: isRecurring ? recurrenceRule : null,
-          category: category || 'General',
-        }
-      });
-
-       // Auto-populate participants with roles
-       try {
-        const staffRoles = [
-          { names: leader, type: 'Leader' },
-          { names: guide, type: 'Guide' },
-          { names: observer, type: 'Observer' }
-        ];
-
-        const addedUserIds = new Set<string>();
-        for (const role of staffRoles) {
-          for (const name of role.names) {
-            const user = await prisma.user.findFirst({
-              where: { name: name }
-            });
-            if (user && !addedUserIds.has(user.id)) {
-              await prisma.participant.create({
-                data: {
-                  activityId: evt.id,
-                  userId: user.id,
-                  type: role.type
-                }
-              });
-              addedUserIds.add(user.id);
-            }
-          }
-        }
-       } catch (e) {
-         console.error("Error auto-populating participants", e);
+     const activity = await withAuth(securityContext, () => ({
+       model: 'activity',
+       operation: 'create',
+       args: {
+         data: {
+           name,
+           startDateTime: new Date(startDateTime),
+           endDateTime: new Date(endDateTime),
+           duration: Number(duration),
+           isRecurring: Boolean(isRecurring),
+           recurrenceRule: isRecurring ? recurrenceRule : null,
+           category: category || 'General',
+         }
        }
-
-      return evt;
-    }, securityContext);
+     }));
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {

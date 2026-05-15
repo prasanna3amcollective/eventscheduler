@@ -31,13 +31,15 @@ export async function PATCH(
             );
         }
 
-        const activity = await withAuth(async () => {
-            return (prisma as any).activity.update({
-                where: { id: baseId },
-                data: { state: 'Completed' },
-                _context: securityContext
-            });
-        }, securityContext);
+        const activity = await withAuth(securityContext, () => ({
+          model: 'activity',
+          operation: 'update',
+          args: {
+            where: { id: baseId },
+            data: { state: 'Completed' },
+            _context: securityContext
+          }
+        }));
 
         return NextResponse.json(activity);
     } catch (error: any) {
