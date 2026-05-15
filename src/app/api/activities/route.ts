@@ -106,7 +106,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = activitySchema.parse(body);
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -119,6 +119,7 @@ export async function POST(request: Request) {
           duration: Number(duration),
           isRecurring: Boolean(isRecurring),
           recurrenceRule: isRecurring ? recurrenceRule : null,
+          category: category || 'General',
         }
       });
 

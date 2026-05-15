@@ -11,7 +11,7 @@ import ActivityCarousel from '@/components/ActivityCarousel';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
-import { CalendarDays, PlusCircle, LogOut, Layout, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
+import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
 function HomeContent() {
   const router = useRouter();
@@ -183,7 +183,7 @@ function HomeContent() {
       <div className="landing-page fade-in">
         <header className="dashboard-header">
           <div className="header-brand">
-            <Layout size={24} />
+            <img src="/fist.png" alt="Clenched Fist" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
             <h1>3AM Collective Movement</h1>
           </div>
         </header>
@@ -248,7 +248,7 @@ function HomeContent() {
     <div className="dashboard-layout fade-in">
       <header className="dashboard-header">
         <div className="header-brand">
-          <Layout size={24} />
+          <img src="/fist.png" alt="Clenched Fist" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
           <h1>3AM Collective</h1>
         </div>
         <div className="header-user">
@@ -296,7 +296,7 @@ function HomeContent() {
         </button>
         {userRoles.includes('core') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-            <ShieldCheck size={18} /> Core
+            <ShieldCheck size={18} /> Developer Panel
           </button>
         )}
       </nav>

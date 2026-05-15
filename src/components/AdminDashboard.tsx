@@ -511,7 +511,6 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                 <tr>
                   {renderFilterHeader('Name', 'role_name')}
                   {renderFilterHeader('Description', 'role_desc')}
-                  <th>System ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -525,9 +524,6 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                     <tr key={r.id}>
                       <td className="font-bold">{r.name}</td>
                       <td>{r.description}</td>
-                      <td>
-                        <span className="sys-id-tag">{r.id.slice(0, 8)}</span>
-                      </td>
                     </tr>
                   ))}
               </tbody>
@@ -1020,6 +1016,9 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
 
   return (
     <div className="admin-dashboard fade-in">
+      <h2 style={{ margin: '0 0 20px 0', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>
+        Developer Panel
+      </h2>
       <div className="admin-nav">
         <button
           className={activeTab === 'roles' ? 'active' : ''}

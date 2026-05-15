@@ -19,6 +19,7 @@ import {
   Tag,
   X,
 } from '@/components/Icons';
+import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -27,11 +28,12 @@ import {
 interface User {
   id: string;
   name: string;
-  type: string;
+  email: string;
+  username: string;
 }
 
 interface ActivityData {
-  id: string;
+  id?: string;
   originalId?: string;
   name: string;
   leader: string;
@@ -42,6 +44,7 @@ interface ActivityData {
   duration: number;
   isRecurring: boolean;
   recurrenceRule?: string | null;
+  category?: string;
 }
 
 interface ActivityFormProps {
@@ -183,6 +186,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     recurrenceFreq: 'WEEKLY',
     recurrenceDays:
       (initialData?.recurrenceRule?.split('BYDAY=')[1]?.split(',') as string[]) ?? [],
+    category: initialData?.category ?? 'General',
   });
 
   const [users, setUsers] = useState<User[]>([]);
@@ -307,6 +311,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         duration: formData.duration,
         isRecurring: formData.isRecurring,
         recurrenceRule: rruleStr,
+        category: formData.category,
       };
 
       try {
@@ -410,6 +415,32 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           placeholder="e.g. Project Sync-up"
         />
+      </div>
+
+      <div className="form-group">
+        <label>
+          <Tag size={16} /> Category
+        </label>
+        <select
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          className="premium-select"
+          style={{
+            width: '100%',
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid var(--border-color)',
+            background: 'var(--surface-color)',
+            color: 'var(--text-primary)',
+            fontSize: '14px'
+          }}
+        >
+          {ACTIVITY_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-row">

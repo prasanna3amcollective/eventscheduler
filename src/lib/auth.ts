@@ -8,9 +8,28 @@ export async function getSecurityContext(userId: string) {
     select: { roleId: true }
   });
 
+  const groupRoles = await (prisma as any).userGroupM2M.findMany({
+    where: { userId },
+    include: {
+      group: {
+        include: {
+          roles: {
+            select: { roleId: true }
+          }
+        }
+      }
+    }
+  });
+
+  const roles = new Set<string>();
+  userRoles.forEach((ur: any) => roles.add(ur.roleId));
+  groupRoles.forEach((ug: any) => {
+    ug.group.roles.forEach((gr: any) => roles.add(gr.roleId));
+  });
+
   return {
     id: userId,
-    roles: userRoles.map((ur: any) => ur.roleId)
+    roles: Array.from(roles)
   };
 }
 

@@ -49,6 +49,7 @@ interface ApiActivity {
   observer?: string;
   participantCount?: number;
   participants?: { userId: string }[];
+  category?: string;
 }
 
 /** The shape used internall by react-big-calendar. */
@@ -63,6 +64,7 @@ interface CalendarActivity {
   guide?: string;
   observer?: string;
   participants?: { userId: string }[];
+  category?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,6 +234,7 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
             }}
           >
             <th style={{ padding: '8px' }}>Event</th>
+            <th style={{ padding: '8px' }}>Category</th>
           </tr>
         </thead>
         <tbody>
@@ -275,6 +278,17 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
                     {format(activity.start, 'MMM dd · hh:mm aa')}
                   </div>
                 </td>
+                <td style={{ padding: '8px' }}>
+                  <span className="category-badge" style={{ 
+                    fontSize: '10px', 
+                    padding: '2px 8px', 
+                    borderRadius: '4px',
+                    background: 'var(--bg-color)',
+                    border: '1px solid var(--border-color)'
+                  }}>
+                    {activity.category || 'General'}
+                  </span>
+                </td>
               </tr>
             ))
           )}
@@ -290,6 +304,7 @@ function CalendarEventRenderer({ event: activity }: { event: CalendarActivity })
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
       {activity.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
+      <span style={{ fontSize: '11px', opacity: 0.8, marginRight: '4px' }}>[{activity.category || 'Gen'}]</span>
       <span>{activity.title}</span>
     </div>
   );
@@ -347,6 +362,7 @@ export default function CalendarView({
           guide: e.guide,
           observer: e.observer,
           participants: e.participants,
+          category: e.category,
         }));
         setActivities(formatted);
       } catch (err) {
@@ -382,6 +398,7 @@ export default function CalendarView({
         end: new Date(h.date),
         allDay: true,
         isHoliday: true,
+        category: 'Holiday'
       })),
     ],
     [activities, holidays],

@@ -11,7 +11,6 @@ interface UserData {
   id: string;
   name: string;
   email?: string;
-  type?: string;
 }
 
 interface RegisterFormProps {
@@ -57,7 +56,6 @@ const EMPTY_FORM = {
   email: '',
   phone: '',
   password: '',
-  type: 'team',
 } as const;
 
 // ---------------------------------------------------------------------------

@@ -14,8 +14,7 @@ export async function GET() {
         name: true,
         username: true,
         email: true,
-        phone: true,
-        type: true
+        phone: true
         // Exclude password
       },
       orderBy: { name: 'asc' }
@@ -30,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, phone, email, type, password } = userRegistrationSchema.parse(body);
+    const { name, username, phone, email, password } = userRegistrationSchema.parse(body);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -40,7 +39,6 @@ export async function POST(request: Request) {
         username,
         phone,
         email,
-        type,
         password: hashedPassword
       }
     });

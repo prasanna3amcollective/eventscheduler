@@ -6,7 +6,8 @@ import { Search, User as UserIcon, Check } from '@/components/Icons';
 interface User {
   id: string;
   name: string;
-  type: string;
+  email: string;
+  username: string;
 }
 
 interface UserTypeaheadProps {
@@ -91,9 +92,9 @@ export default function UserTypeahead({ label, value, onChange, icon, users, pla
               className="typeahead-item"
               onClick={() => handleSelect(user)}
             >
-              <div className="user-info">
-                <span className="user-name">{user.name}</span>
-                <span className={`user-type-tag ${user.type}`}>{user.type}</span>
+              <div className="item-info">
+                <strong>{user.name}</strong>
+                <span>{user.username} • {user.email}</span>
               </div>
               {query === user.name && <Check size={14} className="check-icon" />}
             </div>

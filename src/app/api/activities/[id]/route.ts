@@ -63,7 +63,7 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const parsedData = activitySchema.parse(body);
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category } = parsedData;
 
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
@@ -78,6 +78,7 @@ export async function PUT(
           duration: Number(duration),
           isRecurring: Boolean(isRecurring),
           recurrenceRule: isRecurring ? recurrenceRule : null,
+          category: category || 'General',
         },
         _context: securityContext
       });

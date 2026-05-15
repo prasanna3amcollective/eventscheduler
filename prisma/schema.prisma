@@ -18,6 +18,7 @@ model Activity {
   duration       Int      // in minutes
   isRecurring    Boolean  @default(false)
   recurrenceRule String?
+  category       String   @default("General")
   participants   Participant[]
 
   // System Columns (ServiceNow Style)
@@ -68,7 +69,6 @@ model User {
   phone    String
   email    String @unique
   password String
-  type     String // core, team, inhouse
   groups   UserGroupM2M[]
   roles    UserRole[]
   activities Participant[]

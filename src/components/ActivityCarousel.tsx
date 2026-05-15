@@ -10,6 +10,7 @@ interface Activity {
   name: string;
   startDateTime: string;
   participantCount?: number;
+  category?: string;
 }
 
 interface ActivityCarouselProps {
@@ -104,6 +105,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
                     <h4>{activity.name}</h4>
                     <div className="card-meta">
                       <span><Clock size={12} /> {format(new Date(activity.startDateTime), 'hh:mm aa')}</span>
+                      {activity.category && <span className="carousel-category-tag">{activity.category}</span>}
                     </div>
                   </div>
                   {activity.participantCount !== undefined && (

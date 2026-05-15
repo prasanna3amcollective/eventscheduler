@@ -10,7 +10,6 @@ export const userRegistrationSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters').max(50),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   email: z.string().email('Invalid email address'),
-  type: z.string().default('user'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
@@ -32,7 +31,8 @@ export const activitySchema = z.object({
   endDateTime: z.string().datetime({ message: "Invalid end date format" }),
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
-  recurrenceRule: z.string().nullable().optional()
+  recurrenceRule: z.string().nullable().optional(),
+  category: z.string().default('General')
 });
 
 export const checkOverlapSchema = z.object({

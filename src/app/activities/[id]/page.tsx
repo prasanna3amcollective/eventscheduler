@@ -14,7 +14,6 @@ interface Participant {
         username: string;
         email: string;
         phone: string;
-        type: string;
     };
     sys_created_at: string;
 }
@@ -40,7 +39,6 @@ export default function ActivityManagementPage() {
     const [error, setError] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [typeFilter, setTypeFilter] = useState<string>('all');
 
     useEffect(() => {
         const loadData = async () => {
@@ -87,8 +85,7 @@ export default function ActivityManagementPage() {
         const matchesSearch = p.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.user.username.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = typeFilter === 'all' || p.user.type === typeFilter;
-        return matchesSearch && matchesType;
+        return matchesSearch;
     }) || [];
 
     if (loading) {
@@ -132,7 +129,6 @@ export default function ActivityManagementPage() {
                     {currentUser && (
                         <>
                             <span className="user-name">{currentUser.name}</span>
-                            <span className={`user-type-tag ${currentUser.type}`}>{currentUser.type}</span>
                         </>
                     )}
                 </div>
@@ -197,16 +193,6 @@ export default function ActivityManagementPage() {
                                 className="search-input"
                             />
                         </div>
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                            className="type-filter"
-                        >
-                            <option value="all">All Types</option>
-                            <option value="core">Core</option>
-                            <option value="team">Team</option>
-                            <option value="inhouse">Inhouse</option>
-                        </select>
                     </div>
 
                     {/* Participants Table */}
@@ -219,7 +205,6 @@ export default function ActivityManagementPage() {
                                         <th>Username</th>
                                         <th>Email</th>
                                         <th>Phone</th>
-                                        <th>Type</th>
                                         <th>Registered</th>
                                     </tr>
                                 </thead>
@@ -230,11 +215,6 @@ export default function ActivityManagementPage() {
                                             <td className="text-secondary">{participant.user.username}</td>
                                             <td className="text-secondary">{participant.user.email}</td>
                                             <td className="text-secondary">{participant.user.phone}</td>
-                                            <td>
-                                                <span className={`type-badge ${participant.user.type}`}>
-                                                    {participant.user.type}
-                                                </span>
-                                            </td>
                                             <td className="text-secondary text-sm">
                                                 {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
                                             </td>

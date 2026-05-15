@@ -21,6 +21,7 @@ interface ActivityData {
   observer?: string;
   participantCount?: number;
   participants?: { userId: string, type?: string }[];
+  category?: string;
 }
 
 interface UserData {
@@ -290,9 +291,7 @@ export default function ActivityDetailModal({
 
         {/* ---------- Intimate header: no colored block, just activity name ---------- */}
         <div className="detail-header-flat">
-          <div className="detail-header-row">
-            <div className="detail-category">Activity</div>
-          </div>
+            <div className="detail-category">{activity.category || 'Activity'}</div>
           <h2 className="detail-title">{activity.name}</h2>
         </div>
 

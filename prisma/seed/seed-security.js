@@ -30,8 +30,7 @@ async function seed() {
         username: 'core',
         phone: '0000000000',
         email: 'core@system.local',
-        password: hashedPassword,
-        type: 'core'
+        password: hashedPassword
       }
     });
     console.log('✅ Created core user (username: core, password: core123)');
