@@ -2425,6 +2425,113 @@ input:not([type="checkbox"]):focus {
   margin-left: 8px;
 }
 
+/* Multi User Select & Related List */
+.staff-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--hover-color);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.multi-user-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.multi-user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-count-badge {
+  background: var(--primary-color);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.selected-users-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px;
+  background: var(--surface-color);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--primary-glow);
+  color: var(--primary-color);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.chip-remove:hover {
+  opacity: 1;
+}
+
+.no-users-placeholder {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+.form-section-divider {
+  display: flex;
+  align-items: center;
+  margin: 32px 0 16px;
+}
+
+.form-section-divider span {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  background: var(--bg-color);
+  padding-right: 12px;
+  white-space: nowrap;
+}
+
+.form-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

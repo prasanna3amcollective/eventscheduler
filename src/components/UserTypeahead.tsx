@@ -18,9 +18,10 @@ interface UserTypeaheadProps {
   users: User[];
   placeholder?: string;
   required?: boolean;
+  onSelect?: (user: User) => void;
 }
 
-export default function UserTypeahead({ label, value, onChange, icon, users, placeholder, required }: UserTypeaheadProps) {
+export default function UserTypeahead({ label, value, onChange, icon, users, placeholder, required, onSelect }: UserTypeaheadProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState(value);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -61,6 +62,7 @@ export default function UserTypeahead({ label, value, onChange, icon, users, pla
     setQuery(user.name);
     onChange(user.name);
     setIsOpen(false);
+    if (onSelect) onSelect(user);
   };
 
   return (

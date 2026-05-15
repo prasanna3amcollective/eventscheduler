@@ -141,9 +141,9 @@ function HomeContent() {
         startDateTime: slotInfo.start,
         endDateTime: slotInfo.end || new Date(slotInfo.start.getTime() + 60 * 60 * 1000),
         name: '',
-        leader: '',
-        guide: '',
-        observer: '',
+        leader: [],
+        guide: [],
+        observer: [],
         duration: 60
       };
       setSelectedActivity(newActivity);
@@ -161,9 +161,9 @@ function HomeContent() {
       startDateTime: new Date(),
       endDateTime: new Date(Date.now() + 60 * 60 * 1000),
       name: '',
-      leader: '',
-      guide: '',
-      observer: '',
+      leader: [],
+      guide: [],
+      observer: [],
       duration: 60
     };
     setSelectedActivity(newActivity);

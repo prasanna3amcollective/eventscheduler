@@ -8,6 +8,7 @@ import { secureFetch } from '@/lib/fetch';
 
 interface Participant {
     id: string;
+    type?: string;
     user: {
         id: string;
         name: string;
@@ -26,7 +27,96 @@ interface Activity {
     duration: number;
     isRecurring: boolean;
     recurrenceRule: string | null;
+    category?: string;
+    leaders?: string[];
+    guides?: string[];
+    observers?: string[];
     participants: Participant[];
+}
+
+interface User {
+    id: string;
+    name: string;
+    username: string;
+    email: string;
+}
+
+function StaffMiniList({ 
+    label, 
+    names, 
+    onUpdate 
+}: { 
+    label: string, 
+    names: string[], 
+    onUpdate: (names: string[]) => void 
+}) {
+    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [inputValue, setInputValue] = useState('');
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const res = await secureFetch('/api/users');
+            if (res.ok) {
+                const data = await res.json();
+                setAllUsers(data);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    const handleAdd = (name: string) => {
+        if (name && !names.includes(name)) {
+            onUpdate([...names, name]);
+        }
+        setInputValue('');
+    };
+
+    const handleRemove = (name: string) => {
+        onUpdate(names.filter(n => n !== name));
+    };
+
+    return (
+        <div className="staff-mini-list">
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase' }}>{label}</h3>
+            <div className="selected-users-list" style={{ marginBottom: '12px' }}>
+                {names.length > 0 ? (
+                    names.map(n => (
+                        <div key={n} className="user-chip">
+                            <span>{n}</span>
+                            <button onClick={() => handleRemove(n)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', color: 'inherit' }}>×</button>
+                        </div>
+                    ))
+                ) : (
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontStyle: 'italic' }}>No {label.toLowerCase()}s assigned</span>
+                )}
+            </div>
+            <div style={{ maxWidth: '300px' }}>
+                <input
+                    type="text"
+                    placeholder={`Add ${label.toLowerCase()}...`}
+                    value={inputValue}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        setInputValue(val);
+                        const match = allUsers.find(u => u.name.toLowerCase() === val.toLowerCase());
+                        if (match) handleAdd(match.name);
+                    }}
+                    list={`users-list-${label}`}
+                    style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color)',
+                        fontSize: '13px',
+                        background: 'var(--bg-color)'
+                    }}
+                />
+                <datalist id={`users-list-${label}`}>
+                    {allUsers.map(u => <option key={u.id} value={u.name} />)}
+                </datalist>
+            </div>
+        </div>
+    );
 }
 
 export default function ActivityManagementPage() {
@@ -81,12 +171,50 @@ export default function ActivityManagementPage() {
         }
     };
 
-    const filteredParticipants = activity?.participants.filter(p => {
+    const staffNames = new Set([
+        ...(activity?.leaders || []),
+        ...(activity?.guides || []),
+        ...(activity?.observers || [])
+    ]);
+
+    const regularParticipants = activity?.participants.filter(p => !p.type || !['Leader', 'Guide', 'Observer'].includes(p.type)) || [];
+
+    const filteredParticipants = regularParticipants.filter(p => {
         const matchesSearch = p.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.user.username.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
-    }) || [];
+    });
+
+    const handleUpdateStaff = async (type: 'leader' | 'guide' | 'observer', names: string[]) => {
+        if (!activity) return;
+        
+        const payload = {
+            name: activity.name,
+            startDateTime: activity.startDateTime,
+            endDateTime: activity.endDateTime,
+            duration: activity.duration,
+            isRecurring: activity.isRecurring,
+            recurrenceRule: activity.recurrenceRule,
+            category: activity.category,
+            leader: type === 'leader' ? names : (activity.leaders || []),
+            guide: type === 'guide' ? names : (activity.guides || []),
+            observer: type === 'observer' ? names : (activity.observers || [])
+        };
+
+        try {
+            const res = await secureFetch(`/api/activities/${activityId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                handleRefresh();
+            }
+        } catch (err) {
+            console.error('Failed to update staff', err);
+        }
+    };
 
     if (loading) {
         return (
@@ -177,7 +305,7 @@ export default function ActivityManagementPage() {
                         <div>
                             <h2 className="participants-title">Participants</h2>
                             <p className="participants-count">
-                                {filteredParticipants.length} of {activity.participants.length} participants shown
+                                {filteredParticipants.length} of {regularParticipants.length} participants shown
                             </p>
                         </div>
                     </div>
@@ -187,7 +315,7 @@ export default function ActivityManagementPage() {
                         <div className="search-input-wrapper">
                             <input
                                 type="text"
-                                placeholder="Search by name, email, or username..."
+                                placeholder="Search participants..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="search-input"
@@ -229,6 +357,37 @@ export default function ActivityManagementPage() {
                             <p className="empty-text">No participants found</p>
                         </div>
                     )}
+                </div>
+
+                {/* Staff Related List Section */}
+                <div className="participants-card" style={{ marginTop: '32px' }}>
+                    <div className="participants-header">
+                        <h2 className="participants-title">Staff Management</h2>
+                    </div>
+                    
+                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                        <div className="staff-management-row">
+                             <StaffMiniList 
+                                label="Leaders" 
+                                names={activity.leaders || []} 
+                                onUpdate={(names) => handleUpdateStaff('leader', names)}
+                             />
+                        </div>
+                        <div className="staff-management-row">
+                             <StaffMiniList 
+                                label="Guides" 
+                                names={activity.guides || []} 
+                                onUpdate={(names) => handleUpdateStaff('guide', names)}
+                             />
+                        </div>
+                        <div className="staff-management-row">
+                             <StaffMiniList 
+                                label="Observers" 
+                                names={activity.observers || []} 
+                                onUpdate={(names) => handleUpdateStaff('observer', names)}
+                             />
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

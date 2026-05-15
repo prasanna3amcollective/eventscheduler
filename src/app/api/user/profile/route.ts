@@ -31,7 +31,7 @@ export async function PUT(request: Request) {
   } catch (error: any) {
     console.error('Error updating profile:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });

@@ -16,6 +16,9 @@ interface ActivityData {
   startDateTime: string;
   endDateTime?: string;
   duration?: number;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
   leader?: string;
   guide?: string;
   observer?: string;
@@ -309,26 +312,32 @@ export default function ActivityDetailModal({
           )}
 
           {/* Staff Section */}
-          <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {activity.leader && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                <UserIcon size={14} color="var(--primary-color)" />
-                <span style={{ fontWeight: 600 }}>Leader:</span>
-                <span>{activity.leader}</span>
+          <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {(activity.leaders?.length || 0) > 0 && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                <UserIcon size={14} color="var(--primary-color)" style={{ marginTop: '3px' }} />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Leaders</div>
+                  <div style={{ color: 'var(--text-primary)' }}>{activity.leaders?.join(', ')}</div>
+                </div>
               </div>
             )}
-            {activity.guide && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                <Users size={14} color="#10b981" />
-                <span style={{ fontWeight: 600 }}>Guide:</span>
-                <span>{activity.guide}</span>
+            {(activity.guides?.length || 0) > 0 && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                <Users size={14} color="#10b981" style={{ marginTop: '3px' }} />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Guides</div>
+                  <div style={{ color: 'var(--text-primary)' }}>{activity.guides?.join(', ')}</div>
+                </div>
               </div>
             )}
-            {activity.observer && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-                <Eye size={14} color="var(--text-secondary)" />
-                <span style={{ fontWeight: 600 }}>Observer:</span>
-                <span>{activity.observer}</span>
+            {(activity.observers?.length || 0) > 0 && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                <Eye size={14} color="var(--text-secondary)" style={{ marginTop: '3px' }} />
+                <div>
+                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Observers</div>
+                  <div style={{ color: 'var(--text-primary)' }}>{activity.observers?.join(', ')}</div>
+                </div>
               </div>
             )}
           </div>

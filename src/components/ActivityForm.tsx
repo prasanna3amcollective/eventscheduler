@@ -36,9 +36,9 @@ interface ActivityData {
   id?: string;
   originalId?: string;
   name: string;
-  leader: string;
-  guide: string;
-  observer: string;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
   startDateTime: string;
   endDateTime: string;
   duration: number;
@@ -159,12 +159,75 @@ function DaySelector({
   );
 }
 
+function MultiUserSelect({
+  label,
+  users,
+  selectedNames,
+  onChange,
+  icon,
+}: {
+  label: string;
+  users: User[];
+  selectedNames: string[];
+  onChange: (names: string[]) => void;
+  icon: React.ReactNode;
+}) {
+  const [inputValue, setInputValue] = useState('');
+
+  const addUser = useCallback((name: string) => {
+    if (name && !selectedNames.includes(name)) {
+      onChange([...selectedNames, name]);
+    }
+    setInputValue('');
+  }, [selectedNames, onChange]);
+
+  const removeUser = useCallback((name: string) => {
+    onChange(selectedNames.filter(n => n !== name));
+  }, [selectedNames, onChange]);
+
+  return (
+    <div className="multi-user-select-container">
+      <div className="multi-user-header">
+        <label>{icon} {label}</label>
+        <span className="user-count-badge">{selectedNames.length}</span>
+      </div>
+      
+      <div className="selected-users-list">
+        {selectedNames.length > 0 ? (
+          selectedNames.map(name => (
+            <div key={name} className="user-chip fade-in">
+              <span className="chip-text">{name}</span>
+              <button type="button" className="chip-remove" onClick={() => removeUser(name)}>
+                <X size={14} />
+              </button>
+            </div>
+          ))
+        ) : (
+          <div className="no-users-placeholder">No {label.toLowerCase()}s assigned</div>
+        )}
+      </div>
+
+      <div className="add-user-trigger">
+        <UserTypeahead
+          label=""
+          value={inputValue}
+          onChange={setInputValue}
+          icon={null}
+          users={users}
+          placeholder={`Search to add ${label.toLowerCase()}...`}
+          onSelect={(user: any) => addUser(user.name)}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // ActivityForm
 // ---------------------------------------------------------------------------
 
 export default function ActivityForm({ onActivityCreated, initialData, onCancel }: ActivityFormProps) {
-  const isEditing = !!initialData;
+  const isEditing = !!initialData?.id;
   const isInstance = !!initialData?.originalId;
 
   const initialStartDate = initialData
@@ -176,9 +239,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
-    leader: initialData?.leader ?? '',
-    guide: initialData?.guide ?? '',
-    observer: initialData?.observer ?? '',
+    leader: (initialData as any)?.leaders || (initialData as any)?.leader || [],
+    guide: (initialData as any)?.guides || (initialData as any)?.guide || [],
+    observer: (initialData as any)?.observers || (initialData as any)?.observer || [],
     startDateTime: initialStartDate,
     duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     endDateTime: initialEndDate,
@@ -317,12 +380,15 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       try {
         if (isInstance && saveMode === 'this') {
           // Create a non-recurring copy of this specific occurrence
-          const createRes = await fetch('/api/activities', {
+          const createRes = await secureFetch('/api/activities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...payload, isRecurring: false, recurrenceRule: null }),
           });
-          if (!createRes.ok) throw new Error(ERROR_SAVING_EVENT);
+          if (!createRes.ok) {
+            const errorData = await createRes.json().catch(() => ({}));
+            throw new Error(errorData.error || ERROR_SAVING_EVENT);
+          }
 
           // Exclude this occurrence from the original series
           const exdate = toIcalDtstart(start);
@@ -344,14 +410,19 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           });
-          if (!res.ok) throw new Error(ERROR_SAVING_EVENT);
+          
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            console.error('Save failed:', errorData);
+            throw new Error(errorData.error || errorData.message || ERROR_SAVING_EVENT);
+          }
         }
 
         onActivityCreated();
         setIsSubmitting(false);
       } catch (err) {
         console.error(err);
-        alert(ERROR_SAVING_EVENT);
+        alert(err instanceof Error ? err.message : ERROR_SAVING_EVENT);
         setIsSubmitting(false);
       }
     },
@@ -445,26 +516,29 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </div>
       </div>
 
-      <div className="form-row">
-        <UserTypeahead
-          label="Leader"
-          required
-          value={formData.leader}
-          onChange={(val) => setFormData({ ...formData, leader: val })}
+      <div className="form-section-divider">
+        <span>Participants & Staff</span>
+      </div>
+
+      <div className="staff-related-list">
+        <MultiUserSelect
+          label="Leaders"
+          selectedNames={formData.leader}
+          onChange={(names) => setFormData({ ...formData, leader: names })}
           icon={<UserIcon size={16} />}
           users={users}
         />
-        <UserTypeahead
-          label="Guide"
-          value={formData.guide}
-          onChange={(val) => setFormData({ ...formData, guide: val })}
+        <MultiUserSelect
+          label="Guides"
+          selectedNames={formData.guide}
+          onChange={(names) => setFormData({ ...formData, guide: names })}
           icon={<Users size={16} />}
           users={users}
         />
-        <UserTypeahead
-          label="Observer"
-          value={formData.observer}
-          onChange={(val) => setFormData({ ...formData, observer: val })}
+        <MultiUserSelect
+          label="Observers"
+          selectedNames={formData.observer}
+          onChange={(names) => setFormData({ ...formData, observer: names })}
           icon={<Eye size={16} />}
           users={users}
         />

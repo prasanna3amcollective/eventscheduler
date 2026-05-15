@@ -34,15 +34,11 @@ export async function GET(request: Request) {
 
     for (const activity of dbActivities) {
       // Extract staff members from participants based on their type
-      const leaderRecord = activity.participants.find((p: any) => p.type === 'Leader');
-      const guideRecord = activity.participants.find((p: any) => p.type === 'Guide');
-      const observerRecord = activity.participants.find((p: any) => p.type === 'Observer');
+      const leaders = activity.participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
+      const guides = activity.participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
+      const observers = activity.participants.filter((p: any) => p.type === 'Observer').map((p: any) => p.user?.name).filter(Boolean);
 
-      const leader = leaderRecord?.user?.name || null;
-      const guide = guideRecord?.user?.name || null;
-      const observer = observerRecord?.user?.name || null;
-
-      const staffNames = [leader, guide, observer].filter(Boolean);
+      const staffNames = [...leaders, ...guides, ...observers];
       const participantUserNames = new Set<string>();
 
       for (const p of activity.participants) {
@@ -71,9 +67,9 @@ export async function GET(request: Request) {
               startDateTime: date,
               endDateTime: addMinutes(date, activity.duration),
               participantCount: totalCount,
-              leader,
-              guide,
-              observer
+              leaders,
+              guides,
+              observers
             });
           }
         } catch (e) {
@@ -84,9 +80,9 @@ export async function GET(request: Request) {
           expandedActivities.push({
             ...activity,
             participantCount: totalCount,
-            leader,
-            guide,
-            observer
+            leaders,
+            guides,
+            observers
           });
         }
       }
@@ -105,7 +101,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log("POST /api/activities body:", JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
+    console.log("POST /api/activities parsedData:", JSON.stringify(parsedData, null, 2));
     const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category } = parsedData;
 
     const securityContext = await getSessionContext();
@@ -125,26 +123,30 @@ export async function POST(request: Request) {
 
        // Auto-populate participants with roles
        try {
-         const staff = [
-           { name: leader, type: 'Leader' },
-           { name: guide, type: 'Guide' },
-           { name: observer, type: 'Observer' }
-         ].filter(s => s.name);
+        const staffRoles = [
+          { names: leader, type: 'Leader' },
+          { names: guide, type: 'Guide' },
+          { names: observer, type: 'Observer' }
+        ];
 
-         for (const s of staff) {
-           const user = await prisma.user.findFirst({
-             where: { name: s.name }
-           });
-           if (user) {
-             await prisma.participant.create({
-               data: {
-                 activityId: evt.id,
-                 userId: user.id,
-                 type: s.type
-               }
-             });
-           }
-         }
+        const addedUserIds = new Set<string>();
+        for (const role of staffRoles) {
+          for (const name of role.names) {
+            const user = await prisma.user.findFirst({
+              where: { name: name }
+            });
+            if (user && !addedUserIds.has(user.id)) {
+              await prisma.participant.create({
+                data: {
+                  activityId: evt.id,
+                  userId: user.id,
+                  type: role.type
+                }
+              });
+              addedUserIds.add(user.id);
+            }
+          }
+        }
        } catch (e) {
          console.error("Error auto-populating participants", e);
        }
@@ -154,13 +156,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {
-    console.error("Error creating activity:", error);
+    console.error("Error creating activity FULL ERROR:", error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message, details: error.issues }, { status: 400 });
     }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', message: error.message, stack: error.stack }, { status: 500 });
   }
 }

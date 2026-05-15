@@ -24,9 +24,9 @@ export const userProfileSchema = z.object({
 
 export const activitySchema = z.object({
   name: z.string().min(1, 'Activity name is required').max(200),
-  leader: z.string().optional(),
-  guide: z.string().optional(),
-  observer: z.string().optional(),
+  leader: z.array(z.string()).default([]),
+  guide: z.array(z.string()).default([]),
+  observer: z.array(z.string()).default([]),
   startDateTime: z.string().datetime({ message: "Invalid start date format" }),
   endDateTime: z.string().datetime({ message: "Invalid end date format" }),
   duration: z.number().positive(),

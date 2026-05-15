@@ -44,9 +44,9 @@ interface ApiActivity {
   name: string;
   startDateTime: string;
   endDateTime: string;
-  leader?: string;
-  guide?: string;
-  observer?: string;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
   participantCount?: number;
   participants?: { userId: string }[];
   category?: string;
@@ -60,9 +60,9 @@ interface CalendarActivity {
   end: Date;
   allDay?: boolean;
   isHoliday: boolean;
-  leader?: string;
-  guide?: string;
-  observer?: string;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
   participants?: { userId: string }[];
   category?: string;
 }
@@ -234,6 +234,7 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
             }}
           >
             <th style={{ padding: '8px' }}>Event</th>
+            <th style={{ padding: '8px' }}>Staff</th>
             <th style={{ padding: '8px' }}>Category</th>
           </tr>
         </thead>
@@ -276,6 +277,11 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     {format(activity.start, 'MMM dd · hh:mm aa')}
+                  </div>
+                </td>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
+                    {[...(activity.leaders || []), ...(activity.guides || [])].join(', ') || 'No staff'}
                   </div>
                 </td>
                 <td style={{ padding: '8px' }}>
@@ -357,9 +363,9 @@ export default function CalendarView({
           start: new Date(e.startDateTime),
           end: new Date(e.endDateTime),
           isHoliday: false,
-          leader: e.leader,
-          guide: e.guide,
-          observer: e.observer,
+          leaders: e.leaders || (e as any).leader || [],
+          guides: e.guides || (e as any).guide || [],
+          observers: e.observers || (e as any).observer || [],
           participants: e.participants,
           category: e.category,
         }));

@@ -34,15 +34,15 @@ export async function GET(
     }
 
     // Extract staff members from participants
-    const leaderRecord = (activity as any).participants.find((p: any) => p.type === 'Leader');
-    const guideRecord = (activity as any).participants.find((p: any) => p.type === 'Guide');
-    const observerRecord = (activity as any).participants.find((p: any) => p.type === 'Observer');
+    const leaders = (activity as any).participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
+    const guides = (activity as any).participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
+    const observers = (activity as any).participants.filter((p: any) => p.type === 'Observer').map((p: any) => p.user?.name).filter(Boolean);
 
     const transformedActivity = {
       ...activity,
-      leader: leaderRecord?.user?.name || null,
-      guide: guideRecord?.user?.name || null,
-      observer: observerRecord?.user?.name || null,
+      leaders,
+      guides,
+      observers,
     };
 
     return NextResponse.json(transformedActivity);
@@ -61,12 +61,14 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const baseId = id.split('_inst_')[0];
     const body = await request.json();
+    console.log(`PUT /api/activities/${baseId} body:`, JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
+    console.log(`PUT /api/activities/${baseId} parsedData:`, JSON.stringify(parsedData, null, 2));
     const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category } = parsedData;
 
     const securityContext = await getSessionContext();
-    const baseId = id.split('_inst_')[0];
 
     const activity = await withAuth(async () => {
       const updated = await (prisma as any).activity.update({
@@ -84,34 +86,34 @@ export async function PUT(
       });
 
       // Update staff participants
-      const staff = [
-        { name: leader, type: 'Leader' },
-        { name: guide, type: 'Guide' },
-        { name: observer, type: 'Observer' }
+      const staffRoles = [
+        { names: leader, type: 'Leader' },
+        { names: guide, type: 'Guide' },
+        { names: observer, type: 'Observer' }
       ];
 
-      for (const s of staff) {
-        // Delete existing participant of this type for this activity
+      const addedUserIds = new Set<string>();
+      for (const role of staffRoles) {
         await prisma.participant.deleteMany({
           where: {
             activityId: baseId,
-            type: s.type
+            type: role.type
           }
         });
 
-        // If a name was provided, find the user and create a new participant record
-        if (s.name) {
+        for (const name of role.names) {
           const user = await prisma.user.findFirst({
-            where: { name: s.name }
+            where: { name: name }
           });
-          if (user) {
+          if (user && !addedUserIds.has(user.id)) {
             await prisma.participant.create({
               data: {
                 activityId: baseId,
                 userId: user.id,
-                type: s.type
+                type: role.type
               }
             });
+            addedUserIds.add(user.id);
           }
         }
       }
@@ -121,14 +123,14 @@ export async function PUT(
 
     return NextResponse.json(activity);
   } catch (error: any) {
-    console.error("Error updating activity:", error);
+    console.error("Error updating activity FULL ERROR:", error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message, details: error.issues }, { status: 400 });
     }
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', message: error.message, stack: error.stack }, { status: 500 });
   }
 }
 

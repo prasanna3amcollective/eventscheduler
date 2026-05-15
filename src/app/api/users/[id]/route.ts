@@ -42,7 +42,7 @@ export async function PUT(
     return NextResponse.json(user);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'Username or Email already exists' }, { status: 400 });
