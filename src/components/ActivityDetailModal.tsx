@@ -26,6 +26,7 @@ interface ActivityData {
   participantCount?: number;
   participants?: { userId: string, type?: string }[];
   category?: string;
+  state?: string;
 }
 
 /** Minimal user profile used in the modal */
@@ -338,8 +339,28 @@ export default function ActivityDetailModal({
 
         {/* ---------- Intimate header: no colored block, just activity name ---------- */}
         <div className="detail-header-flat">
-            <div className="detail-category">{activity.category || 'Activity'}</div>
-          <h2 className="detail-title">{activity.name}</h2>
+          <div className="detail-category">{activity.category || 'Activity'}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <h2 className="detail-title" style={{ margin: 0 }}>{activity.name}</h2>
+            {activity.state && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '3px 8px',
+                borderRadius: '10px',
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
+                border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+              }}>
+                {activity.state === 'Completed' ? <CheckCircle size={12} /> : null}
+                {activity.state}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* ---------- Body ---------- */}

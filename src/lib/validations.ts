@@ -32,7 +32,8 @@ export const activitySchema = z.object({
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
-  category: z.string().default('General')
+  category: z.string().default('General'),
+  state: z.enum(['Scheduled', 'Completed']).default('Scheduled').optional()
 });
 
 export const checkOverlapSchema = z.object({

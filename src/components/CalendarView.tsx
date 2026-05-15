@@ -50,6 +50,7 @@ interface ApiActivity {
   participantCount?: number;
   participants?: { userId: string }[];
   category?: string;
+  state?: string;
 }
 
 /** The shape used internally by react-big-calendar */
@@ -65,6 +66,7 @@ interface CalendarActivity {
   observers?: string[];
   participants?: { userId: string }[];
   category?: string;
+  state?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -345,6 +347,7 @@ export default function CalendarView({
           observers: e.observers || (e as any).observer || [],
           participants: e.participants,
           category: e.category,
+          state: e.state,
         }));
         setActivities(formatted);
       } catch (err) {

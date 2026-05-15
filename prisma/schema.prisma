@@ -19,6 +19,7 @@ model Activity {
   isRecurring    Boolean  @default(false)
   recurrenceRule String?
   category       String   @default("General")
+  state          String   @default("Scheduled")
   participants   Participant[]
 
   // System Columns (ServiceNow Style)

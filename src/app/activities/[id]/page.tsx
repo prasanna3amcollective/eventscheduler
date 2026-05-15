@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle } from '@/components/Icons';
+import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
 interface Participant {
@@ -28,6 +28,7 @@ interface Activity {
     isRecurring: boolean;
     recurrenceRule: string | null;
     category?: string;
+    state?: string;
     leaders?: string[];
     guides?: string[];
     observers?: string[];
@@ -41,14 +42,14 @@ interface User {
     email: string;
 }
 
-function StaffMiniList({ 
-    label, 
-    names, 
-    onUpdate 
-}: { 
-    label: string, 
-    names: string[], 
-    onUpdate: (names: string[]) => void 
+function StaffMiniList({
+    label,
+    names,
+    onUpdate
+}: {
+    label: string,
+    names: string[],
+    onUpdate: (names: string[]) => void
 }) {
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -129,6 +130,7 @@ export default function ActivityManagementPage() {
     const [error, setError] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [closingActivity, setClosingActivity] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -187,9 +189,31 @@ export default function ActivityManagementPage() {
         return matchesSearch;
     });
 
+    const handleCloseActivity = async () => {
+        if (!activity) return;
+        if (!confirm('Are you sure you want to close this activity? This will mark it as Completed.')) return;
+        setClosingActivity(true);
+        try {
+            const res = await secureFetch(`/api/activities/${activityId}/close`, {
+                method: 'PATCH',
+            });
+            if (res.ok) {
+                handleRefresh();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to close activity');
+            }
+        } catch (err) {
+            console.error('Failed to close activity', err);
+            alert('An error occurred while closing the activity');
+        } finally {
+            setClosingActivity(false);
+        }
+    };
+
     const handleUpdateStaff = async (type: 'leader' | 'guide' | 'observer', names: string[]) => {
         if (!activity) return;
-        
+
         const payload = {
             name: activity.name,
             startDateTime: activity.startDateTime,
@@ -268,7 +292,25 @@ export default function ActivityManagementPage() {
                 <div className="activity-card">
                     <div className="activity-card-header">
                         <div className="activity-info">
-                            <h1 className="activity-title">{activity.name}</h1>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                                <h1 className="activity-title" style={{ margin: 0 }}>{activity.name}</h1>
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '4px 10px',
+                                    borderRadius: '12px',
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                                    color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
+                                    border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                                }}>
+                                    {activity.state === 'Completed' ? <CheckCircle size={14} /> : null}
+                                    {activity.state || 'Scheduled'}
+                                </span>
+                            </div>
                             <div className="activity-datetime">
                                 <div className="datetime-item">
                                     <div className="datetime-icon">
@@ -294,9 +336,28 @@ export default function ActivityManagementPage() {
                                 </div>
                             </div>
                         </div>
-                        <button onClick={handleRefresh} className="refresh-button" title="Refresh participants">
-                            <Refresh size={20} className={loading ? 'spinning' : ''} />
-                        </button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {activity.state !== 'Completed' && (
+                                <button
+                                    onClick={handleCloseActivity}
+                                    disabled={closingActivity}
+                                    className="btn-primary"
+                                    style={{
+                                        background: 'var(--primary-color)',
+                                        fontSize: '13px',
+                                        padding: '8px 16px',
+                                        whiteSpace: 'nowrap',
+                                    }}
+                                    title="Close this activity"
+                                >
+                                    <CheckCircle size={16} />
+                                    {closingActivity ? 'Closing...' : 'Close Activity'}
+                                </button>
+                            )}
+                            <button onClick={handleRefresh} className="refresh-button" title="Refresh participants">
+                                <Refresh size={20} className={loading ? 'spinning' : ''} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -344,12 +405,12 @@ export default function ActivityManagementPage() {
                                             <td className="font-semibold">{participant.user.name}</td>
                                             <td>
                                                 <span style={{
-                                                    background: participant.type === 'Leader' ? 'var(--primary-glow)' : 
-                                                               participant.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
-                                                               participant.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
+                                                    background: participant.type === 'Leader' ? 'var(--primary-glow)' :
+                                                        participant.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
+                                                            participant.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
                                                     color: participant.type === 'Leader' ? 'var(--primary-color)' :
-                                                           participant.type === 'Guide' ? '#10b981' :
-                                                           participant.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
+                                                        participant.type === 'Guide' ? '#10b981' :
+                                                            participant.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
                                                     padding: '2px 8px',
                                                     borderRadius: '12px',
                                                     fontSize: '11px',
@@ -384,28 +445,28 @@ export default function ActivityManagementPage() {
                     <div className="participants-header">
                         <h2 className="participants-title">Staff Management</h2>
                     </div>
-                    
+
                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                         <div className="staff-management-row">
-                             <StaffMiniList 
-                                label="Leaders" 
-                                names={activity.leaders || []} 
+                            <StaffMiniList
+                                label="Leaders"
+                                names={activity.leaders || []}
                                 onUpdate={(names) => handleUpdateStaff('leader', names)}
-                             />
+                            />
                         </div>
                         <div className="staff-management-row">
-                             <StaffMiniList 
-                                label="Guides" 
-                                names={activity.guides || []} 
+                            <StaffMiniList
+                                label="Guides"
+                                names={activity.guides || []}
                                 onUpdate={(names) => handleUpdateStaff('guide', names)}
-                             />
+                            />
                         </div>
                         <div className="staff-management-row">
-                             <StaffMiniList 
-                                label="Observers" 
-                                names={activity.observers || []} 
+                            <StaffMiniList
+                                label="Observers"
+                                names={activity.observers || []}
                                 onUpdate={(names) => handleUpdateStaff('observer', names)}
-                             />
+                            />
                         </div>
                     </div>
                 </div>
