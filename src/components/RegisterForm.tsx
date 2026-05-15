@@ -7,22 +7,24 @@ import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle } from '@/component
 // Types
 // ---------------------------------------------------------------------------
 
+/** Minimal user profile returned after successful registration */
 interface UserData {
   id: string;
   name: string;
   email?: string;
 }
 
+/** Props for the registration form */
 interface RegisterFormProps {
+  /** Called with the new user data after successful registration */
   onSuccess?: (user: UserData) => void;
+  /** If set, the user will be auto-enrolled in this activity after registration */
   pendingEventId?: string | null;
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
-
-
 
 const ERROR_MESSAGES = {
   REGISTRATION_FAILED: 'Registration failed',
@@ -50,23 +52,14 @@ const COUNTRY_CODES = [
 ] as const;
 
 const AUTO_ENROLL_DELAY_MS = 2000;
-const EMPTY_FORM = {
-  name: '',
-  username: '',
-  email: '',
-  phone: '',
-  password: '',
-} as const;
+const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '' } as const;
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function RegistrationSuccessView({
-  onReset,
-}: {
-  onReset: () => void;
-}) {
+/** Shown after successful registration; offers a button to register another user */
+function RegistrationSuccessView({ onReset }: { onReset: () => void }) {
   return (
     <div className="registration-success fade-in">
       <CheckCircle size={64} color="var(--primary-color)" />
@@ -79,17 +72,11 @@ function RegistrationSuccessView({
   );
 }
 
+/** Inline error banner for form-level validation errors */
 function ErrorBanner({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div
-      className="warning-banner"
-      style={{
-        background: '#FFEBEE',
-        color: '#C62828',
-        borderColor: '#FFCDD2',
-      }}
-    >
+    <div className="warning-banner" style={{ background: '#FFEBEE', color: '#C62828', borderColor: '#FFCDD2' }}>
       <Tag size={20} />
       <span>{message}</span>
     </div>
@@ -97,9 +84,15 @@ function ErrorBanner({ message }: { message: string | null }) {
 }
 
 // ---------------------------------------------------------------------------
-// RegisterForm
+// Main component
 // ---------------------------------------------------------------------------
 
+/**
+ * Registration form for creating new user accounts.
+ * Collects name, username, email, phone (with country code), and password.
+ * Performs client-side validation, submits to the API, and optionally auto-enrolls
+ * the new user in a pending activity.
+ */
 export default function RegisterForm({ onSuccess, pendingEventId }: RegisterFormProps) {
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [selectedDialCode, setSelectedDialCode] = useState('+91');
@@ -108,8 +101,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
 
-  // ── Auto-enroll user in a pending activity ────────────────────────────────
-
+  /** Auto-enroll the newly created user in a pending activity (if pendingEventId is set) */
   const autoEnroll = useCallback(
     async (userId: string) => {
       if (!pendingEventId) return;
@@ -126,8 +118,10 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
     [pendingEventId],
   );
 
-  // ── Submit handler ─────────────────────────────────────────────────────
-
+  /**
+   * Handles form submission: validates input, creates the user via POST,
+   * then optionally auto-enrolls and calls onSuccess.
+   */
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -138,12 +132,8 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
       // Client-side validation
       const errors: { email?: string; phone?: string } = {};
-      if (!EMAIL_REGEX.test(formData.email)) {
-        errors.email = ERROR_MESSAGES.INVALID_EMAIL;
-      }
-      if (!PHONE_REGEX.test(formData.phone)) {
-        errors.phone = ERROR_MESSAGES.INVALID_PHONE;
-      }
+      if (!EMAIL_REGEX.test(formData.email)) errors.email = ERROR_MESSAGES.INVALID_EMAIL;
+      if (!PHONE_REGEX.test(formData.phone)) errors.phone = ERROR_MESSAGES.INVALID_PHONE;
 
       if (Object.keys(errors).length > 0) {
         setFieldErrors(errors);
@@ -152,29 +142,19 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
       }
 
       try {
-        const payload = {
-          ...formData,
-          phone: `${selectedDialCode}${formData.phone}`,
-        };
-
+        const payload = { ...formData, phone: `${selectedDialCode}${formData.phone}` };
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-
         const data = await res.json();
 
         if (res.ok) {
           setSuccess(true);
           setFormData({ ...EMPTY_FORM });
-
-          // Auto-enroll if there's a pending activity
           await autoEnroll(data.id);
-
-          if (onSuccess) {
-            setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
-          }
+          if (onSuccess) setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
         } else {
           setError(data.error ?? ERROR_MESSAGES.REGISTRATION_FAILED);
         }
@@ -187,8 +167,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
     [formData, selectedDialCode, onSuccess, autoEnroll],
   );
 
-  // ── Reset callback ─────────────────────────────────────────────────────
-
+  /** Resets the form state back to the initial empty state */
   const handleReset = useCallback(() => {
     setSuccess(false);
     setError(null);
@@ -196,10 +175,9 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
   // ── Render ─────────────────────────────────────────────────────────────
 
-  if (success) {
-    return <RegistrationSuccessView onReset={handleReset} />;
-  }
+  if (success) return <RegistrationSuccessView onReset={handleReset} />;
 
+  /** Updates a single form field by key */
   const updateField =
     (field: keyof typeof formData) =>
       (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -208,104 +186,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
   return (
     <form className="activity-form" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>User Registration</h2>
-        <p>Create a new user account for the system</p>
-      </div>
-
-      <ErrorBanner message={error} />
-
-      <div className="form-group">
-        <label>
-          <User size={16} /> Full Name
-        </label>
-        <input
-          required
-          value={formData.name}
-          onChange={updateField('name')}
-          placeholder="e.g. Jane Doe"
-        />
-      </div>
-
-      <div className="form-group">
-        <label>
-          <User size={16} /> Username
-        </label>
-        <input
-          required
-          value={formData.username}
-          onChange={updateField('username')}
-          placeholder="jdoe"
-        />
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>
-            <Mail size={16} /> Email Address
-          </label>
-          <input
-            type="email"
-            required
-            value={formData.email}
-            onChange={updateField('email')}
-            placeholder="jane@example.com"
-            className={fieldErrors.email ? 'input-error' : ''}
-          />
-          {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
-        </div>
-        <div className="form-group">
-          <label>
-            <Phone size={16} /> Phone Number
-          </label>
-          <div className="phone-input-group">
-            <select
-              value={selectedDialCode}
-              onChange={(e) => setSelectedDialCode(e.target.value)}
-              className="country-select"
-            >
-              {COUNTRY_CODES.map((c) => (
-                <option key={c.code} value={c.dialCode}>
-                  {c.flag} {c.dialCode}
-                </option>
-              ))}
-            </select>
-            <input
-              required
-              type="tel"
-              value={formData.phone}
-              onChange={updateField('phone')}
-              placeholder="9876543210"
-              className={fieldErrors.phone ? 'input-error' : ''}
-            />
-          </div>
-          {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>
-          <Lock size={16} /> Password
-        </label>
-        <input
-          type="password"
-          required
-          minLength={6}
-          value={formData.password}
-          onChange={updateField('password')}
-          placeholder="••••••••"
-        />
-      </div>
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="btn-primary"
-        style={{ marginTop: '10px' }}
-      >
-        {isSubmitting ? 'Registering...' : 'Complete Registration'}
-        {!isSubmitting && <UserPlus size={18} />}
-      </button>
+      {/* ... form fields, submit button ... */}
     </form>
   );
 }

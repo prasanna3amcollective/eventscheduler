@@ -470,7 +470,8 @@ input:not([type="checkbox"]):focus {
    border-radius: var(--radius-md);
    border: 1px solid var(--border-color);
    font-family: var(--mono-font);
-   font-weight: 600;
+   font-size: 13px;
+   font-weight: 500;
    cursor: pointer;
    transition: all 0.2s;
 }
@@ -577,7 +578,7 @@ input:not([type="checkbox"]):focus {
    border: 1px solid var(--border-color);
    font-family: var(--mono-font);
    font-size: 13px;
-   font-weight: 600;
+   font-weight: 500;
    cursor: pointer;
    transition: all 0.2s;
    display: flex;
@@ -1648,9 +1649,55 @@ input:not([type="checkbox"]):focus {
 }
 
 .admin-error h2 {
-  color: var(--text-primary);
-  font-size: 22px;
-  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+/* Pagination Styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 12px;
+  background: var(--hover-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--primary-glow);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-family: var(--mono-font);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .admin-error p {

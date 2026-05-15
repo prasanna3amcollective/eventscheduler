@@ -1,10 +1,10 @@
 'use client';
 
+import { useState, useEffect, useCallback, useMemo, type JSX } from 'react';
 import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsProps, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useEffect, useState, useCallback, useMemo, type JSX } from 'react';
 import { type Holiday, getHolidays } from '@/lib/holidays';
 import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle } from '@/components/Icons';
 
@@ -14,7 +14,7 @@ import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, Plus
 
 const LOCALES = { 'en-US': enUS };
 
-/** Hard-coded date range to fetch. */
+/** Hard-coded date range to fetch activities from the API */
 const FETCH_WINDOW = {
   start: '2025-12-01T00:00:00Z',
   end: '2027-01-31T23:59:59Z',
@@ -38,7 +38,7 @@ const localizer = dateFnsLocalizer({
 // Types
 // ---------------------------------------------------------------------------
 
-/** The shape of an activity returned by the API (before formatting). */
+/** The shape of an activity returned by the API (before formatting) */
 interface ApiActivity {
   id: string;
   name: string;
@@ -52,7 +52,7 @@ interface ApiActivity {
   category?: string;
 }
 
-/** The shape used internall by react-big-calendar. */
+/** The shape used internally by react-big-calendar */
 interface CalendarActivity {
   id: string;
   title: string;
@@ -71,8 +71,10 @@ interface CalendarActivity {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-// ── Toolbar ───────────────────────────────────────────────────────────────
-
+/**
+ * Custom toolbar with navigation arrows, "Today" button, view switcher,
+ * and an optional "Create Activity" button for authorized users.
+ */
 function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; canCreate?: boolean }): JSX.Element {
   const { label, onNavigate, onView, view, onCreate, canCreate } = props;
 
@@ -94,12 +96,12 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
 
       <div className="toolbar-views">
         {canCreate && onCreate && (
-          <button 
+          <button
             className="rbc-create-btn"
             onClick={onCreate}
-            style={{ 
-              marginRight: '12px', 
-              background: 'var(--primary-color)', 
+            style={{
+              marginRight: '12px',
+              background: 'var(--primary-color)',
               color: 'white',
               border: 'none',
               padding: '0 12px',
@@ -130,10 +132,15 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
   );
 }
 
-// ── Agenda table (paginated, with leader/guide/observer) ────────────────
-
+/**
+ * Paginated agenda sidebar panel.
+ * Displays upcoming activities in a table with columns:
+ * Activity | Time (start–end in 12h format) | Date ("Today" or date string).
+ */
 interface CustomAgendaProps {
+  /** List of calendar activities to display */
   activities: CalendarActivity[];
+  /** Called when an activity row is clicked */
   onSelectActivity: (activity: CalendarActivity) => void;
 }
 
@@ -143,6 +150,7 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
   const now = useMemo(() => startOfDay(new Date()), []);
   const sixMonthsFromNow = useMemo(() => addMonths(now, 6), [now]);
 
+  // Filter to activities within the next 6 months, sorted chronologically
   const filteredActivities = useMemo(
     () =>
       activities
@@ -164,6 +172,7 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
     [filteredActivities, currentPage],
   );
 
+  // Navigate to previous/next page
   const goBack = useCallback(
     () => setCurrentPage((p) => Math.max(0, p - 1)),
     [],
@@ -175,6 +184,7 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
 
   return (
     <div className="rbc-agenda-view-side">
+      {/* Header with pagination controls */}
       <div
         style={{
           display: 'flex',
@@ -233,9 +243,9 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
               fontSize: '12px'
             }}
           >
-            <th style={{ padding: '8px' }}>Event</th>
-            <th style={{ padding: '8px' }}>Staff</th>
-            <th style={{ padding: '8px' }}>Category</th>
+            <th style={{ padding: '8px' }}>Activity</th>
+            <th style={{ padding: '8px' }}>Time</th>
+            <th style={{ padding: '8px' }}>Date</th>
           </tr>
         </thead>
         <tbody>
@@ -266,34 +276,20 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
                   transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
               >
-                <td
-                  style={{
-                    padding: '8px',
-                    borderRadius: '8px',
-                  }}
-                >
+                <td style={{ padding: '8px', borderRadius: '8px' }}>
                   <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
                     {activity.title}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    {format(activity.start, 'MMM dd · hh:mm aa')}
+                </td>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {format(activity.start, 'hh:mm aa')} - {format(activity.end, 'hh:mm aa')}
                   </div>
                 </td>
                 <td style={{ padding: '8px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
-                    {[...(activity.leaders || []), ...(activity.guides || [])].join(', ') || 'No staff'}
+                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {isToday(activity.start) ? 'Today' : format(activity.start, 'MMM dd, yyyy')}
                   </div>
-                </td>
-                <td style={{ padding: '8px' }}>
-                  <span className="category-badge" style={{ 
-                    fontSize: '10px', 
-                    padding: '2px 8px', 
-                    borderRadius: '4px',
-                    background: 'var(--bg-color)',
-                    border: '1px solid var(--border-color)'
-                  }}>
-                    {activity.category || 'General'}
-                  </span>
                 </td>
               </tr>
             ))
@@ -304,29 +300,15 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
   );
 }
 
-// ─── Calendar activity renderer (used by react-big-calendar component prop) ─
-
-function CalendarEventRenderer({ event: activity }: { event: CalendarActivity }): JSX.Element {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      {activity.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
-      <span>{activity.title}</span>
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
-interface CalendarViewProps {
-  refreshTrigger: number;
-  onSelectActivity: (activity: CalendarActivity) => void;
-  onSelectSlot: (slotInfo: { start: Date; end: Date }) => void;
-  onCreateActivity?: () => void;
-  userRoles?: string[];
-}
-
+/**
+ * Full calendar page with month/week/day views and a sidebar agenda.
+ * Fetches activities and holidays, renders them on a react-big-calendar,
+ * and handles activity selection, slot creation, and navigation.
+ */
 export default function CalendarView({
   refreshTrigger,
   onSelectActivity,
@@ -334,17 +316,12 @@ export default function CalendarView({
   onCreateActivity,
   userRoles = [],
 }: CalendarViewProps) {
-  // -- State --
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
 
-  // -- Navigation --
-  const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
-  const onView = useCallback((newView: View) => setView(newView), []);
-
-  // -- Fetch activities --
+  // Fetch activities from the API within a wide date window
   useEffect(() => {
     let cancelled = false;
 
@@ -379,7 +356,7 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, [refreshTrigger]);
 
-  // -- Fetch holidays --
+  // Fetch holiday data once on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -392,7 +369,7 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, []);
 
-  // -- Derived: combined calendar activities --
+  // Combine regular activities with holiday events
   const calendarActivities = useMemo<CalendarActivity[]>(
     () => [
       ...activities,
@@ -409,7 +386,7 @@ export default function CalendarView({
     [activities, holidays],
   );
 
-  // -- Day styling --
+  // Style individual day cells (holidays + weekends get a green tint)
   const dayPropGetter = useCallback(
     (date: Date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -431,7 +408,7 @@ export default function CalendarView({
     [holidays],
   );
 
-  // -- Activity styling --
+  // Style individual activity event blocks on the calendar grid
   const eventPropGetter = useCallback((activity: CalendarActivity) => {
     if (activity.isHoliday) {
       return {
@@ -452,13 +429,13 @@ export default function CalendarView({
     };
   }, []);
 
-  // -- Drill-down handler: clicking a day goes to day view --
+  // Navigate to a specific date and switch to day view
   const handleDrillDown = useCallback((clickedDate: Date) => {
     setDate(clickedDate);
     setView(Views.DAY);
   }, []);
 
-  // -- View options --
+  // Available views: month, week, day (agenda disabled — handled by sidebar)
   const views: ViewsProps<CalendarActivity> = useMemo(
     () => ({
       month: true,
@@ -471,7 +448,7 @@ export default function CalendarView({
 
   const canCreate = userRoles.includes('core') || userRoles.includes('inhouse');
 
-  // -- Calendar component overrides --
+  // Custom components override for toolbar and event rendering
   const components = useMemo(
     () => ({
       toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} canCreate={canCreate} />,

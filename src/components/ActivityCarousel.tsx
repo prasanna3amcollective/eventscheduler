@@ -14,15 +14,27 @@ interface Activity {
 }
 
 interface ActivityCarouselProps {
+  /** Number of milliseconds since epoch; triggers a re-fetch when changed */
   refreshTrigger: number;
+  /** Called when a carousel card is clicked; receives the activity object */
   onActivityClick?: (activity: any) => void;
+  /** Whether the user is logged in; controls collapse toggle visibility */
   isLoggedIn?: boolean;
 }
 
+/**
+ * Carousel of upcoming activities displayed on the landing page.
+ * Fetches future activities, renders them as swipeable cards with date/time/category badges.
+ * Shows a collapse/expand toggle when the user is logged in.
+ */
 export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLoggedIn }: ActivityCarouselProps) {
+  // List of upcoming activities fetched from the API
   const [upcomingActivities, setUpcomingActivities] = useState<Activity[]>([]);
+  // Loading state while fetching
   const [loading, setLoading] = useState(true);
+  // Whether the carousel is collapsed (logged-in users only)
   const [isCollapsed, setIsCollapsed] = useState(false);
+  // Ref to the scrollable strip container
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,16 +71,16 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
         <div className="carousel-title">
           <span className="carousel-dot pulse-icon" />
           <h3>Upcoming Activities</h3>
-          
+
           {isLoggedIn && (
-            <button 
+            <button
               className="carousel-toggle-btn"
               onClick={() => setIsCollapsed(!isCollapsed)}
               title={isCollapsed ? "Show Highlights" : "Hide Highlights"}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                color: 'var(--text-secondary)', 
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-secondary)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -81,7 +93,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
               {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
             </button>
           )}
-          
+
           <span className="carousel-count">{upcomingActivities.length} activities</span>
         </div>
       </div>

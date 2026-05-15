@@ -7,7 +7,6 @@ import ActivityForm from '@/components/ActivityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
 import LoginForm from '@/components/LoginForm';
-import ActivityCarousel from '@/components/ActivityCarousel';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
@@ -151,11 +150,6 @@ function HomeContent() {
     }
   };
 
-  const handleCarouselClick = (activity: any) => {
-    setDetailActivity(activity);
-    setIsDetailOpen(true);
-  };
-
   const onCreateActivity = () => {
     const newActivity = {
       startDateTime: new Date(),
@@ -187,12 +181,6 @@ function HomeContent() {
             <h1>3AM Collective Movement</h1>
           </div>
         </header>
-
-        <ActivityCarousel 
-          refreshTrigger={refreshTrigger} 
-          onActivityClick={handleCarouselClick} 
-          isLoggedIn={isLoggedIn}
-        />
 
         <div className="landing-content">
           <div className="auth-section">
@@ -283,12 +271,6 @@ function HomeContent() {
           <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
         </div>
       </header>
-
-      <ActivityCarousel 
-        refreshTrigger={refreshTrigger} 
-        onActivityClick={handleCarouselClick} 
-        isLoggedIn={isLoggedIn}
-      />
 
       <nav className="nav-container">
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>

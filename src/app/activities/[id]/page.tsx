@@ -177,12 +177,13 @@ export default function ActivityManagementPage() {
         ...(activity?.observers || [])
     ]);
 
-    const regularParticipants = activity?.participants.filter(p => !p.type || !['Leader', 'Guide', 'Observer'].includes(p.type)) || [];
+    const allParticipants = activity?.participants || [];
 
-    const filteredParticipants = regularParticipants.filter(p => {
+    const filteredParticipants = allParticipants.filter(p => {
         const matchesSearch = p.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             p.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.user.username.toLowerCase().includes(searchTerm.toLowerCase());
+            p.user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (p.type || 'Participant').toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
     });
 
@@ -305,7 +306,7 @@ export default function ActivityManagementPage() {
                         <div>
                             <h2 className="participants-title">Participants</h2>
                             <p className="participants-count">
-                                {filteredParticipants.length} of {regularParticipants.length} participants shown
+                                {filteredParticipants.length} of {allParticipants.length} people shown
                             </p>
                         </div>
                     </div>
@@ -330,6 +331,7 @@ export default function ActivityManagementPage() {
                                 <thead>
                                     <tr>
                                         <th>Name</th>
+                                        <th>Role</th>
                                         <th>Username</th>
                                         <th>Email</th>
                                         <th>Phone</th>
@@ -340,6 +342,24 @@ export default function ActivityManagementPage() {
                                     {filteredParticipants.map((participant) => (
                                         <tr key={participant.id}>
                                             <td className="font-semibold">{participant.user.name}</td>
+                                            <td>
+                                                <span style={{
+                                                    background: participant.type === 'Leader' ? 'var(--primary-glow)' : 
+                                                               participant.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
+                                                               participant.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
+                                                    color: participant.type === 'Leader' ? 'var(--primary-color)' :
+                                                           participant.type === 'Guide' ? '#10b981' :
+                                                           participant.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '11px',
+                                                    fontWeight: 700,
+                                                    textTransform: 'uppercase',
+                                                    display: 'inline-block'
+                                                }}>
+                                                    {participant.type || 'Participant'}
+                                                </span>
+                                            </td>
                                             <td className="text-secondary">{participant.user.username}</td>
                                             <td className="text-secondary">{participant.user.email}</td>
                                             <td className="text-secondary">{participant.user.phone}</td>

@@ -9,6 +9,7 @@ import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, Check
 // Types
 // ---------------------------------------------------------------------------
 
+/** Shape of an activity record from the API or internal calendar events */
 interface ActivityData {
   id: string;
   originalId?: string;
@@ -27,20 +28,30 @@ interface ActivityData {
   category?: string;
 }
 
+/** Minimal user profile used in the modal */
 interface UserData {
   id: string;
   name?: string;
   email?: string;
 }
 
+/** Props accepted by the activity detail modal */
 interface ActivityDetailModalProps {
+  /** The activity to display; null hides the modal */
   activity: ActivityData | null;
+  /** Controls modal visibility */
   isOpen: boolean;
+  /** Called to close the modal */
   onClose: () => void;
+  /** Whether the current user is authenticated */
   isLoggedIn: boolean;
+  /** The current user's profile data */
   currentUser: UserData | null;
+  /** Roles of the current user */
   userRoles?: string[];
+  /** Called after a successful registration */
   onRegisterSuccess: () => void;
+  /** Called to switch UI to the registration form */
   onSwitchToRegister: () => void;
 }
 
@@ -61,11 +72,22 @@ const GOOGLE_MAPS_LINK = '3am Tea Cigaz, 18th Cross St, GOCHS Colony, Besant Nag
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Converts a Date to an iCal-compatible date string (YYYYMMDDTHHMMSSZ)
+ * @param date - The date to convert
+ * @returns iCal-formatted date string, or empty string if invalid
+ */
 function toGoogleCalendarDate(date: Date): string {
   if (isNaN(date.getTime())) return '';
   return date.toISOString().replace(/[-:]|\.\d{3}/g, '');
 }
 
+/**
+ * Builds a Google Calendar deep-link URL to add the activity as an event.
+ * @param activity - The activity data to encode in the URL
+ * @param isLoggedIn - Whether the user is logged in (affects URL construction)
+ * @returns A Google Calendar URL, or empty string if data is invalid
+ */
 function buildGoogleCalendarUrl(activity: ActivityData, isLoggedIn: boolean): string {
   const startDate = new Date(activity.startDateTime);
   if (isNaN(startDate.getTime())) return '';
@@ -101,6 +123,11 @@ function buildGoogleCalendarUrl(activity: ActivityData, isLoggedIn: boolean): st
 // Sub-components
 // ---------------------------------------------------------------------------
 
+/**
+ * Renders an inline error banner with an optional "Register" link.
+ * @param error - The error message to display
+ * @param onSwitchToRegister - Callback to switch to registration mode
+ */
 function ErrorBanner({
   error,
   onSwitchToRegister,
@@ -134,6 +161,7 @@ function ErrorBanner({
   );
 }
 
+/** Displays a participant count badge in the modal body */
 function ParticipantCount({ count }: { count: number }) {
   return (
     <div className="detail-section-divider">
@@ -151,6 +179,13 @@ function ParticipantCount({ count }: { count: number }) {
 // Main component
 // ---------------------------------------------------------------------------
 
+/**
+ * Modal dialog displaying detailed information about a single activity.
+ * Shows date/time, staff (leaders/guides/observers), and action buttons:
+ * - Sync: opens a Google Calendar link to add the event
+ * - Manage: links to the staff management page (leaders only)
+ * - Switch Responsibility: closes the modal so the user can re-assign roles
+ */
 export default function ActivityDetailModal({
   activity,
   isOpen,
@@ -166,20 +201,26 @@ export default function ActivityDetailModal({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // The activity ID to use for API calls (prefers the original recurring ID if available)
   const activityId = activity ? activity.originalId ?? activity.id : '';
+
+  // Whether the current user is a leader of this activity
   const isLeader = useMemo(() => {
     if (!isLoggedIn || !currentUser || !activity?.participants) return false;
     return activity.participants.some(p => p.userId === currentUser.id && p.type === 'Leader');
   }, [isLoggedIn, currentUser, activity?.participants]);
 
+  // Whether the current user is any kind of staff for this activity
   const isStaffForActivity = useMemo(() => {
     if (!isLoggedIn || !currentUser || !activity?.participants) return false;
-    return activity.participants.some(p => 
+    return activity.participants.some(p =>
       p.userId === currentUser.id && ['Leader', 'Guide', 'Observer'].includes(p.type || '')
     );
   }, [isLoggedIn, currentUser, activity?.participants]);
 
   const canEdit = userRoles.includes('core') || userRoles.includes('inhouse') || isLeader;
+
+  // Pre-computed Google Calendar URL for the Sync button
   const googleCalendarUrl = useMemo(
     () => (activity ? buildGoogleCalendarUrl(activity, isLoggedIn) : ''),
     [activity, isLoggedIn],
@@ -190,9 +231,10 @@ export default function ActivityDetailModal({
     [activity?.startDateTime],
   );
 
-
+  // Whether the current user is already registered for this activity
   const isRegistered = isLoggedIn && activity?.participants?.some(p => p.userId === currentUser?.id);
 
+  /** Handles user registration: POSTs to the register endpoint and shows success/error feedback */
   const handleRegister = useCallback(async () => {
     if (!isLoggedIn) {
       setError(ERROR_MESSAGES.NOT_LOGGED_IN);
@@ -229,6 +271,7 @@ export default function ActivityDetailModal({
     }
   }, [isLoggedIn, activityId, currentUser, onRegisterSuccess, onClose]);
 
+  /** Handles user unregistration: POSTs to the unregister endpoint */
   const handleUnregister = useCallback(async () => {
     if (!isLoggedIn) return;
     setIsSubmitting(true);
@@ -260,13 +303,14 @@ export default function ActivityDetailModal({
     }
   }, [isLoggedIn, activityId, onRegisterSuccess, onClose]);
 
-
+  /** Navigates to the scheduler tab in edit mode for this activity */
   const handleEdit = useCallback(() => {
     onClose();
     sessionStorage.setItem('editEventId', activityId);
     router.push('/?tab=scheduler');
   }, [activityId, onClose, router]);
 
+  /** Opens the Google Calendar URL in a new tab */
   const handleSyncCalendar = useCallback(() => {
     if (googleCalendarUrl) {
       window.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');

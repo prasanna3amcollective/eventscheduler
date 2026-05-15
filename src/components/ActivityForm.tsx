@@ -25,6 +25,7 @@ import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 // Types
 // ---------------------------------------------------------------------------
 
+/** Represents a user in the system */
 interface User {
   id: string;
   name: string;
@@ -32,6 +33,7 @@ interface User {
   username: string;
 }
 
+/** Shape of activity data used in the form */
 interface ActivityData {
   id?: string;
   originalId?: string;
@@ -47,9 +49,13 @@ interface ActivityData {
   category?: string;
 }
 
+/** Props accepted by the activity form */
 interface ActivityFormProps {
+  /** Called after an activity is successfully created or updated */
   onActivityCreated: () => void;
+  /** Pre-existing activity data when editing */
   initialData?: ActivityData;
+  /** Called when the user cancels the form */
   onCancel?: () => void;
 }
 
@@ -116,6 +122,7 @@ function buildRrule(
 // Sub-components
 // ---------------------------------------------------------------------------
 
+/** Displays a warning banner when the new activity overlaps with existing ones */
 function OverlapWarningBanner({ message }: { message: string | null }) {
   if (!message) return null;
   return (
@@ -126,6 +133,11 @@ function OverlapWarningBanner({ message }: { message: string | null }) {
   );
 }
 
+/**
+ * Renders a row of day-of-week toggle buttons for recurrence selection.
+ * @param selectedDays - Currently selected day codes (e.g. ['MO', 'WE'])
+ * @param onChange - Called with the updated array when a day is toggled
+ */
 function DaySelector({
   selectedDays,
   onChange,
@@ -159,6 +171,15 @@ function DaySelector({
   );
 }
 
+/**
+ * Multi-select dropdown for assigning users to a role (Leader/Guide/Observer).
+ * Supports searching through available users and removing selected ones.
+ * @param label - Role label displayed as heading
+ * @param users - Full list of available users
+ * @param selectedNames - Currently selected user names
+ * @param onChange - Called with updated names array when selection changes
+ * @param icon - Icon displayed next to the label
+ */
 function MultiUserSelect({
   label,
   users,
@@ -174,6 +195,7 @@ function MultiUserSelect({
 }) {
   const [inputValue, setInputValue] = useState('');
 
+  /** Add a user to the selection by name */
   const addUser = useCallback((name: string) => {
     if (name && !selectedNames.includes(name)) {
       onChange([...selectedNames, name]);
@@ -181,6 +203,7 @@ function MultiUserSelect({
     setInputValue('');
   }, [selectedNames, onChange]);
 
+  /** Remove a user from the selection by name */
   const removeUser = useCallback((name: string) => {
     onChange(selectedNames.filter(n => n !== name));
   }, [selectedNames, onChange]);
@@ -191,7 +214,7 @@ function MultiUserSelect({
         <label>{icon} {label}</label>
         <span className="user-count-badge">{selectedNames.length}</span>
       </div>
-      
+
       <div className="selected-users-list">
         {selectedNames.length > 0 ? (
           selectedNames.map(name => (
@@ -223,9 +246,15 @@ function MultiUserSelect({
 }
 
 // ---------------------------------------------------------------------------
-// ActivityForm
+// Main component
 // ---------------------------------------------------------------------------
 
+/**
+ * Form for creating a new activity or editing an existing one.
+ * Handles activity metadata (name, category, date/time, duration, recurrence),
+ * staff assignment (leaders/guides/observers), overlap detection, and submission.
+ * Supports editing a single occurrence or an entire recurring series.
+ */
 export default function ActivityForm({ onActivityCreated, initialData, onCancel }: ActivityFormProps) {
   const isEditing = !!initialData?.id;
   const isInstance = !!initialData?.originalId;
@@ -237,6 +266,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     ? new Date(initialData.endDateTime)
     : addMinutes(new Date(), DEFAULT_DURATION_MINUTES);
 
+  // Form state for all activity fields
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
     leader: (initialData as any)?.leaders || (initialData as any)?.leader || [],
@@ -252,14 +282,18 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     category: initialData?.category ?? 'General',
   });
 
+  // Available users for the typeahead dropdowns
   const [users, setUsers] = useState<User[]>([]);
+  // Warning message when the activity overlaps with another
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
+  // Submission loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 'this' for single occurrence, 'all' for entire recurring series
   const [saveMode, setSaveMode] = useState<'this' | 'all'>(
     isInstance ? 'this' : 'all',
   );
 
-  // Fetch users for typeahead
+  // Fetch users for the typeahead dropdowns on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -278,7 +312,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     return () => { cancelled = true; };
   }, []);
 
-  // Check for overlapping activities
+  // Check for overlapping activities with the given time range
   const checkOverlap = useCallback(
     async (start: Date, end: Date) => {
       setOverlapWarning(null);
@@ -309,9 +343,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
         const otherActivities = isEditing
           ? data.activities.filter(
-            (e: ActivityData) =>
-              e.id !== initialData.originalId && e.id !== initialData.id,
-          )
+              (e: ActivityData) =>
+                e.id !== initialData.originalId && e.id !== initialData.id,
+            )
           : data.activities;
 
         if (otherActivities.length > 0) {
@@ -325,7 +359,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     [formData.isRecurring, formData.recurrenceDays, formData.recurrenceFreq, isEditing, initialData],
   );
 
-  // Auto-set recurrence day to the selected start date's day
+  // Auto-select the day of week matching the start date when recurrence is enabled
   useEffect(() => {
     if (formData.startDateTime && formData.recurrenceDays.length === 0) {
       const dayMap = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
@@ -334,7 +368,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     }
   }, [formData.startDateTime]);
 
-  // Sync end time from start + duration; check overlap
+  // Sync end time from start + duration; also trigger overlap check
   useEffect(() => {
     if (formData.startDateTime && formData.duration > 0) {
       const end = addMinutes(formData.startDateTime, formData.duration);
@@ -348,6 +382,11 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
   // ── Handlers ───────────────────────────────────────────────────────────
 
+  /**
+   * Submits the form to create or update an activity.
+   * For recurring instances edited with "this only", creates a new non-recurring copy
+   * and excludes the current occurrence from the original series.
+   */
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -410,7 +449,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
           });
-          
+
           if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
             console.error('Save failed:', errorData);
@@ -429,6 +468,10 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     [formData, isEditing, isInstance, saveMode, initialData, onActivityCreated],
   );
 
+  /**
+   * Deletes the current activity or excludes the current occurrence from a recurring series.
+   * Prompts the user for confirmation before proceeding.
+   */
   const handleDelete = useCallback(async () => {
     if (
       !confirm(
