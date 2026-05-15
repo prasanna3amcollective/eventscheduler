@@ -464,14 +464,15 @@ input:not([type="checkbox"]):focus {
 }
 
 .btn-secondary {
-  background: var(--bg-color);
-  color: var(--text-primary);
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+   background: var(--bg-color);
+   color: var(--text-primary);
+   padding: 14px 28px;
+   border-radius: var(--radius-md);
+   border: 1px solid var(--border-color);
+   font-family: var(--mono-font);
+   font-weight: 600;
+   cursor: pointer;
+   transition: all 0.2s;
 }
 
 .btn-secondary:hover {
@@ -569,19 +570,20 @@ input:not([type="checkbox"]):focus {
 
 /* Secondary/Cancel Button - Material Style */
 .btn-secondary {
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 12px 24px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+   background: transparent;
+   color: var(--text-secondary);
+   padding: 12px 24px;
+   border-radius: var(--radius-md);
+   border: 1px solid var(--border-color);
+   font-family: var(--mono-font);
+   font-size: 13px;
+   font-weight: 600;
+   cursor: pointer;
+   transition: all 0.2s;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
 }
 
 .btn-secondary:hover {
