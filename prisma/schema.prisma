@@ -49,6 +49,7 @@ model Participant {
   activityId String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
+  type       String   @default("Participant") // Leader, Guide, Observer, Participant
 
   // System Columns
   sys_created_by String?

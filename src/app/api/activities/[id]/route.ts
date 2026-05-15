@@ -33,7 +33,19 @@ export async function GET(
       return NextResponse.json({ error: 'Activity not found' }, { status: 404 });
     }
 
-    return NextResponse.json(activity);
+    // Extract staff members from participants
+    const leaderRecord = (activity as any).participants.find((p: any) => p.type === 'Leader');
+    const guideRecord = (activity as any).participants.find((p: any) => p.type === 'Guide');
+    const observerRecord = (activity as any).participants.find((p: any) => p.type === 'Observer');
+
+    const transformedActivity = {
+      ...activity,
+      leader: leaderRecord?.user?.name || null,
+      guide: guideRecord?.user?.name || null,
+      observer: observerRecord?.user?.name || null,
+    };
+
+    return NextResponse.json(transformedActivity);
   } catch (error: any) {
     console.error("Error fetching activity:", error);
     if (error.message?.includes('Security Restricted')) {
@@ -51,23 +63,60 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     const parsedData = activitySchema.parse(body);
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule } = parsedData;
 
     const securityContext = await getSessionContext();
     const baseId = id.split('_inst_')[0];
 
-    const activity = await withAuth(() => (prisma as any).activity.update({
-      where: { id: baseId },
-      data: {
-        name,
-        startDateTime: new Date(startDateTime),
-        endDateTime: new Date(endDateTime),
-        duration: Number(duration),
-        isRecurring: Boolean(isRecurring),
-        recurrenceRule: isRecurring ? recurrenceRule : null,
-      },
-      _context: securityContext
-    }), securityContext);
+    const activity = await withAuth(async () => {
+      const updated = await (prisma as any).activity.update({
+        where: { id: baseId },
+        data: {
+          name,
+          startDateTime: new Date(startDateTime),
+          endDateTime: new Date(endDateTime),
+          duration: Number(duration),
+          isRecurring: Boolean(isRecurring),
+          recurrenceRule: isRecurring ? recurrenceRule : null,
+        },
+        _context: securityContext
+      });
+
+      // Update staff participants
+      const staff = [
+        { name: leader, type: 'Leader' },
+        { name: guide, type: 'Guide' },
+        { name: observer, type: 'Observer' }
+      ];
+
+      for (const s of staff) {
+        // Delete existing participant of this type for this activity
+        await prisma.participant.deleteMany({
+          where: {
+            activityId: baseId,
+            type: s.type
+          }
+        });
+
+        // If a name was provided, find the user and create a new participant record
+        if (s.name) {
+          const user = await prisma.user.findFirst({
+            where: { name: s.name }
+          });
+          if (user) {
+            await prisma.participant.create({
+              data: {
+                activityId: baseId,
+                userId: user.id,
+                type: s.type
+              }
+            });
+          }
+        }
+      }
+
+      return updated;
+    }, securityContext);
 
     return NextResponse.json(activity);
   } catch (error: any) {

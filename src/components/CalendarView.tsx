@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsProps, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useEffect, useState, useCallback, useMemo, type JSX } from 'react';
@@ -91,7 +91,7 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object>): JSX.Eleme
       <div className="toolbar-label">{label}</div>
 
       <div className="toolbar-views">
-        {(['month', 'week', 'day', 'agenda'] as View[]).map((v) => (
+        {(['month', 'week', 'day'] as View[]).map((v) => (
           <button
             key={v}
             className={view === v ? 'rbc-active' : ''}
@@ -115,7 +115,7 @@ interface CustomAgendaProps {
 function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const now = useMemo(() => new Date(), []);
+  const now = useMemo(() => startOfDay(new Date()), []);
   const sixMonthsFromNow = useMemo(() => addMonths(now, 6), [now]);
 
   const filteredActivities = useMemo(
@@ -149,52 +149,43 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
   );
 
   return (
-    <div className="rbc-agenda-view" style={{ padding: '0 20px' }}>
-      {/* ---------- Header row ---------- */}
+    <div className="rbc-agenda-view-side">
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '20px',
+          marginBottom: '16px',
         }}
       >
         <h3
           style={{
             margin: 0,
-            fontSize: '16px',
+            fontSize: '14px',
             color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
           }}
         >
-          Upcoming Schedule (Next 6 Months)
+          Agenda
         </h3>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           <button
             className="nav-btn"
             disabled={currentPage === 0}
             onClick={goBack}
-            style={{ opacity: currentPage === 0 ? 0.5 : 1 }}
+            style={{ width: '28px', height: '28px', opacity: currentPage === 0 ? 0.3 : 1 }}
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={14} />
           </button>
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              minWidth: '80px',
-              textAlign: 'center',
-            }}
-          >
-            Page {currentPage + 1} of {totalPages}
-          </span>
           <button
             className="nav-btn"
             disabled={currentPage >= totalPages - 1}
             onClick={goForward}
-            style={{ opacity: currentPage >= totalPages - 1 ? 0.5 : 1 }}
+            style={{ width: '28px', height: '28px', opacity: currentPage >= totalPages - 1 ? 0.3 : 1 }}
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
@@ -214,14 +205,10 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
             style={{
               textAlign: 'left',
               borderBottom: '1px solid var(--border-color)',
+              fontSize: '12px'
             }}
           >
-            <th style={{ padding: '12px' }}>Date</th>
-            <th style={{ padding: '12px' }}>Time</th>
-            <th style={{ padding: '12px' }}>Event</th>
-            <th style={{ padding: '12px' }}>Leader</th>
-            <th style={{ padding: '12px' }}>Guide</th>
-            <th style={{ padding: '12px' }}>Observer</th>
+            <th style={{ padding: '8px' }}>Event</th>
           </tr>
         </thead>
         <tbody>
@@ -247,76 +234,23 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
                 style={{
                   background: 'var(--surface-color)',
                   borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
               >
                 <td
                   style={{
-                    padding: '12px',
-                    borderTopLeftRadius: '8px',
-                    borderBottomLeftRadius: '8px',
-                    fontWeight: 600,
+                    padding: '8px',
+                    borderRadius: '8px',
                   }}
                 >
-                  {format(activity.start, 'MMM dd, yyyy')}
-                </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  {format(activity.start, 'hh:mm aa')}
-                </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    fontWeight: 700,
-                    color: 'var(--primary-color)',
-                  }}
-                >
-                  {activity.title}
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      color: 'var(--primary-color)',
-                    }}
-                  >
-                    {activity.leader ?? '-'}
-                  </span>
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: '#10b981',
-                    }}
-                  >
-                    {activity.guide ?? '-'}
-                  </span>
-                </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    borderTopRightRadius: '8px',
-                    borderBottomRightRadius: '8px',
-                  }}
-                >
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(107, 114, 128, 0.1)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {activity.observer ?? '-'}
-                  </span>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
+                    {activity.title}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                    {format(activity.start, 'MMM dd · hh:mm aa')}
+                  </div>
                 </td>
               </tr>
             ))
@@ -481,7 +415,7 @@ export default function CalendarView({
       month: true,
       week: true,
       day: true,
-      agenda: true,
+      agenda: false,
     }),
     [],
   );
@@ -497,37 +431,37 @@ export default function CalendarView({
 
   // ---- Render ----
   return (
-    <div className="calendar-wrapper">
-      <div className={view === Views.AGENDA ? 'hidden-calendar-view' : ''}>
-        <Calendar<CalendarActivity>
-          localizer={localizer}
-          events={calendarActivities}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          onSelectSlot={onSelectSlot}
-          onSelectEvent={onSelectActivity}
-          view={view}
-          onView={onView}
-          date={date}
-          onNavigate={onNavigate}
-          onDrillDown={handleDrillDown}
-          style={{ height: view === Views.AGENDA ? 'auto' : 600 }}
-          views={views}
-          components={components}
-          dayPropGetter={dayPropGetter}
-          eventPropGetter={eventPropGetter}
-        />
-      </div>
-
-      {view === Views.AGENDA && (
-        <div className="custom-agenda-container fade-in">
-          <CustomAgenda
-            activities={calendarActivities.filter((e) => !e.isHoliday)}
-            onSelectActivity={onSelectActivity}
+    <div className="calendar-page-layout">
+      <div className="calendar-main-column">
+        <div className="calendar-wrapper">
+          <Calendar<CalendarActivity>
+            localizer={localizer}
+            events={calendarActivities}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            onSelectSlot={onSelectSlot}
+            onSelectEvent={onSelectActivity}
+            view={view}
+            onView={onView}
+            date={date}
+            onNavigate={onNavigate}
+            onDrillDown={handleDrillDown}
+            style={{ height: 600 }}
+            views={views}
+            components={components}
+            dayPropGetter={dayPropGetter}
+            eventPropGetter={eventPropGetter}
           />
         </div>
-      )}
+      </div>
+
+      <div className="calendar-side-column">
+        <CustomAgenda
+          activities={calendarActivities.filter((e) => !e.isHoliday)}
+          onSelectActivity={onSelectActivity}
+        />
+      </div>
     </div>
   );
 }

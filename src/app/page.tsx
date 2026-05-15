@@ -174,7 +174,11 @@ function HomeContent() {
           </div>
         </header>
 
-        <ActivityCarousel refreshTrigger={refreshTrigger} onActivityClick={handleCarouselClick} />
+        <ActivityCarousel 
+          refreshTrigger={refreshTrigger} 
+          onActivityClick={handleCarouselClick} 
+          isLoggedIn={isLoggedIn}
+        />
 
         <div className="landing-content">
           <div className="auth-section">
@@ -262,12 +266,15 @@ function HomeContent() {
               </div>
             )}
           </div>
-          <span className={`user-type-tag ${currentUser?.type}`}>{currentUser?.type}</span>
           <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
         </div>
       </header>
 
-      <ActivityCarousel refreshTrigger={refreshTrigger} onActivityClick={handleCarouselClick} />
+      <ActivityCarousel 
+        refreshTrigger={refreshTrigger} 
+        onActivityClick={handleCarouselClick} 
+        isLoggedIn={isLoggedIn}
+      />
 
       <nav className="nav-container">
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>

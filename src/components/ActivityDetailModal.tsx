@@ -16,11 +16,11 @@ interface ActivityData {
   startDateTime: string;
   endDateTime?: string;
   duration?: number;
-  
-  
-  
+  leader?: string;
+  guide?: string;
+  observer?: string;
   participantCount?: number;
-  participants?: { userId: string }[];
+  participants?: { userId: string, type?: string }[];
 }
 
 interface UserData {
@@ -163,8 +163,19 @@ export default function ActivityDetailModal({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const activityId = activity ? activity.originalId ?? activity.id : '';
-  const canEdit = userRoles.includes('core') || userRoles.includes('inhouse');
-  const isLeader = false;
+  const isLeader = useMemo(() => {
+    if (!isLoggedIn || !currentUser || !activity?.participants) return false;
+    return activity.participants.some(p => p.userId === currentUser.id && p.type === 'Leader');
+  }, [isLoggedIn, currentUser, activity?.participants]);
+
+  const isStaffForActivity = useMemo(() => {
+    if (!isLoggedIn || !currentUser || !activity?.participants) return false;
+    return activity.participants.some(p => 
+      p.userId === currentUser.id && ['Leader', 'Guide', 'Observer'].includes(p.type || '')
+    );
+  }, [isLoggedIn, currentUser, activity?.participants]);
+
+  const canEdit = userRoles.includes('core') || userRoles.includes('inhouse') || isLeader;
   const googleCalendarUrl = useMemo(
     () => (activity ? buildGoogleCalendarUrl(activity, isLoggedIn) : ''),
     [activity, isLoggedIn],
@@ -175,10 +186,6 @@ export default function ActivityDetailModal({
     [activity?.startDateTime],
   );
 
-  
-  
-  
-  const isStaffForActivity = false;
 
   const isRegistered = isLoggedIn && activity?.participants?.some(p => p.userId === currentUser?.id);
 
@@ -270,7 +277,7 @@ export default function ActivityDetailModal({
         className="modal-content activity-detail-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+        <div className="modal-header-actions">
           {canEdit && (
             <button onClick={handleEdit} className="edit-btn-flat" title="Edit Activity">
               <Edit size={20} />
@@ -301,6 +308,31 @@ export default function ActivityDetailModal({
           {isLoggedIn && activity.participantCount !== undefined && (
             <ParticipantCount count={activity.participantCount} />
           )}
+
+          {/* Staff Section */}
+          <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {activity.leader && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                <UserIcon size={14} color="var(--primary-color)" />
+                <span style={{ fontWeight: 600 }}>Leader:</span>
+                <span>{activity.leader}</span>
+              </div>
+            )}
+            {activity.guide && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                <Users size={14} color="#10b981" />
+                <span style={{ fontWeight: 600 }}>Guide:</span>
+                <span>{activity.guide}</span>
+              </div>
+            )}
+            {activity.observer && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                <Eye size={14} color="var(--text-secondary)" />
+                <span style={{ fontWeight: 600 }}>Observer:</span>
+                <span>{activity.observer}</span>
+              </div>
+            )}
+          </div>
 
           {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
         </div>

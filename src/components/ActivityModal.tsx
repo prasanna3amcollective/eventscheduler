@@ -30,9 +30,11 @@ export default function ActivityModal({ isOpen, onClose, children, title }: Acti
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
+        <div className="modal-header-actions">
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
         <div style={{ padding: '40px' }}>
           {children}
         </div>

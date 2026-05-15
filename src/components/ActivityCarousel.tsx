@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { format, startOfDay } from 'date-fns';
-import { Clock, CalendarDays, Users } from '@/components/Icons';
+import { Clock, CalendarDays, Users, ChevronDown, ChevronUp } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
 interface Activity {
@@ -15,11 +15,13 @@ interface Activity {
 interface ActivityCarouselProps {
   refreshTrigger: number;
   onActivityClick?: (activity: any) => void;
+  isLoggedIn?: boolean;
 }
 
-export default function ActivityCarousel({ refreshTrigger, onActivityClick }: ActivityCarouselProps) {
+export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLoggedIn }: ActivityCarouselProps) {
   const [upcomingActivities, setUpcomingActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,11 +58,34 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick }: Ac
         <div className="carousel-title">
           <span className="carousel-dot pulse-icon" />
           <h3>Upcoming Activities</h3>
+          
+          {isLoggedIn && (
+            <button 
+              className="carousel-toggle-btn"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              title={isCollapsed ? "Show Highlights" : "Hide Highlights"}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--text-secondary)', 
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '2px',
+                borderRadius: '50%',
+                transition: 'all 0.2s',
+                marginLeft: '4px'
+              }}
+            >
+              {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+            </button>
+          )}
+          
+          <span className="carousel-count">{upcomingActivities.length} activities</span>
         </div>
-        <span className="carousel-count">{upcomingActivities.length} activities</span>
       </div>
 
-      <div className="carousel-strip-wrapper">
+      <div className={`carousel-strip-wrapper ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="carousel-strip" ref={scrollRef}>
           {upcomingActivities.length > 0 ? (
             upcomingActivities.map((activity) => (

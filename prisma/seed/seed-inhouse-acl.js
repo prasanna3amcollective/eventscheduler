@@ -18,13 +18,13 @@ async function seed() {
     console.log('ℹ️  "inhouse" role already exists');
   }
 
-  // 2. Remove old event ACLs (we're replacing the policy)
+  // 2. Remove old activity ACLs (we're replacing the policy)
   await prisma.accessControlList.deleteMany({
-    where: { table: 'event' }
+    where: { table: 'activity' }
   });
-  console.log('🗑️  Cleared old event ACLs');
+  console.log('🗑️  Cleared old activity ACLs');
 
-  // 3. Create new ACLs: both core AND inhouse can create/write/delete events
+  // 3. Create new ACLs: both core AND inhouse can create/write/delete activities
   const coreRole = await prisma.role.findFirst({ where: { name: 'core' } });
   const operations = ['create', 'write', 'delete'];
 
@@ -32,10 +32,10 @@ async function seed() {
     // inhouse can do it
     await prisma.accessControlList.create({
       data: {
-        table: 'event',
+        table: 'activity',
         operation: op,
         roleId: inhouseRole.id,
-        description: `Inhouse users can ${op} events`
+        description: `Inhouse users can ${op} activities`
       }
     });
 
@@ -43,15 +43,15 @@ async function seed() {
     if (coreRole) {
       await prisma.accessControlList.create({
         data: {
-          table: 'event',
+          table: 'activity',
           operation: op,
           roleId: coreRole.id,
-          description: `Admins can ${op} events`
+          description: `Admins can ${op} activities`
         }
       });
     }
   }
-  console.log('✅ Created event ACLs for "inhouse" and "core" roles');
+  console.log('✅ Created activity ACLs for "inhouse" and "core" roles');
 
   // 4. Find user prasanna and assign the inhouse role
   const prasanna = await prisma.user.findFirst({

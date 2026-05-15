@@ -12,6 +12,7 @@ interface UserData {
   name: string;
   email: string;
   phone?: string | null;
+  groups?: { group: { name: string } }[];
 }
 
 interface ProfileModalProps {
@@ -120,9 +121,11 @@ export default function ProfileModal({
         className="modal-content profile-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
+        <div className="modal-header-actions">
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
 
         <div style={{ padding: '24px' }}>
           <h2 style={{ margin: '0 0 20px 0', fontSize: '22px', fontWeight: 600 }}>
@@ -199,6 +202,32 @@ export default function ProfileModal({
               </button>
             </div>
           </form>
+
+          {/* Groups Section (Read-only) */}
+          {currentUser?.groups && currentUser.groups.length > 0 && (
+            <div className="profile-groups-section" style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Your Groups
+              </h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {currentUser.groups.map((g, i) => (
+                  <span 
+                    key={i} 
+                    style={{ 
+                      padding: '4px 12px', 
+                      background: 'var(--bg-color)', 
+                      border: '1px solid var(--border-color)', 
+                      borderRadius: '16px', 
+                      fontSize: '13px',
+                      color: 'var(--text-primary)'
+                    }}
+                  >
+                    {g.group.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

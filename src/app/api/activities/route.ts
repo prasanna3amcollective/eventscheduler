@@ -33,33 +33,31 @@ export async function GET(request: Request) {
     const expandedActivities: any[] = [];
 
     for (const activity of dbActivities) {
-      // Build a set of participant user IDs (from Participant records)
-      const participantUserIds = new Set<string>();
+      // Extract staff members from participants based on their type
+      const leaderRecord = activity.participants.find((p: any) => p.type === 'Leader');
+      const guideRecord = activity.participants.find((p: any) => p.type === 'Guide');
+      const observerRecord = activity.participants.find((p: any) => p.type === 'Observer');
+
+      const leader = leaderRecord?.user?.name || null;
+      const guide = guideRecord?.user?.name || null;
+      const observer = observerRecord?.user?.name || null;
+
+      const staffNames = [leader, guide, observer].filter(Boolean);
       const participantUserNames = new Set<string>();
 
       for (const p of activity.participants) {
-        participantUserIds.add(p.userId);
         if (p.user) {
           participantUserNames.add(p.user.name);
         }
       }
 
-      // Add leader, guide, observer as participants (if they exist)
-      const staffNames = [activity.leader, activity.guide, activity.observer].filter(Boolean);
+      // Add staff names to participant names set (just for count calculation)
       for (const name of staffNames) {
-        participantUserNames.add(name);
+        if (name) participantUserNames.add(name);
       }
 
       // Calculate total unique participants
-      // Count = registered participants + staff members not already in participants
-      let totalCount = participantUserIds.size;
-      for (const name of staffNames) {
-        // If this staff member is not already counted via participants
-        const isStaffInParticipants = activity.participants.some((p: any) => p.user && p.user.name === name);
-        if (!isStaffInParticipants) {
-          totalCount++;
-        }
-      }
+      const totalCount = participantUserNames.size;
 
       if (activity.isRecurring && activity.recurrenceRule) {
         try {
@@ -72,7 +70,10 @@ export async function GET(request: Request) {
               originalId: activity.id,
               startDateTime: date,
               endDateTime: addMinutes(date, activity.duration),
-              participantCount: totalCount
+              participantCount: totalCount,
+              leader,
+              guide,
+              observer
             });
           }
         } catch (e) {
@@ -82,7 +83,10 @@ export async function GET(request: Request) {
         if (activity.endDateTime >= rangeStart && activity.startDateTime <= rangeEnd) {
           expandedActivities.push({
             ...activity,
-            participantCount: totalCount
+            participantCount: totalCount,
+            leader,
+            guide,
+            observer
           });
         }
       }
@@ -110,9 +114,6 @@ export async function POST(request: Request) {
       const evt = await prisma.activity.create({
         data: {
           name,
-          leader,
-          guide,
-          observer,
           startDateTime: new Date(startDateTime),
           endDateTime: new Date(endDateTime),
           duration: Number(duration),
@@ -121,20 +122,27 @@ export async function POST(request: Request) {
         }
       });
 
-       // Auto-populate participants
+       // Auto-populate participants with roles
        try {
-         const staffNames = [leader, guide, observer].filter(Boolean);
-         const staffUsers = await prisma.user.findMany({
-           where: { name: { in: staffNames } }
-         });
-         if (staffUsers.length > 0) {
-           await prisma.participant.createMany({
-             data: staffUsers.map((user: { id: string }) => ({
-               activityId: evt.id,
-               userId: user.id
-             })),
-             skipDuplicates: true
+         const staff = [
+           { name: leader, type: 'Leader' },
+           { name: guide, type: 'Guide' },
+           { name: observer, type: 'Observer' }
+         ].filter(s => s.name);
+
+         for (const s of staff) {
+           const user = await prisma.user.findFirst({
+             where: { name: s.name }
            });
+           if (user) {
+             await prisma.participant.create({
+               data: {
+                 activityId: evt.id,
+                 userId: user.id,
+                 type: s.type
+               }
+             });
+           }
          }
        } catch (e) {
          console.error("Error auto-populating participants", e);

@@ -262,36 +262,50 @@ input:not([type="checkbox"]):focus {
 }
 
 /* ── Calendar: off-center, asymmetrical ──────────────────────────────── */
+.calendar-page-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.calendar-main-column {
+  flex: 1;
+  min-width: 0; /* Prevent flex blowout */
+}
+
+.calendar-side-column {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+  height: 648px; /* Match calendar height + padding roughly */
+  overflow-y: auto;
+}
+
 .calendar-wrapper {
   background: var(--surface-color);
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: var(--shadow-lg);
-  height: 800px;
-  max-width: 960px;
-  margin-left: 0;
-  margin-right: auto;
+  height: 700px;
+  width: 100%;
   position: relative;
 }
 
-/* Negative space to the right only when viewport is wide enough */
-@media (min-width: 1400px) {
-  .calendar-wrapper {
-    max-width: 75%;
-    margin-left: 0;
-    margin-right: 80px;
+@media (max-width: 1100px) {
+  .calendar-page-layout {
+    flex-direction: column;
   }
-
-  .calendar-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 32px;
-    right: -72px;
-    width: 1px;
-    height: 200px;
-    background: var(--border-color);
+  .calendar-side-column {
+    width: 100%;
+    height: auto;
   }
 }
+
+/* Negative space to the right only when viewport is wide enough */
 
 .rbc-calendar {
   font-family: inherit;
@@ -353,8 +367,17 @@ input:not([type="checkbox"]):focus {
   }
 }
 
+.modal-header-actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 100;
+}
+
 .modal-close {
-  position: static;
   background: var(--hover-color);
   border: none;
   width: 36px;
@@ -364,7 +387,6 @@ input:not([type="checkbox"]):focus {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
   transition: all 0.2s;
   margin: 0;
 }
@@ -1061,6 +1083,16 @@ input:not([type="checkbox"]):focus {
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
+  max-height: 400px;
+  opacity: 1;
+}
+
+.carousel-strip-wrapper.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
+  pointer-events: none;
 }
 
 .carousel-strip-wrapper::-webkit-scrollbar {

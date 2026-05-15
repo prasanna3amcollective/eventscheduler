@@ -111,6 +111,14 @@ export function ChevronRight({ size, ...props }: IconProps) {
     );
 }
 
+export function ChevronUp({ size, ...props }: IconProps) {
+    return (
+        <svg {...base(size)} {...props}>
+            <path d="M18 15l-6-6-6 6" />
+        </svg>
+    );
+}
+
 export function Clock({ size, ...props }: IconProps) {
     return (
         <svg {...base(size)} {...props}>

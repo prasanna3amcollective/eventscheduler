@@ -61,22 +61,22 @@ async function seed() {
     }
   }
 
-  // 4. Seed ACLs for Event table (only cores can create/write/delete)
+  // 4. Seed ACLs for Activity table (only cores can create/write/delete)
   const eventOps = ['create', 'write', 'delete'];
   for (const op of eventOps) {
     const existing = await prisma.accessControlList.findFirst({
-      where: { table: 'event', operation: op, roleId: coreRole.id }
+      where: { table: 'activity', operation: op, roleId: coreRole.id }
     });
     if (!existing) {
       await prisma.accessControlList.create({
         data: {
-          table: 'event',
+          table: 'activity',
           operation: op,
           roleId: coreRole.id,
-          description: `Only cores can ${op} events`
+          description: `Only cores can ${op} activities`
         }
       });
-      console.log(`✅ Created ACL: event.${op} → core`);
+      console.log(`✅ Created ACL: activity.${op} → core`);
     }
   }
 
