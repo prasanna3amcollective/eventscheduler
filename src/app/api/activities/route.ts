@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { rrulestr } from 'rrule';
-import { addMinutes } from 'date-fns';
+import { addMinutes, startOfDay as startOfDayFn } from 'date-fns';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const startParam = searchParams.get('start') || new Date().toISOString();
+  const startParam = searchParams.get('start') || startOfDayFn(new Date()).toISOString();
   const endParam = searchParams.get('end') || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
 
   const rangeStart = new Date(startParam);

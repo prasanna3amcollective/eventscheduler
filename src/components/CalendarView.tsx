@@ -6,7 +6,7 @@ import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useEffect, useState, useCallback, useMemo, type JSX } from 'react';
 import { type Holiday, getHolidays } from '@/lib/holidays';
-import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight } from '@/components/Icons';
+import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -71,8 +71,8 @@ interface CalendarActivity {
 
 // ── Toolbar ───────────────────────────────────────────────────────────────
 
-function CustomToolbar(props: ToolbarProps<CalendarActivity, object>): JSX.Element {
-  const { label, onNavigate, onView, view } = props;
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; canCreate?: boolean }): JSX.Element {
+  const { label, onNavigate, onView, view, onCreate, canCreate } = props;
 
   return (
     <div className="calendar-toolbar">
@@ -91,6 +91,29 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object>): JSX.Eleme
       <div className="toolbar-label">{label}</div>
 
       <div className="toolbar-views">
+        {canCreate && onCreate && (
+          <button 
+            className="rbc-create-btn"
+            onClick={onCreate}
+            style={{ 
+              marginRight: '12px', 
+              background: 'var(--primary-color)', 
+              color: 'white',
+              border: 'none',
+              padding: '0 12px',
+              height: '34px',
+              borderRadius: '6px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <PlusCircle size={16} /> Create Activity
+          </button>
+        )}
         {(['month', 'week', 'day'] as View[]).map((v) => (
           <button
             key={v}
@@ -280,12 +303,16 @@ interface CalendarViewProps {
   refreshTrigger: number;
   onSelectActivity: (activity: CalendarActivity) => void;
   onSelectSlot: (slotInfo: { start: Date; end: Date }) => void;
+  onCreateActivity?: () => void;
+  userRoles?: string[];
 }
 
 export default function CalendarView({
   refreshTrigger,
   onSelectActivity,
   onSelectSlot,
+  onCreateActivity,
+  userRoles = [],
 }: CalendarViewProps) {
   // -- State --
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
@@ -420,13 +447,15 @@ export default function CalendarView({
     [],
   );
 
+  const canCreate = userRoles.includes('core') || userRoles.includes('inhouse');
+
   // -- Calendar component overrides --
   const components = useMemo(
     () => ({
-      toolbar: CustomToolbar,
+      toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} canCreate={canCreate} />,
       event: CalendarEventRenderer,
     }),
-    [],
+    [onCreateActivity, canCreate],
   );
 
   // ---- Render ----

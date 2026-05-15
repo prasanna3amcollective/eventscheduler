@@ -156,6 +156,20 @@ function HomeContent() {
     setIsDetailOpen(true);
   };
 
+  const onCreateActivity = () => {
+    const newActivity = {
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      leader: '',
+      guide: '',
+      observer: '',
+      duration: 60
+    };
+    setSelectedActivity(newActivity);
+    setIsModalOpen(true);
+  };
+
   if (isLoadingSession) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
@@ -280,11 +294,6 @@ function HomeContent() {
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
           <CalendarDays size={18} /> Calendar View
         </button>
-        {(userRoles.includes('core') || userRoles.includes('inhouse')) && (
-          <button className={`nav-tab ${activeTab === 'scheduler' ? 'active' : ''}`} onClick={() => setActiveTab('scheduler')}>
-            <PlusCircle size={18} /> Create Activity
-          </button>
-        )}
         {userRoles.includes('core') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
             <ShieldCheck size={18} /> Core
@@ -299,12 +308,9 @@ function HomeContent() {
               refreshTrigger={refreshTrigger}
               onSelectActivity={handleSelectActivity}
               onSelectSlot={handleSelectSlot}
+              onCreateActivity={onCreateActivity}
+              userRoles={userRoles}
             />
-          </div>
-        )}
-        {activeTab === 'scheduler' && (
-          <div className="content-section">
-            <ActivityForm onActivityCreated={handleActivityCreated} />
           </div>
         )}
         {activeTab === 'admin' && (
