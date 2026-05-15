@@ -148,13 +148,19 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+
         const data = await res.json();
 
         if (res.ok) {
           setSuccess(true);
           setFormData({ ...EMPTY_FORM });
+
+          // Auto-enroll if there's a pending activity
           await autoEnroll(data.id);
-          if (onSuccess) setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
+
+          if (onSuccess) {
+            setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
+          }
         } else {
           setError(data.error ?? ERROR_MESSAGES.REGISTRATION_FAILED);
         }
@@ -175,7 +181,9 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
   // ── Render ─────────────────────────────────────────────────────────────
 
-  if (success) return <RegistrationSuccessView onReset={handleReset} />;
+  if (success) {
+    return <RegistrationSuccessView onReset={handleReset} />;
+  }
 
   /** Updates a single form field by key */
   const updateField =
@@ -186,7 +194,104 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
   return (
     <form className="activity-form" onSubmit={handleSubmit}>
-      {/* ... form fields, submit button ... */}
+      <div className="form-header">
+        <h2>User Registration</h2>
+        <p>Create a new user account for the system</p>
+      </div>
+
+      <ErrorBanner message={error} />
+
+      <div className="form-group">
+        <label>
+          <User size={16} /> Full Name
+        </label>
+        <input
+          required
+          value={formData.name}
+          onChange={updateField('name')}
+          placeholder="e.g. Jane Doe"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>
+          <User size={16} /> Username
+        </label>
+        <input
+          required
+          value={formData.username}
+          onChange={updateField('username')}
+          placeholder="jdoe"
+        />
+      </div>
+
+      <div className="form-row">
+        <div className="form-group">
+          <label>
+            <Mail size={16} /> Email Address
+          </label>
+          <input
+            type="email"
+            required
+            value={formData.email}
+            onChange={updateField('email')}
+            placeholder="jane@example.com"
+            className={fieldErrors.email ? 'input-error' : ''}
+          />
+          {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
+        </div>
+        <div className="form-group">
+          <label>
+            <Phone size={16} /> Phone Number
+          </label>
+          <div className="phone-input-group">
+            <select
+              value={selectedDialCode}
+              onChange={(e) => setSelectedDialCode(e.target.value)}
+              className="country-select"
+            >
+              {COUNTRY_CODES.map((c) => (
+                <option key={c.code} value={c.dialCode}>
+                  {c.flag} {c.dialCode}
+                </option>
+              ))}
+            </select>
+            <input
+              required
+              type="tel"
+              value={formData.phone}
+              onChange={updateField('phone')}
+              placeholder="9876543210"
+              className={fieldErrors.phone ? 'input-error' : ''}
+            />
+          </div>
+          {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>
+          <Lock size={16} /> Password
+        </label>
+        <input
+          type="password"
+          required
+          minLength={6}
+          value={formData.password}
+          onChange={updateField('password')}
+          placeholder="••••••••"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="btn-primary"
+        style={{ marginTop: '10px' }}
+      >
+        {isSubmitting ? 'Registering...' : 'Complete Registration'}
+        {!isSubmitting && <UserPlus size={18} />}
+      </button>
     </form>
   );
 }

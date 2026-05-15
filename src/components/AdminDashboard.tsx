@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
 import { secureFetch } from '@/lib/fetch';
 import {
-  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter
+  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight
 } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
@@ -57,7 +57,18 @@ interface Acl {
   description: string | null;
 }
 
-type AdminTab = 'roles' | 'user-roles' | 'groups' | 'group-members' | 'group-roles' | 'acls';
+interface ParticipantRecord {
+  id: string;
+  user: User;
+  activity: {
+    id: string;
+    name: string;
+  };
+  type: string;
+  sys_created_at: string;
+}
+
+type AdminTab = 'roles' | 'user-roles' | 'groups' | 'group-members' | 'group-roles' | 'acls' | 'participants';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -71,6 +82,7 @@ const ACL_TABLES = [
 const ACL_OPERATIONS = ['read', 'write', 'create', 'delete'] as const;
 
 const FILTER_DELAY_MS = 300;
+const RECORDS_PER_PAGE = 10;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -156,6 +168,7 @@ function FilterableTh({
 
 export default function AdminDashboard({ currentUser }: { currentUser: User }) {
   const [activeTab, setActiveTab] = useState<AdminTab>('roles');
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showFilterInput, setShowFilterInput] = useState<Record<string, boolean>>({});
 
@@ -167,6 +180,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([]);
   const [acls, setAcls] = useState<Acl[]>([]);
+  const [participants, setParticipants] = useState<ParticipantRecord[]>([]);
 
   // -- Form states --
   // Roles
@@ -226,6 +240,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
 
   const updateFilter = useCallback((field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
+    setCurrentPage(1);
   }, []);
 
   // -----------------------------------------------------------------------
@@ -251,6 +266,9 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
       if (gmRes.ok) setGroupMembers(await gmRes.json());
       if (grRes.ok) setGroupRoles(await grRes.json());
       if (aRes.ok) setAcls(await aRes.json());
+
+      const pRes = await secureFetch('/api/admin/participants');
+      if (pRes.ok) setParticipants(await pRes.json());
     } catch (err) {
       showError(err instanceof Error ? err.message : 'Failed to load data');
     }
@@ -268,6 +286,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     setActiveTab(tab);
     setFilters({});
     setShowFilterInput({});
+    setCurrentPage(1);
   }, []);
 
   // ── CREATE ROLE ────────────────────────────────────────────────────────
@@ -408,6 +427,29 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [showSuccess, showError, fetchData],
   );
 
+  const requestRemoveParticipant = useCallback(
+    (id: string, userName: string, activityName: string) => {
+      setConfirmMessage(`Remove ${userName} from activity "${activityName}"?`);
+      setConfirmAction(() => async () => {
+        try {
+          const res = await secureFetch(`/api/admin/participants?id=${id}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            showSuccess(`Removed ${userName} from "${activityName}"`);
+            fetchData();
+          } else {
+            const d = await res.json();
+            showError(d.error);
+          }
+        } catch (err) {
+          showError(err instanceof Error ? err.message : 'Failed to remove participant');
+        }
+      });
+    },
+    [showSuccess, showError, fetchData],
+  );
+
   // ── ASSIGN GROUP ROLE ─────────────────────────────────────────────────
 
   const handleAssignGroupRole = useCallback(
@@ -489,6 +531,37 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     ),
     [filters, showFilterInput, toggleFilter, updateFilter],
   );
+
+  const Pagination = useCallback(({ totalRecords }: { totalRecords: number }) => {
+    const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="pagination fade-in">
+        <button
+          className="pagination-btn"
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+          title="Previous Page"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <span className="pagination-info">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button
+          className="pagination-btn"
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+          title="Next Page"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    );
+  }, [currentPage]);
 
   // -----------------------------------------------------------------------
   // Render helpers for each tab (extracted so JSX stays flat)
@@ -991,6 +1064,95 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [acls, filters, renderFilterHeader, roles, aclTable, aclOperation, aclRoleId, aclDescription, handleCreateAcl],
   );
 
+  const participantsTab = useMemo(
+    () => (
+      <div className="admin-panel">
+        <h3>Activity Participants</h3>
+        <p className="panel-subtitle">
+          View and manage all user associations with activities (Leaders, Guides, Observers, and Participants).
+        </p>
+
+        <div className="table-container">
+          {participants.length === 0 ? (
+            <div className="empty-state">No participant records found</div>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  {renderFilterHeader('User', 'p_user')}
+                  {renderFilterHeader('Activity', 'p_activity')}
+                  {renderFilterHeader('Role', 'p_role')}
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants
+                  .filter(
+                    (p) =>
+                      (matchesFilter(p.user.name, filters.p_user) ||
+                        matchesFilter(p.user.username, filters.p_user)) &&
+                      matchesFilter(p.activity.name, filters.p_activity) &&
+                      matchesFilter(p.type, filters.p_role),
+                  )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
+                  .map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="item-info">
+                          <strong>{p.user.name}</strong>
+                          <span>{p.user.username}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="font-bold">{p.activity.name}</span>
+                      </td>
+                      <td>
+                        <span className={`role-badge ${p.type.toLowerCase()}`} style={{
+                             background: p.type === 'Leader' ? 'var(--primary-glow)' : 
+                                        p.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
+                                        p.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
+                             color: p.type === 'Leader' ? 'var(--primary-color)' :
+                                    p.type === 'Guide' ? '#10b981' :
+                                    p.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
+                             padding: '2px 8px',
+                             borderRadius: '12px',
+                             fontSize: '11px',
+                             fontWeight: 700,
+                             textTransform: 'uppercase'
+                        }}>
+                          {p.type}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-icon-danger"
+                          onClick={() =>
+                            requestRemoveParticipant(p.id, p.user.name, p.activity.name)
+                          }
+                          title="Remove from activity"
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+          <Pagination 
+            totalRecords={participants.filter(p => 
+              (matchesFilter(p.user.name, filters.p_user) ||
+                matchesFilter(p.user.username, filters.p_user)) &&
+              matchesFilter(p.activity.name, filters.p_activity) &&
+              matchesFilter(p.type, filters.p_role)
+            ).length} 
+          />
+        </div>
+      </div>
+    ),
+    [participants, filters, renderFilterHeader, currentPage, requestRemoveParticipant, Pagination],
+  );
+
   // -----------------------------------------------------------------------
   // Render
   // -----------------------------------------------------------------------
@@ -1009,10 +1171,12 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         return userRolesTab;
       case 'acls':
         return aclsTab;
+      case 'participants':
+        return participantsTab;
       default:
         return null;
     }
-  }, [activeTab, rolesTab, groupsTab, groupMembersTab, groupRolesTab, userRolesTab, aclsTab]);
+  }, [activeTab, rolesTab, groupsTab, groupMembersTab, groupRolesTab, userRolesTab, aclsTab, participantsTab]);
 
   return (
     <div className="admin-dashboard fade-in">
@@ -1049,6 +1213,12 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
           onClick={() => handleTabChange('acls')}
         >
           <Key size={16} /> ACLs
+        </button>
+        <button
+          className={activeTab === 'participants' ? 'active' : ''}
+          onClick={() => handleTabChange('participants')}
+        >
+          <Users size={16} /> Participants
         </button>
       </div>
 

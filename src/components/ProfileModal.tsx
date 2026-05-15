@@ -108,5 +108,89 @@ export default function ProfileModal({
 
   if (!isOpen) return null;
 
-  return (/* ... modal JSX with form and read-only groups ... */);
+  return (
+    <div className="modal-overlay fade-in" onClick={onClose}>
+      <div
+        className="modal-content"
+        style={{ maxWidth: '500px', padding: '40px' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header-actions">
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="form-header">
+          <h2>Edit Profile</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>
+            Update your personal information.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
+          <div className="form-group">
+            <label htmlFor="name">
+              <User size={14} /> Full Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Your name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">
+              <Mail size={14} /> Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">
+              <Phone size={14} /> Phone Number
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="e.g. +91 98765 43210"
+            />
+          </div>
+
+          {currentUser?.groups && currentUser.groups.length > 0 && (
+            <div className="form-group">
+              <label style={{ marginBottom: '12px' }}>Member of Groups</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {currentUser.groups.map((g, idx) => (
+                  <span key={idx} className="category-badge">
+                    {g.group.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
+
+          <button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px' }}>
+            {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 }

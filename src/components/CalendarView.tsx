@@ -386,7 +386,10 @@ export default function CalendarView({
     [activities, holidays],
   );
 
-  // Style individual day cells (holidays + weekends get a green tint)
+  const onView = useCallback((newView: View) => setView(newView), []);
+  const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
+
+  // style individual day cells (holidays + weekends get a green tint)
   const dayPropGetter = useCallback(
     (date: Date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -408,7 +411,7 @@ export default function CalendarView({
     [holidays],
   );
 
-  // Style individual activity event blocks on the calendar grid
+  // style individual activity event blocks on the calendar grid
   const eventPropGetter = useCallback((activity: CalendarActivity) => {
     if (activity.isHoliday) {
       return {
@@ -448,13 +451,25 @@ export default function CalendarView({
 
   const canCreate = userRoles.includes('core') || userRoles.includes('inhouse');
 
+  const CalendarEventRenderer = useCallback(({ event }: { event: CalendarActivity }) => {
+    if (event.isHoliday) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Umbrella size={14} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+        </div>
+      );
+    }
+    return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
+  }, []);
+
   // Custom components override for toolbar and event rendering
   const components = useMemo(
     () => ({
       toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} canCreate={canCreate} />,
       event: CalendarEventRenderer,
     }),
-    [onCreateActivity, canCreate],
+    [onCreateActivity, canCreate, CalendarEventRenderer],
   );
 
   // ---- Render ----

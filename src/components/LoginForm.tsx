@@ -97,6 +97,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
         });
+
         const data = await res.json();
 
         if (res.ok) {
@@ -115,7 +116,47 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
 
   return (
     <form className="activity-form" onSubmit={handleSubmit}>
-      {/* ... form fields, submit button ... */}
+      <div className="form-header">
+        <h2>Welcome Back</h2>
+        <p>Login to access your activity scheduler</p>
+      </div>
+
+      {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
+
+      <div className="form-group">
+        <label>
+          <User size={16} /> Username
+        </label>
+        <input
+          required
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter your username"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>
+          <Lock size={16} /> Password
+        </label>
+        <input
+          type="password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="btn-primary"
+        style={{ marginTop: '10px' }}
+      >
+        {isSubmitting ? 'Logging in...' : 'Login'}
+        {!isSubmitting && <LogIn size={18} />}
+      </button>
     </form>
   );
 }
