@@ -17,7 +17,8 @@ interface Participant {
         phone: string;
     };
     sys_created_at: string;
-}
+    attendance?: number;
+ }
 
 interface Activity {
     id: string;
@@ -395,9 +396,10 @@ export default function ActivityManagementPage() {
                                         <th>Role</th>
                                         <th>Username</th>
                                         <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Registered</th>
-                                    </tr>
+                                         <th>Phone</th>
+                                         <th>Registered</th>
+                                         <th>Attendance</th>
+                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredParticipants.map((participant) => (
@@ -424,10 +426,17 @@ export default function ActivityManagementPage() {
                                             <td className="text-secondary">{participant.user.username}</td>
                                             <td className="text-secondary">{participant.user.email}</td>
                                             <td className="text-secondary">{participant.user.phone}</td>
-                                            <td className="text-secondary text-sm">
-                                                {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
-                                            </td>
-                                        </tr>
+                                             <td className="text-secondary text-sm">
+                                                 {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
+                                             </td>
+                                             <td>
+                                                 <select value={participant.attendance ?? 0} disabled>
+                                                     <option value={0}>Present</option>
+                                                     <option value={1}>Half</option>
+                                                     <option value={2}>Absent</option>
+                                                 </select>
+                                             </td>
+                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
