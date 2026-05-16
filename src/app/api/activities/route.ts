@@ -125,6 +125,36 @@ export async function POST(request: Request) {
       }
     }));
 
+    // Create staff participants (leader/guide/observer)
+    const staffRoles = [
+      { names: leader, type: 'Leader' },
+      { names: guide, type: 'Guide' },
+      { names: observer, type: 'Observer' }
+    ];
+
+    for (const role of staffRoles) {
+      for (const name of role.names) {
+        const user = await prisma.user.findFirst({
+          where: { name: name }
+        });
+        if (user) {
+          await prisma.participant.create({
+            data: {
+              activityId: activity.id,
+              userId: user.id,
+              type: role.type
+            }
+          }).catch((err: any) => {
+            if (err.code === 'P2002') {
+              // User already has a participant record for this activity — skip
+              return;
+            }
+            throw err;
+          });
+        }
+      }
+    }
+
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {
     console.error("Error creating activity FULL ERROR:", error);

@@ -20,13 +20,13 @@ export async function GET(request: Request) {
       args: {
         where: groupId ? { groupId } : undefined,
         include: {
-          user: { select: { id: true, name: true, username: true, type: true } },
+          user: { select: { id: true, name: true, username: true } },
           group: { select: { id: true, name: true, category: true } }
         },
         orderBy: { sys_created_at: 'desc' }
       }
     }));
-    
+
     return NextResponse.json(members);
   } catch (error: any) {
     console.error("Error fetching group members:", error);
