@@ -288,7 +288,7 @@ function HomeContent() {
         <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
           <CalendarDays size={18} /> Calendar View
         </button>
-        {userRoles.includes('core') && (
+        {userRoles.includes('developer') && (
           <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
             <ShieldCheck size={18} /> Developer Panel
           </button>

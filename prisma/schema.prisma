@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Activity {
@@ -37,6 +36,8 @@ model Responsibility {
   duration       Int      // in minutes
   isRecurring    Boolean  @default(false)
   recurrenceRule String?
+  category       String   @default("General")
+  state          String   @default("Scheduled")
 
   // System Columns (ServiceNow Style)
   sys_created_by String?

@@ -97,29 +97,51 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
       <div className="toolbar-label">{label}</div>
 
       <div className="toolbar-views">
-        {canCreate && onCreate && (
-          <button
-            className="rbc-create-btn"
-            onClick={onCreate}
-            style={{
-              marginRight: '12px',
-              background: 'var(--primary-color)',
-              color: 'white',
-              border: 'none',
-              padding: '0 12px',
-              height: '34px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <PlusCircle size={16} /> Create Activity
-          </button>
-        )}
+         {canCreate && onCreate && (
+           <>
+             <button
+               onClick={() => {/* TODO: open Own Responsibility modal */}}
+               style={{
+                 marginRight: '12px',
+                 background: '#d97757',
+                 color: 'white',
+                 border: 'none',
+                 padding: '0 12px',
+                 height: '34px',
+                 borderRadius: '6px',
+                 fontSize: '13px',
+                 fontWeight: 600,
+                 cursor: 'pointer',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '6px'
+               }}
+             >
+               <PlusCircle size={16} /> Own Responsibility
+             </button>
+             <button
+               className="rbc-create-btn"
+               onClick={onCreate}
+               style={{
+                 marginRight: '12px',
+                 background: 'var(--primary-color)',
+                 color: 'white',
+                 border: 'none',
+                 padding: '0 12px',
+                 height: '34px',
+                 borderRadius: '6px',
+                 fontSize: '13px',
+                 fontWeight: 600,
+                 cursor: 'pointer',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '6px'
+               }}
+             >
+               <PlusCircle size={16} /> Create Activity
+             </button>
+           </>
+         )}
         {(['month', 'week', 'day'] as View[]).map((v) => (
           <button
             key={v}
