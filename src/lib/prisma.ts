@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { AsyncLocalStorage } from 'async_hooks';
+import 'dotenv/config';
 
 const globalForPrisma = global as unknown as { prisma: any; userContextStorage: AsyncLocalStorage<any> };
 
@@ -8,7 +10,13 @@ export const userContextStorage = globalForPrisma.userContextStorage || new Asyn
 if (process.env.NODE_ENV !== 'production') globalForPrisma.userContextStorage = userContextStorage;
 
 const createPrismaClient = () => {
-  const client = new PrismaClient();
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is not defined');
+  }
+
+  const adapter = new PrismaPg({ connectionString });
+  const client = new PrismaClient({ adapter });
 
   return client.$extends({
     query: {
@@ -100,14 +108,25 @@ async function syncUserRoles(userId: string, p: any) {
       include: { group: { include: { roles: true } } }
     });
 
-    const roleIds = Array.from(new Set(
-      groups.flatMap((g: any) => g.group.roles.map((r: any) => r.roleId))
-    ));
+    // Get roles inherited from groups
+    const groupRoleIds = groups.flatMap((g: any) =>
+      g.group.roles.map((r: any) => r.roleId)
+    );
+
+    // Get existing direct role assignments (to preserve them)
+    const directRoles = await p.userRole.findMany({
+      where: { userId },
+      select: { roleId: true }
+    });
+    const directRoleIds = directRoles.map((r: any) => r.roleId);
+
+    // Merge both sets
+    const allRoleIds = Array.from(new Set([...groupRoleIds, ...directRoleIds]));
 
     await p.$transaction([
       p.userRole.deleteMany({ where: { userId } }),
       p.userRole.createMany({
-        data: roleIds.map(roleId => ({ userId, roleId }))
+        data: allRoleIds.map(roleId => ({ userId, roleId }))
       })
     ]);
   } catch (error) {

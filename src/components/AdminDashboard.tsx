@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
 import { secureFetch } from '@/lib/fetch';
 import {
-  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight
+  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight, User
 } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
@@ -1202,16 +1202,22 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         >
           <UserPlus size={16} /> Group Members
         </button>
-        <button
-          className={activeTab === 'group-roles' ? 'active' : ''}
-          onClick={() => handleTabChange('group-roles')}
-        >
-          <Link size={16} /> Group Roles
-        </button>
-        <button
-          className={activeTab === 'acls' ? 'active' : ''}
-          onClick={() => handleTabChange('acls')}
-        >
+         <button
+           className={activeTab === 'group-roles' ? 'active' : ''}
+           onClick={() => handleTabChange('group-roles')}
+         >
+           <Link size={16} /> Group Roles
+         </button>
+         <button
+           className={activeTab === 'user-roles' ? 'active' : ''}
+           onClick={() => handleTabChange('user-roles')}
+         >
+           <User size={16} /> User Roles
+         </button>
+         <button
+           className={activeTab === 'acls' ? 'active' : ''}
+           onClick={() => handleTabChange('acls')}
+         >
           <Key size={16} /> ACLs
         </button>
         <button
