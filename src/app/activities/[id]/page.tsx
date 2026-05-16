@@ -337,7 +337,7 @@ export default function ActivityManagementPage() {
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {activity.state !== 'Completed' && (
+                            {activity.state !== 'Completed' && new Date(activity.endDateTime) < new Date() && (
                                 <button
                                     onClick={handleCloseActivity}
                                     disabled={closingActivity}
