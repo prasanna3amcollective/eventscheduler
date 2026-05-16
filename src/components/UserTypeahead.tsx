@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, User as UserIcon, Check } from '@/components/Icons';
+import { Search, Check } from '@/components/Icons';
 
 interface User {
   id: string;
@@ -41,12 +41,14 @@ export default function UserTypeahead({ label, value, onChange, icon, users, pla
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const MIN_CHARS = 3;
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
     onChange(val); // Allow free text if they want, but show suggestions
 
-    if (val.length > 0) {
+    if (val.length >= MIN_CHARS) {
       const filtered = users.filter(user => 
         user.name.toLowerCase().includes(val.toLowerCase())
       );
@@ -74,12 +76,12 @@ export default function UserTypeahead({ label, value, onChange, icon, users, pla
           value={query}
           onChange={handleInputChange}
           onFocus={() => {
-            if (users.length > 0) {
+            if (users.length > 0 && query.length >= 3) {
                setFilteredUsers(users.filter(u => u.name.toLowerCase().includes(query.toLowerCase())));
                setIsOpen(true);
             }
           }}
-          placeholder={placeholder || `Search ${label}...`}
+          placeholder={placeholder || `Type 3+ chars...`}
         />
         <div className="typeahead-icon">
           <Search size={14} />

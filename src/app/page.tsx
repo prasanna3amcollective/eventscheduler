@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
+import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
 import LoginForm from '@/components/LoginForm';
@@ -26,6 +27,8 @@ function HomeContent() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedResponsibility, setSelectedResponsibility] = useState<any>(null);
+  const [isResponsibilityModalOpen, setIsResponsibilityModalOpen] = useState(false);
 
   const [detailActivity, setDetailActivity] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -170,6 +173,18 @@ function HomeContent() {
     setIsModalOpen(true);
   };
 
+  const onOwnResponsibility = () => {
+    const newResponsibility = {
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      owner: '',
+      duration: 60
+    };
+    setSelectedResponsibility(newResponsibility);
+    setIsResponsibilityModalOpen(true);
+  };
+
   if (isLoadingSession) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
@@ -298,13 +313,14 @@ function HomeContent() {
       <main className="app-container">
         {activeTab === 'calendar' && (
           <div className="content-section">
-            <CalendarView
-              refreshTrigger={refreshTrigger}
-              onSelectActivity={handleSelectActivity}
-              onSelectSlot={handleSelectSlot}
-              onCreateActivity={onCreateActivity}
-              userRoles={userRoles}
-            />
+             <CalendarView
+               refreshTrigger={refreshTrigger}
+               onSelectActivity={handleSelectActivity}
+               onSelectSlot={handleSelectSlot}
+               onCreateActivity={onCreateActivity}
+               onOwnResponsibility={onOwnResponsibility}
+               userRoles={userRoles}
+             />
           </div>
         )}
         {activeTab === 'admin' && (
@@ -322,6 +338,24 @@ function HomeContent() {
             initialData={selectedActivity}
             onActivityCreated={handleActivityCreated}
             onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          />
+        )}
+      </ActivityModal>
+
+      <ActivityModal
+        isOpen={isResponsibilityModalOpen}
+        onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+        title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
+      >
+        {selectedResponsibility && (
+          <ResponsibilityForm
+            initialData={selectedResponsibility}
+            onResponsibilityCreated={() => {
+              setRefreshTrigger(prev => prev + 1);
+              setIsResponsibilityModalOpen(false);
+              setSelectedResponsibility(null);
+            }}
+            onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
           />
         )}
       </ActivityModal>

@@ -38,6 +38,7 @@ model Responsibility {
   recurrenceRule String?
   category       String   @default("General")
   state          String   @default("Scheduled")
+  owner          String?
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
@@ -81,6 +82,8 @@ model User {
   sys_updated_by String?
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
+
+  @@index([name])
 }
 
 model Group {

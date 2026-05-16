@@ -77,8 +77,8 @@ interface CalendarActivity {
  * Custom toolbar with navigation arrows, "Today" button, view switcher,
  * and an optional "Create Activity" button for authorized users.
  */
-function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; canCreate?: boolean }): JSX.Element {
-  const { label, onNavigate, onView, view, onCreate, canCreate } = props;
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; canCreate?: boolean }): JSX.Element {
+  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, canCreate } = props;
 
   return (
     <div className="calendar-toolbar">
@@ -99,26 +99,26 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
       <div className="toolbar-views">
          {canCreate && onCreate && (
            <>
-             <button
-               onClick={() => {/* TODO: open Own Responsibility modal */}}
-               style={{
-                 marginRight: '12px',
-                 background: '#d97757',
-                 color: 'white',
-                 border: 'none',
-                 padding: '0 12px',
-                 height: '34px',
-                 borderRadius: '6px',
-                 fontSize: '13px',
-                 fontWeight: 600,
-                 cursor: 'pointer',
-                 display: 'flex',
-                 alignItems: 'center',
-                 gap: '6px'
-               }}
-             >
-               <PlusCircle size={16} /> Own Responsibility
-             </button>
+              <button
+                onClick={onOwnResponsibility}
+                style={{
+                  marginRight: '12px',
+                  background: '#d97757',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0 12px',
+                  height: '34px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <PlusCircle size={16} /> Own Responsibility
+              </button>
              <button
                className="rbc-create-btn"
                onClick={onCreate}
@@ -333,6 +333,7 @@ interface CalendarViewProps {
   onSelectActivity: (activity: CalendarActivity) => void;
   onSelectSlot: (slotInfo: any) => void;
   onCreateActivity: () => void;
+  onOwnResponsibility?: () => void;
   userRoles: string[];
 }
 
@@ -346,6 +347,7 @@ export default function CalendarView({
   onSelectActivity,
   onSelectSlot,
   onCreateActivity,
+  onOwnResponsibility,
   userRoles = [],
 }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
@@ -499,7 +501,7 @@ export default function CalendarView({
   // Custom components override for toolbar and event rendering
   const components = useMemo(
     () => ({
-      toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} canCreate={canCreate} />,
+      toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} onOwnResponsibility={onOwnResponsibility} canCreate={canCreate} />,
       event: CalendarEventRenderer,
     }),
     [onCreateActivity, canCreate, CalendarEventRenderer],
