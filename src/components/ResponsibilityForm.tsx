@@ -29,6 +29,7 @@ interface ResponsibilityData {
   id?: string;
   name: string;
   owner?: string;
+  ownerId?: string;
   startDateTime: string;
   endDateTime: string;
   duration: number;
@@ -81,6 +82,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
     owner: initialData?.owner ?? '',
+    ownerId: initialData?.ownerId ?? '',
     startDateTime: initialStartDate,
     duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     endDateTime: initialEndDate,
@@ -140,6 +142,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       const payload = {
         name: formData.name.trim(),
         owner: formData.owner.trim() || null,
+        ownerId: formData.ownerId || null,
         startDateTime: formData.startDateTime.toISOString(),
         endDateTime: formData.endDateTime.toISOString(),
         duration: formData.duration,
@@ -198,6 +201,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             label="Owner"
             value={formData.owner}
             onChange={(val) => setFormData(prev => ({ ...prev, owner: val }))}
+            onSelect={(user) => setFormData(prev => ({ ...prev, ownerId: user.id }))}
             icon={<UserIcon size={16} />}
             users={users}
             placeholder="Type 3+ chars to search users..."

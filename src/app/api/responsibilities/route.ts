@@ -12,14 +12,15 @@ const responsibilitySchema = z.object({
   recurrenceRule: z.string().nullable().optional(),
   category: z.string().default('General'),
   state: z.enum(['Scheduled', 'Completed']).default('Scheduled').optional(),
-  owner: z.string().optional().nullable()
+  owner: z.string().optional().nullable(),
+  ownerId: z.string().optional().nullable()
 });
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = responsibilitySchema.parse(body);
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, owner } = parsedData;
+    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, owner, ownerId } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
           recurrenceRule: isRecurring ? recurrenceRule : null,
           category: category || 'General',
           owner: owner || null,
+          ownerId: ownerId || null,
         }
       }
     }));
@@ -61,6 +63,9 @@ export async function GET() {
       model: 'responsibility',
       operation: 'findMany',
       args: {
+        where: {
+          ownerId: securityContext?.id || undefined,
+        },
         orderBy: { startDateTime: 'asc' }
       }
     }));

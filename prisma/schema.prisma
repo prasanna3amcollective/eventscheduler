@@ -39,6 +39,7 @@ model Responsibility {
   category       String   @default("General")
   state          String   @default("Scheduled")
   owner          String?
+  ownerId        String?
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
