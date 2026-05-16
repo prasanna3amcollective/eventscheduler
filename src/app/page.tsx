@@ -10,6 +10,7 @@ import RegisterForm from '@/components/RegisterForm';
 import LoginForm from '@/components/LoginForm';
 import ActivityCarousel from '@/components/ActivityCarousel';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
+import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
@@ -32,6 +33,8 @@ function HomeContent() {
 
   const [detailActivity, setDetailActivity] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [responsibilityDetail, setResponsibilityDetail] = useState<any>(null);
+  const [isResponsibilityDetailOpen, setIsResponsibilityDetailOpen] = useState(false);
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -115,6 +118,21 @@ function HomeContent() {
 
   const handleSelectActivity = (activity: any) => {
     if (activity.isHoliday) return;
+
+    if (activity.isResponsibility) {
+      setResponsibilityDetail({
+        id: activity.id,
+        name: activity.title,
+        startDateTime: activity.start instanceof Date ? activity.start.toISOString() : activity.start,
+        endDateTime: activity.end instanceof Date ? activity.end.toISOString() : activity.end,
+        duration: activity.duration,
+        category: activity.category,
+        state: activity.state,
+        owner: activity.owner,
+      });
+      setIsResponsibilityDetailOpen(true);
+      return;
+    }
 
     // Map CalendarActivity format (from react-big-calendar) to ActivityData format (expected by ActivityDetailModal)
     // CalendarActivity has: title, start (Date), end (Date), leader, guide, observer
@@ -369,6 +387,12 @@ function HomeContent() {
         userRoles={userRoles}
         onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
         onSwitchToRegister={() => { }}
+      />
+
+      <ResponsibilityDetailModal
+        responsibility={responsibilityDetail}
+        isOpen={isResponsibilityDetailOpen}
+        onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
       />
 
       <ProfileModal
