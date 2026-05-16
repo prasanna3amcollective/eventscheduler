@@ -296,22 +296,21 @@ export default function ActivityManagementPage() {
                         <div className="activity-info">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                                 <h1 className="activity-title" style={{ margin: 0 }}>{activity.name}</h1>
-                                <span style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    padding: '4px 10px',
-                                    borderRadius: '12px',
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    textTransform: 'uppercase',
-                                    background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                                    color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
-                                    border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-                                }}>
-                                    {activity.state === 'Completed' ? <CheckCircle size={14} /> : null}
-                                    {activity.state || 'Scheduled'}
-                                </span>
+                                 <span style={{
+                                     background: activity.state === 'Completed' ? 'var(--primary-glow)' : 'rgba(107, 114, 128, 0.1)',
+                                     color: activity.state === 'Completed' ? 'var(--primary-color)' : '#6b7280',
+                                     padding: '2px 8px',
+                                     borderRadius: '12px',
+                                     fontSize: '11px',
+                                     fontWeight: 600,
+                                     letterSpacing: '0.5px',
+                                     lineHeight: 1,
+                                     textTransform: 'uppercase',
+                                     display: 'inline-block',
+                                     alignSelf: 'center'
+                                 }}>
+                                     {activity.state || 'Scheduled'}
+                                 </span>
                             </div>
                             <div className="activity-datetime">
                                 <div className="datetime-item">
