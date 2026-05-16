@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle } from '@/components/Icons';
+import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle, ChevronRight, ChevronDown } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
 interface Participant {
@@ -132,6 +132,7 @@ export default function ActivityManagementPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [closingActivity, setClosingActivity] = useState(false);
+    const [isStaffOpen, setIsStaffOpen] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -429,13 +430,28 @@ export default function ActivityManagementPage() {
                                              <td className="text-secondary text-sm">
                                                  {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
                                              </td>
-                                             <td>
-                                                 <select value={participant.attendance ?? 0} disabled>
-                                                     <option value={0}>Present</option>
-                                                     <option value={1}>Half</option>
-                                                     <option value={2}>Absent</option>
-                                                 </select>
-                                             </td>
+                                              <td>
+                                                  <select
+                                                      value={participant.attendance ?? 0}
+                                                      disabled={!['Leader', 'Guide', 'Observer'].includes(participant.type)}
+                                                      onChange={(e) => {
+                                                          const newVal = parseInt(e.target.value);
+                                                          setActivity(prev => {
+                                                              if (!prev) return prev;
+                                                              return {
+                                                                  ...prev,
+                                                                  participants: prev.participants?.map(p =>
+                                                                      p.id === participant.id ? { ...p, attendance: newVal } : p
+                                                                  )
+                                                              };
+                                                          });
+                                                      }}
+                                                  >
+                                                      <option value={0}>Present</option>
+                                                      <option value={1}>Half</option>
+                                                      <option value={2}>Absent</option>
+                                                  </select>
+                                              </td>
                                          </tr>
                                     ))}
                                 </tbody>
@@ -446,16 +462,48 @@ export default function ActivityManagementPage() {
                             <Users size={48} className="empty-icon" />
                             <p className="empty-text">No participants found</p>
                         </div>
-                    )}
-                </div>
-
-                {/* Staff Related List Section */}
-                <div className="participants-card" style={{ marginTop: '32px' }}>
-                    <div className="participants-header">
-                        <h2 className="participants-title">Staff Management</h2>
-                    </div>
-
-                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                     )}
+                     <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)' }}>
+                         <button
+                             onClick={async () => {
+                                 if (!activity?.participants) return;
+                                 try {
+                                     for (const p of activity.participants) {
+                                         if (['Leader', 'Guide', 'Observer'].includes(p.type || '')) {
+                                             await secureFetch(`/api/activities/${activityId}`, {
+                                                 method: 'PATCH',
+                                                 headers: { 'Content-Type': 'application/json' },
+                                                 body: JSON.stringify({ participantId: p.id, attendance: p.attendance ?? 0 })
+                                             });
+                                         }
+                                     }
+                                     alert('Attendance saved');
+                                 } catch {
+                                     console.error('Failed to save attendance');
+                                 }
+                             }}
+                             className="btn btn-primary"
+                         >
+                             Save Attendance
+                         </button>
+                     </div>
+                 </div>
+ 
+                 {/* Staff Related List Section */}
+                 <div className="participants-card" style={{ marginTop: '32px' }}>
+                     <div
+                         className="participants-header"
+                         onClick={() => setIsStaffOpen(!isStaffOpen)}
+                         style={{ cursor: 'pointer' }}
+                     >
+                         <h2 className="participants-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             Staff Management
+                             {isStaffOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                         </h2>
+                     </div>
+ 
+                     {isStaffOpen && (
+                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
                         <div className="staff-management-row">
                             <StaffMiniList
                                 label="Leaders"
@@ -477,9 +525,10 @@ export default function ActivityManagementPage() {
                                 onUpdate={(names) => handleUpdateStaff('observer', names)}
                             />
                         </div>
-                    </div>
-                </div>
-            </main>
+                     </div>
+                     )}
+                 </div>
+             </main>
         </div>
     );
 }

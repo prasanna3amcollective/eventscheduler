@@ -172,3 +172,36 @@ export async function DELETE(
     return NextResponse.json({ error: 'An error occurred during deletion: ' + error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const baseId = id.split('_inst_')[0];
+    const { participantId, attendance } = await request.json();
+
+    const securityContext = await getSessionContext();
+    if (!securityContext) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const updated = await withAuth(securityContext, () => ({
+      model: 'participant',
+      operation: 'update',
+      args: {
+        where: { id: participantId, activityId: baseId },
+        data: { attendance: Number(attendance) }
+      }
+    }));
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    console.error("Error updating attendance:", error);
+    if (error.message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
