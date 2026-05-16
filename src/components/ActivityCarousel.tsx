@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { format, startOfDay } from 'date-fns';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { format, startOfDay, addMonths } from 'date-fns';
 import { Clock, CalendarDays, Users, ChevronDown, ChevronUp } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
@@ -36,6 +36,31 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
   const [isCollapsed, setIsCollapsed] = useState(false);
   // Ref to the scrollable strip container
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Active category filter; null means show all
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+
+  // Activities whose startDateTime falls within the next 12 months (for determining category pills)
+  const activitiesNext12Months = useMemo(
+    () => upcomingActivities.filter((a) => {
+      const date = new Date(a.startDateTime);
+      return date <= addMonths(new Date(), 12);
+    }),
+    [upcomingActivities],
+  );
+
+  // Unique, sorted category names from the 12-month window
+  const categoryList = useMemo(
+    () => [...new Set(activitiesNext12Months.map((a) => a.category).filter(Boolean) as string[])].sort(),
+    [activitiesNext12Months],
+  );
+
+  // Activities to display — filtered by selected category, or all
+  const filteredActivities = useMemo(
+    () => filterCategory
+      ? upcomingActivities.filter((a) => a.category === filterCategory)
+      : upcomingActivities,
+    [filterCategory, upcomingActivities],
+  );
 
   useEffect(() => {
     const fetchUpcoming = async () => {
@@ -53,6 +78,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
             .sort((a: any, b: any) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
             .slice(0, 12);
           setUpcomingActivities(future);
+          setFilterCategory(null);
         }
       } catch (err) {
         console.error('Failed to fetch upcoming activities', err);
@@ -94,14 +120,28 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
             </button>
           )}
 
-          <span className="carousel-count">{upcomingActivities.length} activities</span>
+          <span className="carousel-count">{filteredActivities.length} activities</span>
         </div>
       </div>
 
+      {categoryList.length > 1 && (
+        <div className="carousel-category-strip">
+          {categoryList.map((cat) => (
+            <button
+              key={cat}
+              className={`category-pill${cat === filterCategory ? ' active' : ''}`}
+              onClick={() => setFilterCategory(cat === filterCategory ? null : cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className={`carousel-strip-wrapper ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="carousel-strip" ref={scrollRef}>
-          {upcomingActivities.length > 0 ? (
-            upcomingActivities.map((activity) => (
+          {filteredActivities.length > 0 ? (
+            filteredActivities.map((activity) => (
               <div
                 key={activity.id}
                 className="carousel-card clickable"
@@ -117,7 +157,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
                     <h4>{activity.name}</h4>
                     <div className="card-meta">
                       <span><Clock size={12} /> {format(new Date(activity.startDateTime), 'hh:mm aa')}</span>
-                      {activity.category && <span className="carousel-category-tag">{activity.category}</span>}
+                      {isLoggedIn && activity.category && <span className="carousel-category-tag">{activity.category}</span>}
                     </div>
                   </div>
                   {activity.participantCount !== undefined && (

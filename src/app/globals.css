@@ -1204,6 +1204,46 @@ input:not([type="checkbox"]):focus {
   cursor: pointer;
 }
 
+/* ── Carousel Category Filter Strip ── */
+.carousel-category-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.carousel-category-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.category-pill {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.category-pill:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.category-pill.active {
+  background: var(--primary-color);
+  color: var(--primary-light, #fff);
+  border-color: var(--primary-color);
+}
+
 /* Carousel Empty State */
 .carousel-empty-state {
   flex: 0 0 320px;
