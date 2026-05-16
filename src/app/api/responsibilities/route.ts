@@ -52,3 +52,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const securityContext = await getSessionContext();
+
+    const responsibilities = await withAuth(securityContext, () => ({
+      model: 'responsibility',
+      operation: 'findMany',
+      args: {
+        orderBy: { startDateTime: 'asc' }
+      }
+    }));
+
+    return NextResponse.json(responsibilities);
+  } catch (error: unknown) {
+    console.error("Error fetching responsibilities:", error);
+    if (error.message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

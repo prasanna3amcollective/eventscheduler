@@ -178,7 +178,7 @@ function HomeContent() {
       startDateTime: new Date(),
       endDateTime: new Date(Date.now() + 60 * 60 * 1000),
       name: '',
-      owner: '',
+      owner: currentUser?.name || '',
       duration: 60
     };
     setSelectedResponsibility(newResponsibility);

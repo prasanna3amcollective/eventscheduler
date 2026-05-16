@@ -67,6 +67,8 @@ interface CalendarActivity {
   participants?: { userId: string }[];
   category?: string;
   state?: string;
+  isResponsibility?: boolean;
+  owner?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,7 +105,7 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
                 onClick={onOwnResponsibility}
                 style={{
                   marginRight: '12px',
-                  background: '#d97757',
+                  background: 'var(--responsibility-color)',
                   color: 'white',
                   border: 'none',
                   padding: '0 12px',
@@ -351,6 +353,7 @@ export default function CalendarView({
   userRoles = [],
 }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
+  const [responsibilities, setResponsibilities] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
@@ -391,6 +394,23 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, [refreshTrigger]);
 
+  // Fetch responsibilities
+  useEffect(() => {
+    let cancelled = false;
+    const fetchResponsibilities = async () => {
+      try {
+        const res = await fetch('/api/responsibilities');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setResponsibilities(data);
+      } catch (err) {
+        console.error('Failed to fetch responsibilities', err);
+      }
+    };
+    fetchResponsibilities();
+    return () => { cancelled = true; };
+  }, [refreshTrigger]);
+
   // Fetch holiday data once on mount
   useEffect(() => {
     let cancelled = false;
@@ -408,6 +428,17 @@ export default function CalendarView({
   const calendarActivities = useMemo<CalendarActivity[]>(
     () => [
       ...activities,
+      ...responsibilities.map((r) => ({
+        id: r.id,
+        title: r.name,
+        start: new Date(r.startDateTime),
+        end: new Date(r.endDateTime),
+        isHoliday: false,
+        isResponsibility: true,
+        owner: r.owner,
+        category: r.category,
+        state: r.state,
+      })),
       ...holidays.map((h) => ({
         id: h.id,
         title: h.name,
@@ -418,7 +449,7 @@ export default function CalendarView({
         category: 'Holiday'
       })),
     ],
-    [activities, holidays],
+    [activities, responsibilities, holidays],
   );
 
   const onView = useCallback((newView: View) => setView(newView), []);
@@ -455,6 +486,15 @@ export default function CalendarView({
           color: 'white',
           border: 'none',
           fontWeight: 600,
+        } as const,
+      };
+    }
+    if (activity.isResponsibility) {
+      return {
+        style: {
+          backgroundColor: 'var(--responsibility-color)',
+          color: 'white',
+          border: 'none',
         } as const,
       };
     }
