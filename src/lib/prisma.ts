@@ -25,7 +25,7 @@ const createPrismaClient = () => {
 
           // 2. ACL BYPASS for internal/junction tables (no ACL rows exist for these)
           // NOTE: System column stamping still runs below for ALL tables.
-          const aclBypassTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant'];
+          const aclBypassTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant', 'User', 'Group'];
           const skipAcl = aclBypassTables.includes(model);
 
           if (!skipAcl) {
@@ -118,8 +118,43 @@ async function syncUserRoles(userId: string, p: any) {
 export const prisma = globalForPrisma.prisma || createPrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// Helper: run a callback with user context set (replaces withAuth)
-export function withAuth<T>(fn: () => Promise<T>, user: { id: string; roles: string[] } | undefined): Promise<T> {
-  if (!user) return fn();
-  return userContextStorage.run(user, fn);
+export function withAuth<T>(fn: () => T, user: { id: string; roles: string[] } | undefined): Promise<T>;
+export function withAuth<T>(user: { id: string; roles: string[] } | undefined, fn: () => T): Promise<T>;
+export function withAuth<T>(
+  a: (() => T) | { id: string; roles: string[] } | undefined,
+  b?: { id: string; roles: string[] } | (() => T) | undefined
+): Promise<T> {
+  let fn: () => T;
+  let user: { id: string; roles: string[] } | undefined;
+
+  if (typeof a === 'function') {
+    fn = a;
+    user = b as { id: string; roles: string[] } | undefined;
+  } else {
+    fn = b as () => T;
+    user = a;
+  }
+
+  const raw: any = fn();
+
+  // If the callback returned a Prisma descriptor { model, operation, args },
+  // execute the actual Prisma query with the user context injected via _context.
+  // We inject _context instead of relying on AsyncLocalStorage because the Prisma
+  // extended client ($allOperations) runs in a different async context.
+  if (raw && typeof raw === 'object' && raw.model && raw.operation && raw.args !== undefined) {
+    // Prisma model names are capitalized (e.g., "User", "Role") while descriptors
+    // use lowercase (e.g., "user", "role"). Capitalize the first letter.
+    let modelName = raw.model as string;
+    modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+
+    const op = raw.operation as string;
+    const args = raw.args;
+    const prismaModel = (prisma as any)[modelName];
+    if (prismaModel && typeof prismaModel[op] === 'function') {
+      const finalArgs = user ? { ...args, _context: user } : args;
+      return prismaModel[op](finalArgs) as Promise<T>;
+    }
+  }
+
+  return (raw as any) as Promise<T>;
 }

@@ -17,19 +17,19 @@ export async function GET(request: Request) {
   try {
     const securityContext = await getSessionContext();
 
-     const dbActivities: any[] = await withAuth(securityContext, () => ({
-       model: 'activity',
-       operation: 'findMany',
-       args: {
-         include: {
-           participants: {
-             include: {
-               user: true
-             }
-           }
-         }
-       }
-     }));
+    const dbActivities: any[] = await (withAuth(securityContext, () => ({
+      model: 'activity',
+      operation: 'findMany',
+      args: {
+        include: {
+          participants: {
+            include: {
+              user: true
+            }
+          }
+        }
+      }
+    })) as any);
 
     const expandedActivities: any[] = [];
 
@@ -109,21 +109,21 @@ export async function POST(request: Request) {
 
     const securityContext = await getSessionContext();
 
-     const activity = await withAuth(securityContext, () => ({
-       model: 'activity',
-       operation: 'create',
-       args: {
-         data: {
-           name,
-           startDateTime: new Date(startDateTime),
-           endDateTime: new Date(endDateTime),
-           duration: Number(duration),
-           isRecurring: Boolean(isRecurring),
-           recurrenceRule: isRecurring ? recurrenceRule : null,
-           category: category || 'General',
-         }
-       }
-     }));
+    const activity = await withAuth(securityContext, () => ({
+      model: 'activity',
+      operation: 'create',
+      args: {
+        data: {
+          name,
+          startDateTime: new Date(startDateTime),
+          endDateTime: new Date(endDateTime),
+          duration: Number(duration),
+          isRecurring: Boolean(isRecurring),
+          recurrenceRule: isRecurring ? recurrenceRule : null,
+          category: category || 'General',
+        }
+      }
+    }));
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {

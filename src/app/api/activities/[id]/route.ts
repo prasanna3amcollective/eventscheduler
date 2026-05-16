@@ -125,8 +125,6 @@ export async function PUT(
       }
     }
 
-    return updated;
-
     return NextResponse.json(activity);
   } catch (error: any) {
     console.error("Error updating activity FULL ERROR:", error);

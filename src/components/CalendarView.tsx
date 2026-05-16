@@ -306,6 +306,14 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
 // Main component
 // ---------------------------------------------------------------------------
 
+interface CalendarViewProps {
+  refreshTrigger: number;
+  onSelectActivity: (activity: CalendarActivity) => void;
+  onSelectSlot: (slotInfo: any) => void;
+  onCreateActivity: () => void;
+  userRoles: string[];
+}
+
 /**
  * Full calendar page with month/week/day views and a sidebar agenda.
  * Fetches activities and holidays, renders them on a react-big-calendar,

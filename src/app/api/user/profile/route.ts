@@ -14,14 +14,14 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-     const user = await withAuth(securityContext, () => ({
-       model: 'user',
-       operation: 'update',
-       args: {
-         where: { id: securityContext.id },
-         data: { name, email, phone }
-       }
-     }));
+    const user = await (withAuth(securityContext, () => ({
+      model: 'user',
+      operation: 'update',
+      args: {
+        where: { id: securityContext.id },
+        data: { name, email, phone }
+      }
+    })) as any) as any;
 
     return NextResponse.json({
       id: user.id,
