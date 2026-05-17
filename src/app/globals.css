@@ -282,7 +282,7 @@ input:not([type="checkbox"]):focus {
   border-radius: var(--radius-lg);
   padding: 20px;
   box-shadow: var(--shadow-lg);
-  height: 648px; /* Match calendar height + padding roughly */
+  height: 700px; /* Match calendar-wrapper height */
   overflow-y: auto;
 }
 
