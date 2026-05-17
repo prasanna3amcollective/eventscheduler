@@ -7,10 +7,11 @@ export interface Holiday {
 }
 
 export const getHolidays = async (year?: number): Promise<Holiday[]> => {
+  if (typeof window === 'undefined') return [];
   const yearParam = year || new Date().getFullYear();
 
   try {
-    const response = await fetch(`/api/holidays?country=IN&subdivision=TN`);
+    const response = await fetch(`/api/holidays?country=IN&subdivision=TN&year=${yearParam}`);
     if (response.ok) {
       const data = await response.json();
       // Filter to only include government/public holidays for calendar display

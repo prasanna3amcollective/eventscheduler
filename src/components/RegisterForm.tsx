@@ -278,7 +278,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
         <input
           type="password"
           required
-          minLength={6}
+          minLength={8}
           value={formData.password}
           onChange={updateField('password')}
           placeholder="••••••••"
