@@ -67,7 +67,7 @@ function RegistrationSuccessView({ onReset }: { onReset: () => void }) {
       <CheckCircle size={64} color="var(--primary-color)" />
       <h2>Registration Successful!</h2>
       <p>User has been created and can now be searched in the scheduler.</p>
-      <button onClick={onReset} className="btn-primary" style={{ marginTop: '20px' }}>
+      <button onClick={onReset} className="mt-5 flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
         Register Another User
       </button>
     </div>
@@ -288,7 +288,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary"
+        className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
         style={{ marginTop: '10px' }}
       >
         {isSubmitting ? 'Registering...' : 'Complete Registration'}

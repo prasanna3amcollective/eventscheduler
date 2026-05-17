@@ -1,4 +1,20 @@
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@theme {
+  --color-bg: #f2ece4;
+  --color-surface: #faf6f0;
+  --color-text-primary: #2a1f18;
+  --color-text-secondary: #7d6b5c;
+  --color-primary: #b4533d;
+  --color-responsibility: #a8d5e6;
+  --color-border: #d6cbbc;
+  --color-hover: #e8dfd2;
+  --color-activity: #b4533d;
+  --color-holiday: #b88a3d;
+  --color-error: #a13a2a;
+  --color-success: #5a7a4a;
+}
 
 :root {
   --bg-color: #f2ece4;
@@ -410,102 +426,6 @@ input:not([type="checkbox"]):focus {
 .modal-close:hover {
   background: #fee2e2;
   color: #ef4444;
-}
-
-/* Professional Utilities */
-.btn-outline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-family: var(--mono-font);
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s;
-}
-
-.btn-outline:hover {
-  background: var(--hover-color);
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
-}
-
-.btn-outline:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: none;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--primary-glow);
-}
-
-.btn-danger {
-  background: #f5dfda;
-  color: #a13a2a;
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: none;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-danger:hover {
-  background: #ebcec7;
-}
-
-.btn-secondary {
-   background: var(--bg-color);
-   color: var(--text-primary);
-   padding: 14px 28px;
-   border-radius: var(--radius-md);
-   border: 1px solid var(--border-color);
-   font-family: var(--mono-font);
-   font-size: 13px;
-   font-weight: 500;
-   cursor: pointer;
-   transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background: var(--hover-color);
-}
-
-.warning-banner {
-  background: #fff7ed;
-  border: 1px solid #ffedd5;
-  color: #c2410c;
-  padding: 16px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 14px;
 }
 
 /* Day Selector - Material UI Style */

@@ -261,7 +261,7 @@ export default function ActivityManagementPage() {
                     <XCircle size={48} className="error-icon" />
                     <h2 className="error-title">Access Denied</h2>
                     <p className="error-message">{error || 'Activity not found'}</p>
-                    <button onClick={() => router.push('/')} className="btn-primary">
+                    <button onClick={() => router.push('/')} className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
                         <ArrowLeft size={18} />
                         Back to Home
                     </button>
@@ -342,7 +342,7 @@ export default function ActivityManagementPage() {
                                 <button
                                     onClick={handleCloseActivity}
                                     disabled={closingActivity}
-                                    className="btn-primary"
+                                    className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
                                     style={{
                                         background: 'var(--primary-color)',
                                         fontSize: '13px',
@@ -481,7 +481,7 @@ export default function ActivityManagementPage() {
                                      console.error('Failed to save attendance');
                                  }
                              }}
-                             className="btn btn-primary"
+                             className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
                          >
                              Save Attendance
                          </button>

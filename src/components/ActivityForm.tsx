@@ -674,7 +674,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="btn-primary"
+          className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
           style={{ flex: 2 }}
         >
           {isSubmitting
@@ -688,7 +688,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           <button
             type="button"
             onClick={handleDelete}
-            className="btn-danger"
+            className="rounded-[8px] bg-[#f5dfda] px-7 py-[14px] text-[16px] font-semibold text-[#a13a2a] transition-all hover:bg-[#ebcec7] disabled:opacity-60"
             style={{ flex: 0.5 }}
           >
             <Trash size={18} />
@@ -700,7 +700,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         <button
           type="button"
           onClick={onCancel}
-          className="btn-secondary"
+          className="rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-7 py-[14px] text-[13px] font-medium text-[#2a1f18] font-mono transition-all hover:bg-[#e8dfd2] disabled:opacity-60"
           style={{ marginTop: '12px' }}
         >
           <X size={18} />
@@ -713,9 +713,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
           <div className="modal-content" style={{ maxWidth: '400px', padding: '24px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
             <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-              <button className="btn-secondary" onClick={() => setConfirmAction(null)}>Cancel</button>
-              <button className="btn-primary" onClick={() => { confirmAction(); setConfirmAction(null); }}>Confirm</button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center' }}>
+              <button className="rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-7 py-[14px] text-[16px] font-semibold text-[#2a1f18] transition-all hover:bg-[#e8dfd2] disabled:opacity-60" onClick={() => setConfirmAction(null)}>Cancel</button>
+              <button className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60" onClick={() => { confirmAction(); setConfirmAction(null); }}>Confirm</button>
             </div>
           </div>
         </div>

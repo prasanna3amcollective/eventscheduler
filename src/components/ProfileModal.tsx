@@ -185,7 +185,7 @@ export default function ProfileModal({
 
           {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
 
-          <button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px' }}>
+          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60" disabled={isSaving} style={{ marginTop: '8px' }}>
             {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>

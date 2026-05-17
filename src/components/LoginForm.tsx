@@ -51,7 +51,7 @@ function ErrorBanner({
   const isUserNotFound = error === ERROR_MESSAGES.USER_NOT_FOUND;
 
   return (
-    <div className="warning-banner" style={{ background: '#FFEBEE', color: '#C62828', borderColor: '#FFCDD2' }}>
+    <div className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
       <AlertCircle size={20} />
       <span>
         {isUserNotFound ? (
@@ -151,7 +151,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary"
+        className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
         style={{ marginTop: '10px' }}
       >
         {isSubmitting ? 'Logging in...' : 'Login'}
