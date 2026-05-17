@@ -30,11 +30,14 @@ const ERROR_MESSAGES = {
   REGISTRATION_FAILED: 'Registration failed',
   UNEXPECTED_ERROR: 'An unexpected error occurred',
   INVALID_EMAIL: 'Please enter a valid email address',
-  INVALID_PHONE: 'Please enter a valid phone number (10 digits)',
+  INVALID_PHONE: 'Please enter a valid phone number (7-15 digits)',
 } as const;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\d{10}$/;
+const isValidPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+};
 
 const COUNTRY_CODES = [
   { code: 'IN', name: 'India', dialCode: '+91', flag: '🇮🇳' },
@@ -133,7 +136,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
       // Client-side validation
       const errors: { email?: string; phone?: string } = {};
       if (!EMAIL_REGEX.test(formData.email)) errors.email = ERROR_MESSAGES.INVALID_EMAIL;
-      if (!PHONE_REGEX.test(formData.phone)) errors.phone = ERROR_MESSAGES.INVALID_PHONE;
+      if (!isValidPhone(formData.phone)) errors.phone = ERROR_MESSAGES.INVALID_PHONE;
 
       if (Object.keys(errors).length > 0) {
         setFieldErrors(errors);

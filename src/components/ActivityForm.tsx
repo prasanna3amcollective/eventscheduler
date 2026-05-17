@@ -292,6 +292,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   const [saveMode, setSaveMode] = useState<'this' | 'all'>(
     isInstance ? 'this' : 'all',
   );
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
 
   // Fetch users for the typeahead dropdowns on mount
   useEffect(() => {
@@ -461,7 +463,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         setIsSubmitting(false);
       } catch (err) {
         console.error(err);
-        alert(err instanceof Error ? err.message : ERROR_SAVING_EVENT);
+        setConfirmMessage(err instanceof Error ? err.message : ERROR_SAVING_EVENT);
+        setConfirmAction(() => () => {});
         setIsSubmitting(false);
       }
     },
@@ -472,46 +475,35 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
    * Deletes the current activity or excludes the current occurrence from a recurring series.
    * Prompts the user for confirmation before proceeding.
    */
-  const handleDelete = useCallback(async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${isInstance && saveMode === 'this'
-          ? 'this specific occurrence'
-          : 'the entire series'
-        }?`,
-      )
-    ) {
-      return;
-    }
-
-    try {
-      if (isInstance && saveMode === 'this') {
-        const exdate = toIcalDtstart(formData.startDateTime);
-        const newRRule =
-          initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
-
-        await secureFetch(`/api/activities/${initialData!.originalId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
-        });
-      } else {
-        await secureFetch(
-          `/api/activities/${initialData!.originalId || initialData!.id}`,
-          { method: 'DELETE' },
-        );
+  const handleDelete = useCallback(() => {
+    const msg = `Are you sure you want to delete ${isInstance && saveMode === 'this' ? 'this specific occurrence' : 'the entire series'}?`;
+    setConfirmMessage(msg);
+    setConfirmAction(() => async () => {
+      try {
+        if (isInstance && saveMode === 'this') {
+          const exdate = toIcalDtstart(formData.startDateTime);
+          const newRRule = initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
+          await secureFetch(`/api/activities/${initialData!.originalId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
+          });
+        } else {
+          await secureFetch(`/api/activities/${initialData!.originalId || initialData!.id}`, { method: 'DELETE' });
+        }
+        onActivityCreated();
+      } catch (err) {
+        console.error(err);
+        setConfirmMessage(ERROR_DELETING_EVENT);
+        setConfirmAction(() => () => {});
       }
-
-      onActivityCreated();
-    } catch (err) {
-      console.error(err);
-      alert(ERROR_DELETING_EVENT);
-    }
+    });
   }, [isInstance, saveMode, formData.startDateTime, initialData, onActivityCreated]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
   return (
+    <>
     <form className="activity-form" onSubmit={handleSubmit}>
       <div className="form-header">
         <h2>{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
@@ -716,5 +708,18 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </button>
       )}
     </form>
+
+      {confirmAction && (
+        <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
+          <div className="modal-content" style={{ maxWidth: '400px', padding: '24px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setConfirmAction(null)}>Cancel</button>
+              <button className="btn-primary" onClick={() => { confirmAction(); setConfirmAction(null); }}>Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -72,6 +72,7 @@ function buildRrule(
 }
 
 export default function ResponsibilityForm({ onResponsibilityCreated, initialData, onCancel }: ResponsibilityFormProps) {
+  const isEditing = !!initialData?.id;
   const initialStartDate = initialData
     ? new Date(initialData.startDateTime)
     : new Date();
@@ -186,7 +187,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   return (
     <form onSubmit={handleSubmit} className="responsibility-form">
       <div className="form-header">
-        <h2>{'New Responsibility'}</h2>
+        <h2>{isEditing ? 'Edit Responsibility' : 'New Responsibility'}</h2>
       </div>
       <div className="form-row">
         <div className="form-group">
