@@ -54,7 +54,6 @@ const COUNTRY_CODES = [
   { code: 'AE', name: 'UAE', dialCode: '+971', flag: '🇦🇪' },
 ] as const;
 
-const AUTO_ENROLL_DELAY_MS = 2000;
 const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '' } as const;
 
 // ---------------------------------------------------------------------------
@@ -162,7 +161,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           await autoEnroll(data.id);
 
           if (onSuccess) {
-            setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
+            onSuccess(data as UserData);
           }
         } else {
           setError(data.error ?? ERROR_MESSAGES.REGISTRATION_FAILED);
