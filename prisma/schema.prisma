@@ -56,6 +56,7 @@ model Participant {
   userId     String
   type       String   @default("Participant") // Leader, Guide, Observer, Participant
   attendance Int      @default(0) // 0=Present, 1=Half, 2=Absent
+  payAsYouWish Float   @default(0)
 
   // System Columns
   sys_created_by String?
