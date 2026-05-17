@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { format } from 'date-fns';
-import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle } from '@/components/Icons';
+import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader } from '@/components/Icons';
+import { secureFetch } from '@/lib/fetch';
 
 interface ResponsibilityData {
   id: string;
@@ -19,6 +20,7 @@ interface ResponsibilityDetailModalProps {
   responsibility: ResponsibilityData | null;
   isOpen: boolean;
   onClose: () => void;
+  onStateChange?: (id: string, newState: string) => void;
 }
 
 const GOOGLE_MAPS_LINK = '3am Tea Cigaz, 18th Cross St, GOCHS Colony, Besant Nagar, Chennai, Tamil Nadu 600090, India';
@@ -60,6 +62,7 @@ export default function ResponsibilityDetailModal({
   responsibility,
   isOpen,
   onClose,
+  onStateChange,
 }: ResponsibilityDetailModalProps) {
   const googleCalendarUrl = useMemo(
     () => (responsibility ? buildGoogleCalendarUrl(responsibility) : ''),
@@ -70,6 +73,29 @@ export default function ResponsibilityDetailModal({
     () => (responsibility ? new Date(responsibility.startDateTime) : new Date()),
     [responsibility],
   );
+
+  const [completing, setCompleting] = useState(false);
+
+  const handleComplete = useCallback(async () => {
+    if (!responsibility || completing) return;
+    setCompleting(true);
+    try {
+      const res = await secureFetch(`/api/responsibilities/${responsibility.id}/complete`, {
+        method: 'PATCH',
+      });
+      if (res.ok) {
+        onStateChange?.(responsibility.id, 'Completed');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to complete responsibility');
+      }
+    } catch (err) {
+      console.error('Failed to complete responsibility', err);
+      alert('An error occurred while completing the responsibility');
+    } finally {
+      setCompleting(false);
+    }
+  }, [responsibility, completing, onStateChange]);
 
   const handleSyncCalendar = useCallback(() => {
     if (googleCalendarUrl) {
@@ -145,13 +171,26 @@ export default function ResponsibilityDetailModal({
         </div>
 
         <div className="detail-footer-flat">
-          <button
-            onClick={handleSyncCalendar}
-            className="btn-outline"
-            disabled={!googleCalendarUrl}
-          >
-            <Calendar size={16} /> Sync
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {responsibility.state !== 'Completed' && (
+              <button
+                onClick={handleComplete}
+                className="btn-primary"
+                disabled={completing}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
+                {completing ? 'Completing...' : 'Complete Responsibility'}
+              </button>
+            )}
+            <button
+              onClick={handleSyncCalendar}
+              className="btn-outline"
+              disabled={!googleCalendarUrl}
+            >
+              <Calendar size={16} /> Sync
+            </button>
+          </div>
         </div>
       </div>
     </div>

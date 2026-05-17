@@ -394,6 +394,9 @@ function HomeContent() {
         responsibility={responsibilityDetail}
         isOpen={isResponsibilityDetailOpen}
         onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+        onStateChange={(id, newState) => {
+          setResponsibilityDetail(prev => prev && prev.id === id ? { ...prev, state: newState } : prev);
+        }}
       />
 
       <ProfileModal
