@@ -138,23 +138,10 @@ async function syncUserRoles(userId: string, p: any) {
 export const prisma = globalForPrisma.prisma || createPrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-export function withAuth<T>(fn: () => T, user: { id: string; roles: string[] } | undefined): Promise<T>;
-export function withAuth<T>(user: { id: string; roles: string[] } | undefined, fn: () => T): Promise<T>;
 export function withAuth<T>(
-  a: (() => T) | { id: string; roles: string[] } | undefined,
-  b?: { id: string; roles: string[] } | (() => T) | undefined
+  user: { id: string; roles: string[] } | undefined,
+  fn: () => T
 ): Promise<T> {
-  let fn: () => T;
-  let user: { id: string; roles: string[] } | undefined;
-
-  if (typeof a === 'function') {
-    fn = a;
-    user = b as { id: string; roles: string[] } | undefined;
-  } else {
-    fn = b as () => T;
-    user = a;
-  }
-
   const raw: any = fn();
 
   // If the callback returned a Prisma descriptor { model, operation, args },
