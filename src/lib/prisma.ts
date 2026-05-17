@@ -131,6 +131,7 @@ async function syncUserRoles(userId: string, p: any) {
     ]);
   } catch (error) {
     console.error("Error syncing user roles:", error);
+    throw error;
   }
 }
 
