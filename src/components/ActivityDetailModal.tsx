@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, CheckCircle, Edit } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
+import { GOOGLE_MAPS_LINK } from '@/lib/constants';
+import { buildGoogleCalendarUrl } from '@/lib/calendar';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -68,58 +70,9 @@ const ERROR_MESSAGES = {
   NETWORK_ERROR: 'An error occurred',
 } as const;
 
-const GOOGLE_MAPS_LINK = '3am Tea Cigaz, 18th Cross St, GOCHS Colony, Besant Nagar, Chennai, Tamil Nadu 600090, India';
-
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Converts a Date to an iCal-compatible date string (YYYYMMDDTHHMMSSZ)
- * @param date - The date to convert
- * @returns iCal-formatted date string, or empty string if invalid
- */
-function toGoogleCalendarDate(date: Date): string {
-  if (isNaN(date.getTime())) return '';
-  return date.toISOString().replace(/[-:]|\.\d{3}/g, '');
-}
-
-/**
- * Builds a Google Calendar deep-link URL to add the activity as an event.
- * @param activity - The activity data to encode in the URL
- * @param isLoggedIn - Whether the user is logged in (affects URL construction)
- * @returns A Google Calendar URL, or empty string if data is invalid
- */
-function buildGoogleCalendarUrl(activity: ActivityData, isLoggedIn: boolean): string {
-  const startDate = new Date(activity.startDateTime);
-  if (isNaN(startDate.getTime())) return '';
-
-  const durationMs = (activity.duration ?? 60) * 60_000;
-  const endMs = activity.endDateTime
-    ? new Date(activity.endDateTime).getTime()
-    : startDate.getTime() + durationMs;
-  const endDate = new Date(endMs);
-
-  const start = toGoogleCalendarDate(startDate);
-  const end = toGoogleCalendarDate(endDate);
-  if (!start || !end) return '';
-
-  const details = '';
-
-  const query = [
-    'action=TEMPLATE',
-    `text=${encodeURIComponent(activity.name)}`,
-    `dates=${start}/${end}`,
-    details ? `details=${encodeURIComponent(details)}` : '',
-    `location=${encodeURIComponent(GOOGLE_MAPS_LINK)}`,
-    'sf=true',
-    'output=xml',
-  ]
-    .filter(Boolean)
-    .join('&');
-
-  return `https://www.google.com/calendar/render?${query}`;
-}
 
 // ---------------------------------------------------------------------------
 // Sub-components

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
+import { buildGoogleCalendarUrl } from '@/lib/calendar';
 
 interface ResponsibilityData {
   id: string;
@@ -21,41 +22,6 @@ interface ResponsibilityDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStateChange?: (id: string, newState: string) => void;
-}
-
-const GOOGLE_MAPS_LINK = '3am Tea Cigaz, 18th Cross St, GOCHS Colony, Besant Nagar, Chennai, Tamil Nadu 600090, India';
-
-function toGoogleCalendarDate(date: Date): string {
-  if (isNaN(date.getTime())) return '';
-  return date.toISOString().replace(/[-:]|\.\d{3}/g, '');
-}
-
-function buildGoogleCalendarUrl(responsibility: ResponsibilityData): string {
-  const startDate = new Date(responsibility.startDateTime);
-  if (isNaN(startDate.getTime())) return '';
-
-  const durationMs = (responsibility.duration ?? 60) * 60_000;
-  const endMs = responsibility.endDateTime
-    ? new Date(responsibility.endDateTime).getTime()
-    : startDate.getTime() + durationMs;
-  const endDate = new Date(endMs);
-
-  const start = toGoogleCalendarDate(startDate);
-  const end = toGoogleCalendarDate(endDate);
-  if (!start || !end) return '';
-
-  const query = [
-    'action=TEMPLATE',
-    `text=${encodeURIComponent(responsibility.name)}`,
-    `dates=${start}/${end}`,
-    `location=${encodeURIComponent(GOOGLE_MAPS_LINK)}`,
-    'sf=true',
-    'output=xml',
-  ]
-    .filter(Boolean)
-    .join('&');
-
-  return `https://www.google.com/calendar/render?${query}`;
 }
 
 export default function ResponsibilityDetailModal({
