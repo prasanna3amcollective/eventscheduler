@@ -312,7 +312,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       {success && <div role="status" aria-live="polite" className="success-banner"><Check size={16} aria-hidden="true" /> Responsibility created successfully!</div>}
 
       <div className="form-actions">
-        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary text-[13px] font-mono"><X size={16} aria-hidden="true" /> Cancel</button>}
+        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary"><X size={16} aria-hidden="true" /> Cancel</button>}
         <button
           type="submit"
           disabled={isSubmitting || !formData.name.trim()}

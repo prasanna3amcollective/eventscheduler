@@ -675,7 +675,6 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           type="submit"
           disabled={isSubmitting}
           className="btn-primary"
-          style={{ flex: 1 }}
         >
           {isSubmitting
             ? 'Saving...'
@@ -712,7 +711,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
           <div className="modal-content" style={{ maxWidth: '400px', padding: '24px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
             <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center' }}>
+            <div className="flex justify-center gap-3">
               <button className="btn-secondary" onClick={() => setConfirmAction(null)}>Cancel</button>
               <button className="btn-primary" onClick={() => { confirmAction(); setConfirmAction(null); }}>Confirm</button>
             </div>

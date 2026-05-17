@@ -393,7 +393,7 @@ export default function ActivityDetailModal({
           )}
 
           {isStaffForActivity ? (
-            <button className="btn-secondary text-[13px] font-mono" onClick={() => {
+            <button className="btn-secondary" onClick={() => {
               onClose();
             }}>
               Switch Responsibility

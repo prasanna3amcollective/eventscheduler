@@ -36,93 +36,19 @@
 }
 
 .btn-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: none;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-shrink: 0;
-  width: auto;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px var(--primary-glow);
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-6 py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60;
 }
 
 .btn-secondary {
-  background: var(--bg-color);
-  color: var(--text-primary);
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  width: auto;
-}
-
-.btn-secondary:hover {
-  background: var(--hover-color);
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-[28px] py-[14px] text-[16px] font-semibold text-[#2a1f18] transition-all hover:bg-[#e8dfd2] disabled:opacity-60;
 }
 
 .btn-outline {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-family: var(--mono-font);
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s;
-  flex-shrink: 0;
-  width: auto;
-}
-
-.btn-outline:hover {
-  background: var(--hover-color);
-  color: var(--text-primary);
-  border-color: var(--text-secondary);
-}
-
-.btn-outline:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  @apply flex items-center justify-center gap-[6px] rounded-[8px] border border-[#d6cbbc] bg-transparent px-4 py-[10px] text-[13px] font-medium text-[#7d6b5c] font-mono transition-all hover:bg-[#e8dfd2] hover:text-[#2a1f18] hover:border-[#2a1f18] disabled:opacity-40;
 }
 
 .btn-danger {
-  background: #f5dfda;
-  color: #a13a2a;
-  padding: 14px 28px;
-  border-radius: var(--radius-md);
-  border: none;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  width: auto;
-}
-
-.btn-danger:hover {
-  background: #ebcec7;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#f5dfda] px-[28px] py-[14px] text-[16px] font-semibold text-[#a13a2a] transition-all hover:bg-[#ebcec7] disabled:opacity-60;
 }
 
 body {

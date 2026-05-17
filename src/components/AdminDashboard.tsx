@@ -1327,7 +1327,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
-                className="btn-secondary text-[13px] font-mono"
+                className="btn-secondary"
                 onClick={() => setConfirmAction(null)}
               >
                 Cancel
