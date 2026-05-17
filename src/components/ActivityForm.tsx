@@ -366,7 +366,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       const day = dayMap[formData.startDateTime.getDay()];
       setFormData((prev) => ({ ...prev, recurrenceDays: [day] }));
     }
-  }, [formData.startDateTime]);
+  }, [formData.startDateTime, formData.recurrenceDays]);
 
   // Sync end time from start + duration; also trigger overlap check
   useEffect(() => {

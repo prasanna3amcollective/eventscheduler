@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, type JSX } from 'react';
 import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsProps, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { type Holiday, getHolidays } from '@/lib/holidays';
@@ -14,10 +14,10 @@ import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, Plus
 
 const LOCALES = { 'en-US': enUS };
 
-/** Hard-coded date range to fetch activities from the API */
+/** Dynamic date range to fetch activities from the API */
 const FETCH_WINDOW = {
   start: '2025-12-01T00:00:00Z',
-  end: '2027-01-31T23:59:59Z',
+  end: addYears(new Date(), 1).toISOString(),
 } as const;
 
 const AGENDA_PAGE_SIZE = 6;
@@ -565,7 +565,7 @@ export default function CalendarView({
       toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} onOwnResponsibility={onOwnResponsibility} canCreate={canCreate} />,
       event: CalendarEventRenderer,
     }),
-    [onCreateActivity, canCreate, CalendarEventRenderer],
+    [onCreateActivity, canCreate, CalendarEventRenderer, onOwnResponsibility],
   );
 
   // ---- Render ----

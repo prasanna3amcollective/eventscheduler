@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, CheckCircle, Edit } from '@/components/Icons';
+import { secureFetch } from '@/lib/fetch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -246,9 +247,8 @@ export default function ActivityDetailModal({
     setSuccessMessage(null);
     let succeeded = false;
     try {
-      const res = await fetch(`/api/activities/${activityId}/register`, {
+      const res = await secureFetch(`/api/activities/${activityId}/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser!.id }),
       });
       if (res.ok) {
@@ -280,7 +280,7 @@ export default function ActivityDetailModal({
     setSuccessMessage(null);
     let succeeded = false;
     try {
-      const res = await fetch(`/api/activities/${activityId}/unregister`, {
+      const res = await secureFetch(`/api/activities/${activityId}/unregister`, {
         method: 'POST',
       });
       if (res.ok) {

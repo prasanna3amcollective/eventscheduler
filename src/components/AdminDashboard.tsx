@@ -162,6 +162,45 @@ function FilterableTh({
   );
 }
 
+function Pagination({
+  currentPage,
+  totalRecords,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalRecords: number;
+  onPageChange: (page: number) => void;
+}) {
+  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="pagination fade-in">
+      <button
+        className="pagination-btn"
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+        title="Previous Page"
+      >
+        <ChevronLeft size={16} />
+      </button>
+
+      <span className="pagination-info">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        className="pagination-btn"
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+        title="Next Page"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // AdminDashboard
 // ---------------------------------------------------------------------------
@@ -531,37 +570,6 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     ),
     [filters, showFilterInput, toggleFilter, updateFilter],
   );
-
-  const Pagination = useCallback(({ totalRecords }: { totalRecords: number }) => {
-    const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
-    if (totalPages <= 1) return null;
-
-    return (
-      <div className="pagination fade-in">
-        <button
-          className="pagination-btn"
-          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-          disabled={currentPage === 1}
-          title="Previous Page"
-        >
-          <ChevronLeft size={16} />
-        </button>
-
-        <span className="pagination-info">
-          Page {currentPage} of {totalPages}
-        </span>
-
-        <button
-          className="pagination-btn"
-          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-          disabled={currentPage === totalPages}
-          title="Next Page"
-        >
-          <ChevronRight size={16} />
-        </button>
-      </div>
-    );
-  }, [currentPage]);
 
   // -----------------------------------------------------------------------
   // Render helpers for each tab (extracted so JSX stays flat)
@@ -1139,18 +1147,21 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
-          <Pagination 
-            totalRecords={participants.filter(p => 
-              (matchesFilter(p.user.name, filters.p_user) ||
-                matchesFilter(p.user.username, filters.p_user)) &&
-              matchesFilter(p.activity.name, filters.p_activity) &&
-              matchesFilter(p.type, filters.p_role)
-            ).length} 
-          />
+           <Pagination 
+             currentPage={currentPage}
+             totalRecords={participants.filter(p => 
+               (matchesFilter(p.user.name, filters.p_user) ||
+                 matchesFilter(p.user.username, filters.p_user)) &&
+               matchesFilter(p.activity.name, filters.p_activity) &&
+               matchesFilter(p.type, filters.p_role)
+             ).length} 
+             onPageChange={setCurrentPage}
+           />
+
         </div>
       </div>
     ),
-    [participants, filters, renderFilterHeader, currentPage, requestRemoveParticipant, Pagination],
+    [participants, filters, renderFilterHeader, currentPage, requestRemoveParticipant],
   );
 
   // -----------------------------------------------------------------------
