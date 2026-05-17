@@ -154,7 +154,8 @@ h4 {
 }
 
 /* Form Styling - Premium Material */
-.activity-form {
+.activity-form,
+.responsibility-form {
   max-width: 800px;
   margin: 0 auto;
   background: var(--surface-color);

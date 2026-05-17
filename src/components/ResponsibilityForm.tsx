@@ -120,6 +120,12 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     setFormData(prev => ({ ...prev, duration: newDuration, endDateTime: newEnd }));
   };
 
+  const updateDurationFromTimes = (start: Date, end: Date) => {
+    const diffMs = end.getTime() - start.getTime();
+    const diffMin = Math.max(15, Math.round(diffMs / 60000));
+    setFormData(prev => ({ ...prev, duration: diffMin }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -178,19 +184,20 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   };
 
   return (
-    <form onSubmit={handleSubmit} className="activity-form">
+    <form onSubmit={handleSubmit} className="responsibility-form">
       <div className="form-header">
         <h2>{'New Responsibility'}</h2>
       </div>
       <div className="form-row">
         <div className="form-group">
-          <label><Tag size={16} /> Responsibility Name</label>
+          <label><Tag size={16} aria-hidden="true" /> Responsibility Name</label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="e.g. Morning Meditation"
             required
+            autoFocus
           />
         </div>
 
@@ -207,7 +214,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         </div>
 
         <div className="form-group">
-          <label><Calendar size={16} /> Start Date & Time</label>
+          <label><Calendar size={16} aria-hidden="true" /> Start Date & Time</label>
           <DatePicker
             selected={formData.startDateTime}
             onChange={(date: Date | null) => {
@@ -225,7 +232,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         </div>
 
 <div className="form-group">
-          <label><Clock size={16} /> Duration (minutes)</label>
+          <label><Clock size={16} aria-hidden="true" /> Duration (minutes)</label>
           <input
             type="number"
             min="15"
@@ -236,7 +243,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         </div>
 
         <div className="form-group">
-          <label><Tag size={16} /> Category</label>
+          <label><Tag size={16} aria-hidden="true" /> Category</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
@@ -249,13 +256,15 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       </div>
 
         <div className="form-group">
-          <label><Calendar size={16} /> End Date & Time</label>
+          <label><Calendar size={16} aria-hidden="true" /> End Date & Time</label>
           <DatePicker
             selected={formData.endDateTime}
             onChange={(date: Date | null) => {
               if (date) {
-                setFormData(prev => ({ ...prev, endDateTime: date }));
-                updateDurationFromTimes(formData.startDateTime, date);
+                setFormData(prev => {
+                  const newDuration = Math.max(15, Math.round((date.getTime() - prev.startDateTime.getTime()) / 60000));
+                  return { ...prev, endDateTime: date, duration: newDuration };
+                });
               }
             }}
             showTimeSelect
@@ -265,25 +274,14 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         </div>
 
         <div className="form-group">
-          <label><Tag size={16} /> Category</label>
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-          >
-            {ACTIVITY_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
           <label className="recurring-toggle">
             <input
+              id="recurring-toggle"
               type="checkbox"
               checked={formData.isRecurring}
               onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
             />
-            <Repeat size={16} /> Recurring Event
+            <Repeat size={16} aria-hidden="true" /> Recurring Event
           </label>
           {formData.isRecurring && (
             <div className="recurrence-options">
@@ -309,12 +307,17 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             </div>
           )}
         </div>
-      {error && <div className="error-banner"><AlertTriangle size={16} /> {error}</div>}
-      {success && <div className="success-banner"><Check size={16} /> Responsibility created successfully!</div>}
+      {error && <div role="alert" aria-live="assertive" className="error-banner"><AlertTriangle size={16} aria-hidden="true" /> {error}</div>}
+      {success && <div role="status" aria-live="polite" className="success-banner"><Check size={16} aria-hidden="true" /> Responsibility created successfully!</div>}
 
       <div className="form-actions">
-        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary"><X size={16} /> Cancel</button>}
-        <button type="submit" disabled={isSubmitting || !formData.name.trim()} className="btn-primary">
+        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary"><X size={16} aria-hidden="true" /> Cancel</button>}
+        <button
+          type="submit"
+          disabled={isSubmitting || !formData.name.trim()}
+          aria-busy={isSubmitting}
+          className="btn-primary"
+        >
           {isSubmitting ? 'Saving...' : initialData ? 'Update Responsibility' : 'Create Responsibility'}
         </button>
       </div>

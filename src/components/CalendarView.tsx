@@ -85,14 +85,22 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
   return (
     <div className="calendar-toolbar">
       <div className="toolbar-navigation">
-        <button className="nav-btn" onClick={() => onNavigate('PREV')}>
-          <ChevronLeft size={20} />
+        <button
+          className="nav-btn"
+          onClick={() => onNavigate('PREV')}
+          aria-label="Go to previous period"
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
         </button>
         <button className="nav-btn-today" onClick={() => onNavigate('TODAY')}>
           Today
         </button>
-        <button className="nav-btn" onClick={() => onNavigate('NEXT')}>
-          <ChevronRight size={20} />
+        <button
+          className="nav-btn"
+          onClick={() => onNavigate('NEXT')}
+          aria-label="Go to next period"
+        >
+          <ChevronRight size={20} aria-hidden="true" />
         </button>
       </div>
 
@@ -235,18 +243,22 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
           <button
             className="nav-btn"
             disabled={currentPage === 0}
+            aria-disabled={currentPage === 0}
             onClick={goBack}
+            aria-label="Previous page"
             style={{ width: '28px', height: '28px', opacity: currentPage === 0 ? 0.3 : 1 }}
           >
-            <ChevronLeft size={14} />
+            <ChevronLeft size={14} aria-hidden="true" />
           </button>
           <button
             className="nav-btn"
             disabled={currentPage >= totalPages - 1}
+            aria-disabled={currentPage >= totalPages - 1}
             onClick={goForward}
+            aria-label="Next page"
             style={{ width: '28px', height: '28px', opacity: currentPage >= totalPages - 1 ? 0.3 : 1 }}
           >
-            <ChevronRight size={14} />
+            <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -293,7 +305,16 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
               <tr
                 key={activity.id}
                 className="agenda-row clickable-row"
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelectActivity(activity)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectActivity(activity);
+                  }
+                }}
+                aria-label={`${activity.title} from ${format(activity.start, 'hh:mm aa')} to ${format(activity.end, 'hh:mm aa')}`}
                 style={{
                   background: 'var(--surface-color)',
                   borderRadius: '8px',
@@ -529,10 +550,10 @@ export default function CalendarView({
   const CalendarEventRenderer = useCallback(({ event }: { event: CalendarActivity }) => {
     if (event.isHoliday) {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Umbrella size={14} />
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <Umbrella size={14} aria-hidden="true" />
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+      </div>
       );
     }
     return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
