@@ -269,9 +269,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   // Form state for all activity fields
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
-    leader: (initialData as any)?.leaders || (initialData as any)?.leader || [],
-    guide: (initialData as any)?.guides || (initialData as any)?.guide || [],
-    observer: (initialData as any)?.observers || (initialData as any)?.observer || [],
+    leader: initialData?.leaders ?? [],
+    guide: initialData?.guides ?? [],
+    observer: initialData?.observers ?? [],
     startDateTime: initialStartDate,
     duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     endDateTime: initialEndDate,

@@ -379,56 +379,46 @@ export default function CalendarView({
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
 
-  // Fetch activities from the API within a wide date window
+  // Fetch activities and responsibilities together
   useEffect(() => {
     let cancelled = false;
 
-    const fetchActivities = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(
-          `/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`,
-        );
-        if (!res.ok) return;
-        const data: ApiActivity[] = await res.json();
-        if (cancelled) return;
+        const [actRes, respRes] = await Promise.all([
+          fetch(`/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`),
+          fetch('/api/responsibilities'),
+        ]);
 
-        const formatted: CalendarActivity[] = data.map((e) => ({
-          id: e.id,
-          title: e.name,
-          start: new Date(e.startDateTime),
-          end: new Date(e.endDateTime),
-          isHoliday: false,
-          leaders: e.leaders || (e as any).leader || [],
-          guides: e.guides || (e as any).guide || [],
-          observers: e.observers || (e as any).observer || [],
-          participants: e.participants,
-          category: e.category,
-          state: e.state,
-        }));
-        setActivities(formatted);
+        if (!cancelled) {
+          if (actRes.ok) {
+            const data: ApiActivity[] = await actRes.json();
+            const formatted: CalendarActivity[] = data.map((e) => ({
+              id: e.id,
+              title: e.name,
+              start: new Date(e.startDateTime),
+              end: new Date(e.endDateTime),
+              isHoliday: false,
+              leaders: e.leaders || (e as any).leader || [],
+              guides: e.guides || (e as any).guide || [],
+              observers: e.observers || (e as any).observer || [],
+              participants: e.participants,
+              category: e.category,
+              state: e.state,
+            }));
+            setActivities(formatted);
+          }
+          if (respRes.ok) {
+            const data = await respRes.json();
+            setResponsibilities(data);
+          }
+        }
       } catch (err) {
-        console.error('Failed to fetch activities', err);
+        console.error('Failed to fetch calendar data', err);
       }
     };
 
-    fetchActivities();
-    return () => { cancelled = true; };
-  }, [refreshTrigger]);
-
-  // Fetch responsibilities
-  useEffect(() => {
-    let cancelled = false;
-    const fetchResponsibilities = async () => {
-      try {
-        const res = await fetch('/api/responsibilities');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setResponsibilities(data);
-      } catch (err) {
-        console.error('Failed to fetch responsibilities', err);
-      }
-    };
-    fetchResponsibilities();
+    fetchData();
     return () => { cancelled = true; };
   }, [refreshTrigger]);
 

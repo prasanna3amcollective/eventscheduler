@@ -601,6 +601,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(r.name, filters.role_name) &&
                       matchesFilter(r.description, filters.role_desc),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((r) => (
                     <tr key={r.id}>
                       <td className="font-bold">{r.name}</td>
@@ -610,6 +611,17 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              roles.filter(
+                (r) =>
+                  matchesFilter(r.name, filters.role_name) &&
+                  matchesFilter(r.description, filters.role_desc),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateRole}>
@@ -664,6 +676,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(g.description, filters.group_desc) &&
                       matchesFilter(g.category, filters.group_cat),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((g) => (
                     <tr key={g.id}>
                       <td className="font-bold">{g.name}</td>
@@ -676,6 +689,18 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              groups.filter(
+                (g) =>
+                  matchesFilter(g.name, filters.group_name) &&
+                  matchesFilter(g.description, filters.group_desc) &&
+                  matchesFilter(g.category, filters.group_cat),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateGroup}>
@@ -742,6 +767,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                         matchesFilter(gm.user.username, filters.gm_user)) &&
                       matchesFilter(gm.group.name, filters.gm_group),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((gm) => (
                     <tr key={gm.id}>
                       <td>
@@ -769,6 +795,18 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              groupMembers.filter(
+                (gm) =>
+                  (matchesFilter(gm.user.name, filters.gm_user) ||
+                    matchesFilter(gm.user.username, filters.gm_user)) &&
+                  matchesFilter(gm.group.name, filters.gm_group),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleAddMember}>
@@ -843,6 +881,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(gr.group.name, filters.gr_group) &&
                       matchesFilter(gr.role.name, filters.gr_role),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((gr) => (
                     <tr key={gr.id}>
                       <td className="font-bold">{gr.group.name}</td>
@@ -854,6 +893,17 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              groupRoles.filter(
+                (gr) =>
+                  matchesFilter(gr.group.name, filters.gr_group) &&
+                  matchesFilter(gr.role.name, filters.gr_role),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleAssignGroupRole}>
@@ -919,6 +969,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                         matchesFilter(ur.user.username, filters.ur_user)) &&
                       matchesFilter(ur.role.name, filters.ur_role),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((ur) => (
                     <tr key={ur.id}>
                       <td>
@@ -935,6 +986,18 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              userRoles.filter(
+                (ur) =>
+                  (matchesFilter(ur.user.name, filters.ur_user) ||
+                    matchesFilter(ur.user.username, filters.ur_user)) &&
+                  matchesFilter(ur.role.name, filters.ur_role),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleAssignRole}>
@@ -1003,6 +1066,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(acl.role.name, filters.acl_role) &&
                       matchesFilter(acl.description, filters.acl_desc),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((acl) => (
                     <tr key={acl.id}>
                       <td className="font-bold text-uppercase">{acl.table}</td>
@@ -1018,6 +1082,19 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              acls.filter(
+                (acl) =>
+                  matchesFilter(acl.table, filters.acl_table) &&
+                  matchesFilter(acl.operation, filters.acl_op) &&
+                  matchesFilter(acl.role.name, filters.acl_role) &&
+                  matchesFilter(acl.description, filters.acl_desc),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateAcl}>
