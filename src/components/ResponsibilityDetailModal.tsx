@@ -137,26 +137,23 @@ export default function ResponsibilityDetailModal({
         </div>
 
         <div className="detail-footer-flat">
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {responsibility.state !== 'Completed' && (
-              <button
-                onClick={handleComplete}
-                className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
-                disabled={completing}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
-                {completing ? 'Completing...' : 'Complete Responsibility'}
-              </button>
-            )}
+          {responsibility.state !== 'Completed' && (
             <button
-              onClick={handleSyncCalendar}
-              className="flex items-center justify-center gap-1.5 rounded-[8px] border border-[#d6cbbc] bg-transparent px-4 py-[10px] text-[13px] font-medium text-[#7d6b5c] font-mono transition-all hover:bg-[#e8dfd2] hover:text-[#2a1f18] hover:border-[#2a1f18] disabled:opacity-40"
-              disabled={!googleCalendarUrl}
+              onClick={handleComplete}
+              className="btn-primary"
+              disabled={completing}
             >
-              <Calendar size={16} /> Sync
+              {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
+              {completing ? 'Completing...' : 'Complete Responsibility'}
             </button>
-          </div>
+          )}
+          <button
+            onClick={handleSyncCalendar}
+            className="btn-outline"
+            disabled={!googleCalendarUrl}
+          >
+            <Calendar size={16} /> Sync
+          </button>
         </div>
       </div>
     </div>

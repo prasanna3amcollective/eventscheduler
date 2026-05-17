@@ -380,30 +380,30 @@ export default function ActivityDetailModal({
 
           <button
             onClick={handleSyncCalendar}
-            className="flex items-center justify-center gap-1.5 rounded-[8px] border border-[#d6cbbc] bg-transparent px-4 py-[10px] text-[13px] font-medium text-[#7d6b5c] font-mono transition-all hover:bg-[#e8dfd2] hover:text-[#2a1f18] hover:border-[#2a1f18] disabled:opacity-40"
+            className="btn-outline"
             disabled={!googleCalendarUrl}
           >
             <Calendar size={16} /> Sync
           </button>
 
           {isLeader && (
-            <a href={`/activities/${activityId}`} className="flex items-center justify-center gap-1.5 rounded-[8px] border border-[#d6cbbc] bg-transparent px-4 py-[10px] text-[13px] font-medium text-[#7d6b5c] font-mono transition-all hover:bg-[#e8dfd2] hover:text-[#2a1f18] hover:border-[#2a1f18] disabled:opacity-40">
+            <a href={`/activities/${activityId}`} className="btn-outline">
               <Users size={16} /> Manage
             </a>
           )}
 
           {isStaffForActivity ? (
-            <button className="rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-7 py-[14px] text-[13px] font-medium text-[#2a1f18] font-mono transition-all hover:bg-[#e8dfd2] disabled:opacity-60" onClick={() => {
+            <button className="btn-secondary text-[13px] font-mono" onClick={() => {
               onClose();
             }}>
               Switch Responsibility
             </button>
           ) : isRegistered ? (
-            <button className="rounded-[8px] bg-[#f5dfda] px-7 py-[14px] text-[16px] font-semibold text-[#a13a2a] transition-all hover:bg-[#ebcec7] disabled:opacity-60" onClick={handleUnregister} disabled={isSubmitting}>
+            <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting}>
               {isSubmitting ? 'Unregistering...' : 'Unregister'}
             </button>
           ) : (
-            <button className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60" onClick={handleRegister} disabled={isSubmitting}>
+            <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
               {isSubmitting ? 'Registering...' : 'Register'}
               <CheckCircle size={16} />
             </button>

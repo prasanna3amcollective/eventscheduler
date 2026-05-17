@@ -633,7 +633,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             onChange={(e) => setNewRoleDesc(e.target.value)}
             required
           />
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <Plus size={16} /> Add Role
           </button>
         </form>
@@ -724,7 +724,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </option>
             ))}
           </select>
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <Plus size={16} /> Add Group
           </button>
         </form>
@@ -830,7 +830,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </option>
             ))}
           </select>
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <UserPlus size={16} /> Add to Group
           </button>
         </form>
@@ -927,7 +927,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </option>
             ))}
           </select>
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <Link size={16} /> Assign Role to Group
           </button>
         </form>
@@ -1021,7 +1021,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </option>
             ))}
           </select>
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <Target size={16} /> Assign Role
           </button>
         </form>
@@ -1135,7 +1135,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             value={aclDescription}
             onChange={(e) => setAclDescription(e.target.value)}
           />
-          <button type="submit" className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60">
+          <button type="submit" className="btn-primary">
             <Plus size={16} /> Add ACL
           </button>
         </form>
@@ -1327,13 +1327,13 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
-                className="rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-7 py-[14px] text-[13px] font-medium text-[#2a1f18] font-mono transition-all hover:bg-[#e8dfd2] disabled:opacity-60"
+                className="btn-secondary text-[13px] font-mono"
                 onClick={() => setConfirmAction(null)}
               >
                 Cancel
               </button>
               <button
-                className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
+                className="btn-primary"
                 onClick={() => {
                   confirmAction();
                   setConfirmAction(null);

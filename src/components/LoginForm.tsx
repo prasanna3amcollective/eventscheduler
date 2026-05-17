@@ -151,7 +151,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
+        className="btn-primary"
         style={{ marginTop: '10px' }}
       >
         {isSubmitting ? 'Logging in...' : 'Login'}

@@ -312,12 +312,12 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       {success && <div role="status" aria-live="polite" className="success-banner"><Check size={16} aria-hidden="true" /> Responsibility created successfully!</div>}
 
       <div className="form-actions">
-        {onCancel && <button type="button" onClick={onCancel} className="rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-7 py-[14px] text-[13px] font-medium text-[#2a1f18] font-mono transition-all hover:bg-[#e8dfd2] disabled:opacity-60"><X size={16} aria-hidden="true" /> Cancel</button>}
+        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary text-[13px] font-mono"><X size={16} aria-hidden="true" /> Cancel</button>}
         <button
           type="submit"
           disabled={isSubmitting || !formData.name.trim()}
           aria-busy={isSubmitting}
-          className="flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60"
+          className="btn-primary"
         >
           {isSubmitting ? 'Saving...' : initialData ? 'Update Responsibility' : 'Create Responsibility'}
         </button>
