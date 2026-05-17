@@ -12,7 +12,7 @@ interface CalendarItem {
   duration?: number;
 }
 
-export function buildGoogleCalendarUrl(item: CalendarItem, isLoggedIn?: boolean): string {
+export function buildGoogleCalendarUrl(item: CalendarItem): string {
   const startDate = new Date(item.startDateTime);
   if (isNaN(startDate.getTime())) return '';
 
@@ -26,13 +26,10 @@ export function buildGoogleCalendarUrl(item: CalendarItem, isLoggedIn?: boolean)
   const end = toGoogleCalendarDate(endDate);
   if (!start || !end) return '';
 
-  const details = '';
-
   const query = [
     'action=TEMPLATE',
     `text=${encodeURIComponent(item.name)}`,
     `dates=${start}/${end}`,
-    details ? `details=${encodeURIComponent(details)}` : '',
     `location=${encodeURIComponent(GOOGLE_MAPS_LINK)}`,
     'sf=true',
     'output=xml',

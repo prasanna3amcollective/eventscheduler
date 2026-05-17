@@ -81,16 +81,11 @@ const ACL_TABLES = [
 ] as const;
 const ACL_OPERATIONS = ['read', 'write', 'create', 'delete'] as const;
 
-const FILTER_DELAY_MS = 300;
 const RECORDS_PER_PAGE = 10;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function pluralise(count: number, singular: string, plural?: string): string {
-  return count === 1 ? singular : (plural ?? `${singular}s`);
-}
 
 /** Case-insensitive substring match; handles null/undefined safely. */
 function matchesFilter(value: string | null | undefined, filter: string): boolean {

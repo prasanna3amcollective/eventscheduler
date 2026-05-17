@@ -177,8 +177,8 @@ export default function ActivityDetailModal({
 
   // Pre-computed Google Calendar URL for the Sync button
   const googleCalendarUrl = useMemo(
-    () => (activity ? buildGoogleCalendarUrl(activity, isLoggedIn) : ''),
-    [activity, isLoggedIn],
+    () => (activity ? buildGoogleCalendarUrl(activity) : ''),
+    [activity?.startDateTime, activity?.endDateTime, activity?.duration, activity?.name],
   );
 
   const startDate = useMemo(
