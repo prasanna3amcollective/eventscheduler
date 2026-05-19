@@ -18,22 +18,51 @@
 }
 
 :root {
+  --bg-color:              #f5ede0;
+  --surface-color:         #fdf7ee;
+  --text-primary:          #1a120a;
+  --text-secondary:        #5a3e2a;
+  --primary-color:         #c8391a;  /* kumkum */
+  --responsibility-color:  #1e2e8c;  /* indigo */
+  --border-color:          #c8a882;
+  --hover-color:           #ede0cc;
+  --activity-color:        #c8391a;
+  --holiday-color:         #e8920a;  /* marigold */
+  --error-color:           #b02818;
+  --success-color:         #2a7a3c;  /* leaf */
+  --primary-glow:          rgba(200, 57, 26, 0.15);
+
+  /* Extended — 9 pigments for 9 activities */
+  --color-kumkum:          #c8391a;
+  --color-marigold:        #e8920a;
+  --color-indigo:          #1e2e8c;
+  --color-leaf:            #2a7a3c;
+  --color-lotus:           #c83a6a;
+  --color-turmeric:        #d4a20a;
+  --color-patina:          #1a7070;
+  --color-brinjal:         #6a1e9a;
+  --color-tamarind:        #8c4a1a;
+
+  --heading-font: 'League Spartan', sans-serif;
+  --body-font: 'Fraunces', serif;
+  --mono-font: 'JetBrains Mono', monospace;
+}
+
+/* Light theme */
+[data-theme="light"] {
   --bg-color: #f2ece4;
   --surface-color: #faf6f0;
   --text-primary: #2a1f18;
   --text-secondary: #7d6b5c;
   --primary-color: #b4533d;
   --responsibility-color: #a8d5e6;
-  --heading-font: 'League Spartan', sans-serif;
-  --body-font: 'Fraunces', serif;
-  --mono-font: 'JetBrains Mono', monospace;
-  --primary-glow: rgba(180, 83, 61, 0.15);
   --border-color: #d6cbbc;
   --hover-color: #e8dfd2;
   --activity-color: #b4533d;
   --holiday-color: #b88a3d;
   --error-color: #a13a2a;
   --success-color: #5a7a4a;
+  --primary-glow: rgba(180, 83, 61, 0.15);
 }
 
 .btn-primary {

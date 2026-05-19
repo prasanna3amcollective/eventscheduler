@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "3AM Collective",
+  title: "3AM Collective Movement",
   description: "Join the collective movement",
 };
 

@@ -26,6 +26,23 @@ function HomeContent() {
 
   const [activeTab, setActiveTab] = useState<'calendar' | 'scheduler' | 'admin'>('calendar');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Theme switcher
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme') as 'dark' | 'light' | null;
+    const initial = saved || 'dark';
+    setTheme(initial);
+    document.documentElement.dataset.theme = initial;
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('theme', next);
+  };
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResponsibility, setSelectedResponsibility] = useState<any>(null);
@@ -283,7 +300,7 @@ function HomeContent() {
       <header className="dashboard-header">
         <div className="header-brand">
           <img src="/fist.png" alt="Clenched Fist" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-          <h1>3AM Collective</h1>
+          <h1>3AM Collective Movement</h1>
         </div>
         <div className="header-user">
           <div className="user-menu-container">
@@ -314,6 +331,14 @@ function HomeContent() {
               </div>
             )}
           </div>
+          <button
+            onClick={toggleTheme}
+            className="btn-logout"
+            title="Switch theme"
+            style={{ marginRight: '6px' }}
+          >
+            {theme === 'dark' ? '☀︎' : '☾'}
+          </button>
           <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
         </div>
       </header>
@@ -332,14 +357,14 @@ function HomeContent() {
       <main className="app-container">
         {activeTab === 'calendar' && (
           <div className="content-section">
-             <CalendarView
-               refreshTrigger={refreshTrigger}
-               onSelectActivity={handleSelectActivity}
-               onSelectSlot={handleSelectSlot}
-               onCreateActivity={onCreateActivity}
-               onOwnResponsibility={onOwnResponsibility}
-               userRoles={userRoles}
-             />
+            <CalendarView
+              refreshTrigger={refreshTrigger}
+              onSelectActivity={handleSelectActivity}
+              onSelectSlot={handleSelectSlot}
+              onCreateActivity={onCreateActivity}
+              onOwnResponsibility={onOwnResponsibility}
+              userRoles={userRoles}
+            />
           </div>
         )}
         {activeTab === 'admin' && (
