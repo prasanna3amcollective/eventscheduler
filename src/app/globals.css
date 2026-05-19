@@ -307,17 +307,17 @@ input:not([type="checkbox"]):focus {
 
 .calendar-main-column {
   flex: 1;
-  min-width: 0; /* Prevent flex blowout */
+  min-width: 0;
 }
 
 .calendar-side-column {
-  width: 320px;
+  width: 280px;
   flex-shrink: 0;
   background: var(--surface-color);
   border-radius: var(--radius-lg);
   padding: 20px;
   box-shadow: var(--shadow-lg);
-  height: 700px; /* Match calendar-wrapper height */
+  height: 700px;
   overflow-y: auto;
 }
 
@@ -345,6 +345,7 @@ input:not([type="checkbox"]):focus {
 
 .rbc-calendar {
   font-family: inherit;
+  min-width: 0;
 }
 
 .rbc-header {
@@ -554,6 +555,8 @@ input:not([type="checkbox"]):focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 16px 0;
   margin-bottom: 12px;
   border-bottom: 1px solid var(--border-color);
@@ -610,6 +613,7 @@ input:not([type="checkbox"]):focus {
 
 .toolbar-views {
   display: flex;
+  flex-wrap: wrap;
   background: var(--hover-color);
   padding: 4px;
   border-radius: 12px;
@@ -1930,6 +1934,10 @@ input:not([type="checkbox"]):focus {
 .rbc-agenda-view {
   background: var(--bg-color);
   border-radius: var(--radius-lg);
+}
+
+.rbc-agenda-view-side {
+  padding-left: 4px;
 }
 
 .rbc-agenda-table {

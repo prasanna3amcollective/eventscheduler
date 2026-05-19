@@ -232,7 +232,8 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
             fontSize: '14px',
             color: 'var(--text-secondary)',
             textTransform: 'uppercase',
-            letterSpacing: '0.05em'
+            letterSpacing: '0.05em',
+            paddingLeft: '16px'
           }}
         >
           Agenda
