@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { rrulestr } from 'rrule';
 import { addMinutes } from 'date-fns';
 import { checkOverlapSchema } from '@/lib/validations';
 import { z } from 'zod';
+import { generateOccurrenceDates } from '@/lib/recurrence';
 
 export async function POST(request: Request) {
   try {
@@ -18,17 +18,13 @@ export async function POST(request: Request) {
 
     let newInstances: { start: Date, end: Date }[] = [];
     if (isRecurring && recurrenceRule) {
-      try {
-        const rule = rrulestr(recurrenceRule);
-        const until = new Date(newStart);
-        until.setFullYear(until.getFullYear() + 1);
-        newInstances = rule.between(newStart, until, true).map(d => ({
-          start: d,
-          end: addMinutes(d, duration)
-        }));
-      } catch (e) {
-        console.error("Error parsing new rrule", e);
-      }
+      const until = new Date(newStart);
+      until.setFullYear(until.getFullYear() + 1);
+      const dates = generateOccurrenceDates(recurrenceRule, newStart, until);
+      newInstances = dates.map(d => ({
+        start: d,
+        end: addMinutes(d, duration)
+      }));
     } else {
       newInstances = [{ start: newStart, end: newEnd }];
     }
@@ -38,19 +34,17 @@ export async function POST(request: Request) {
 
       let eventInstances: { start: Date, end: Date }[] = [];
       if (activity.isRecurring && activity.recurrenceRule) {
-        try {
-          const rule = rrulestr(activity.recurrenceRule);
-          // Only check instances around the new event's time range
-          const checkStart = new Date(newStart);
-          checkStart.setMonth(checkStart.getMonth() - 1);
-          const checkEnd = new Date(newStart);
-          checkEnd.setFullYear(checkEnd.getFullYear() + 1);
-          
-          eventInstances = rule.between(checkStart, checkEnd, true).map(d => ({
-            start: d,
-            end: addMinutes(d, activity.duration)
-          }));
-        } catch (e) {}
+        // Only check instances around the new event's time range
+        const checkStart = new Date(newStart);
+        checkStart.setMonth(checkStart.getMonth() - 1);
+        const checkEnd = new Date(newStart);
+        checkEnd.setFullYear(checkEnd.getFullYear() + 1);
+
+        const dates = generateOccurrenceDates(activity.recurrenceRule, checkStart, checkEnd);
+        eventInstances = dates.map(d => ({
+          start: d,
+          end: addMinutes(d, activity.duration)
+        }));
       } else {
         eventInstances = [{ start: activity.startDateTime, end: activity.endDateTime }];
       }

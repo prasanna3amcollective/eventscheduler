@@ -20,6 +20,11 @@ import {
   X,
 } from '@/components/Icons';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
+import {
+  buildRecurrenceRule,
+  parseRecurrenceForForm,
+  addExdateToRule,
+} from '@/lib/recurrence';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -77,46 +82,6 @@ const DEFAULT_DURATION_MINUTES = 60;
 
 const ERROR_SAVING_EVENT = 'An error occurred while saving';
 const ERROR_DELETING_EVENT = 'An error occurred';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Format a Date as an iCal DTSTART value, e.g. "20260605T090000Z".
- */
-function toIcalDtstart(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-}
-
-/**
- * Build an RRULE string from the form state.
- * Preserves any pre-existing EXDATE lines when editing a recurring instance.
- */
-function buildRrule(
-  start: Date,
-  isRecurring: boolean,
-  recurrenceDays: string[],
-  recurrenceFreq: string,
-  initialData?: ActivityData,
-): string {
-  if (!isRecurring || recurrenceDays.length === 0) return '';
-
-  const dtstart = toIcalDtstart(start);
-  let rrule = `DTSTART:${dtstart}\nRRULE:FREQ=${recurrenceFreq};BYDAY=${recurrenceDays.join(',')}`;
-
-  // Preserve EXDATE lines from the original rule when editing
-  if (initialData?.recurrenceRule?.includes('EXDATE')) {
-    const exdates = initialData.recurrenceRule
-      .split('\n')
-      .filter((l) => l.startsWith('EXDATE'));
-    if (exdates.length > 0) {
-      rrule += '\n' + exdates.join('\n');
-    }
-  }
-
-  return rrule;
-}
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -277,8 +242,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     endDateTime: initialEndDate,
     isRecurring: initialData?.isRecurring ?? false,
     recurrenceFreq: 'WEEKLY',
-    recurrenceDays:
-      (initialData?.recurrenceRule?.split('BYDAY=')[1]?.split(',') as string[]) ?? [],
+    recurrenceDays: parseRecurrenceForForm(initialData?.recurrenceRule).recurrenceDays,
     category: initialData?.category ?? 'General',
   });
 
@@ -319,7 +283,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     async (start: Date, end: Date) => {
       setOverlapWarning(null);
       try {
-        const rruleStr = buildRrule(
+        const rruleStr = buildRecurrenceRule(
           start,
           formData.isRecurring,
           formData.recurrenceDays,
@@ -397,7 +361,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       const start = formData.startDateTime;
       const end = formData.endDateTime;
 
-      const rruleStr = buildRrule(
+      const rruleStr = buildRecurrenceRule(
         start,
         formData.isRecurring,
         formData.recurrenceDays,
@@ -432,8 +396,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           }
 
           // Exclude this occurrence from the original series
-          const exdate = toIcalDtstart(start);
-          const newRRule = initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
+          const newRRule = addExdateToRule(initialData!.recurrenceRule || '', start);
 
           await fetch(`/api/activities/${initialData!.originalId}`, {
             method: 'PUT',
@@ -481,8 +444,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     setConfirmAction(() => async () => {
       try {
         if (isInstance && saveMode === 'this') {
-          const exdate = toIcalDtstart(formData.startDateTime);
-          const newRRule = initialData!.recurrenceRule + '\n' + `EXDATE:${exdate}`;
+          const newRRule = addExdateToRule(initialData!.recurrenceRule || '', formData.startDateTime);
           await secureFetch(`/api/activities/${initialData!.originalId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

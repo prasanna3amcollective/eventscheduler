@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
-import { rrulestr } from 'rrule';
 import { addMinutes, startOfDay as startOfDayFn } from 'date-fns';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
+import { generateOccurrenceDates } from '@/lib/recurrence';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -57,24 +57,19 @@ export async function GET(request: Request) {
       const totalCount = participantUserNames.size;
 
       if (activity.isRecurring && activity.recurrenceRule) {
-        try {
-          const rule = rrulestr(activity.recurrenceRule);
-          const occurrences = rule.between(rangeStart, rangeEnd, true);
-          for (const date of occurrences) {
-            expandedActivities.push({
-              ...activity,
-              id: `${activity.id}_inst_${date.getTime()}`,
-              originalId: activity.id,
-              startDateTime: date,
-              endDateTime: addMinutes(date, activity.duration),
-              participantCount: totalCount,
-              leaders,
-              guides,
-              observers
-            });
-          }
-        } catch (e) {
-          console.error("Error parsing rrule for event", activity.id, e);
+        const occurrences = generateOccurrenceDates(activity.recurrenceRule, rangeStart, rangeEnd);
+        for (const date of occurrences) {
+          expandedActivities.push({
+            ...activity,
+            id: `${activity.id}_inst_${date.getTime()}`,
+            originalId: activity.id,
+            startDateTime: date,
+            endDateTime: addMinutes(date, activity.duration),
+            participantCount: totalCount,
+            leaders,
+            guides,
+            observers
+          });
         }
       } else {
         if (activity.endDateTime >= rangeStart && activity.startDateTime <= rangeEnd) {

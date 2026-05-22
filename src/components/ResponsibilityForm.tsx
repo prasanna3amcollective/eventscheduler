@@ -17,7 +17,12 @@ import {
   User as UserIcon,
 } from '@/components/Icons';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
+import {
+  buildRecurrenceRule,
+  parseRecurrenceForForm,
+} from '@/lib/recurrence';
 
+// Types
 interface User {
   id: string;
   name: string;
@@ -56,21 +61,6 @@ const DAYS_OF_WEEK = [
 
 const DEFAULT_DURATION_MINUTES = 60;
 
-function toIcalDtstart(date: Date): string {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-}
-
-function buildRrule(
-  start: Date,
-  isRecurring: boolean,
-  recurrenceDays: string[],
-  recurrenceFreq: string,
-): string {
-  if (!isRecurring || recurrenceDays.length === 0) return '';
-  const dtstart = toIcalDtstart(start);
-  return `DTSTART:${dtstart}\nRRULE:FREQ=${recurrenceFreq};BYDAY=${recurrenceDays.join(',')}`;
-}
-
 export default function ResponsibilityForm({ onResponsibilityCreated, initialData, onCancel }: ResponsibilityFormProps) {
   const isEditing = !!initialData?.id;
   const initialStartDate = initialData
@@ -89,7 +79,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     endDateTime: initialEndDate,
     isRecurring: initialData?.isRecurring ?? false,
     recurrenceFreq: 'WEEKLY' as 'WEEKLY' | 'MONTHLY',
-    recurrenceDays: (initialData?.recurrenceRule?.split('BYDAY=')[1]?.split(',') as string[]) ?? [],
+    recurrenceDays: parseRecurrenceForForm(initialData?.recurrenceRule).recurrenceDays,
     category: initialData?.category ?? 'General',
   });
 
@@ -134,7 +124,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     setIsSubmitting(true);
 
     try {
-      const recurrenceRule = buildRrule(
+      const recurrenceRule = buildRecurrenceRule(
         formData.startDateTime,
         formData.isRecurring,
         formData.recurrenceDays,
