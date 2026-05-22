@@ -28,6 +28,9 @@ interface Activity {
     duration: number;
     isRecurring: boolean;
     recurrenceRule: string | null;
+    recurrenceTemplateId?: string | null;
+    generatedFromTemplateId?: string | null;
+    detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
     category?: string;
     state?: string;
     leaders?: string[];
@@ -224,6 +227,9 @@ export default function ActivityManagementPage() {
             isRecurring: activity.isRecurring,
             recurrenceRule: activity.recurrenceRule,
             category: activity.category,
+            recurrenceTemplateId: activity.recurrenceTemplateId,
+            generatedFromTemplateId: activity.generatedFromTemplateId,
+            detachReason: activity.detachReason,
             leader: type === 'leader' ? names : (activity.leaders || []),
             guide: type === 'guide' ? names : (activity.guides || []),
             observer: type === 'observer' ? names : (activity.observers || [])

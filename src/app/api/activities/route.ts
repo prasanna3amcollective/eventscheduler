@@ -33,6 +33,16 @@ export async function GET(request: Request) {
 
     const expandedActivities: any[] = [];
 
+    // Hybrid recurrence support: collect slots that have explicit detached/stored instances
+    // so we can suppress the corresponding synthetic occurrence from the master template.
+    const overriddenSlots = new Set<string>();
+    for (const act of dbActivities) {
+      if (act.recurrenceTemplateId && act.detachReason && act.detachReason !== 'none') {
+        const startIso = new Date(act.startDateTime).toISOString();
+        overriddenSlots.add(`${act.recurrenceTemplateId}:${startIso}`);
+      }
+    }
+
     for (const activity of dbActivities) {
       // Extract staff members from participants based on their type
       const leaders = activity.participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
@@ -56,9 +66,17 @@ export async function GET(request: Request) {
       // Calculate total unique participants
       const totalCount = participantUserNames.size;
 
-      if (activity.isRecurring && activity.recurrenceRule) {
+      const isTemplateMaster = !activity.recurrenceTemplateId; // templates have null recurrenceTemplateId
+
+      if (isTemplateMaster && activity.isRecurring && activity.recurrenceRule) {
         const occurrences = generateOccurrenceDates(activity.recurrenceRule, rangeStart, rangeEnd);
         for (const date of occurrences) {
+          const key = `${activity.id}:${date.toISOString()}`;
+          if (overriddenSlots.has(key)) {
+            // Hybrid transition: a stored detached row (edited/cancelled/...) exists for this slot.
+            // Skip synthetic so the real persisted row (with correct detachReason and real id) is the only one.
+            continue;
+          }
           expandedActivities.push({
             ...activity,
             id: `${activity.id}_inst_${date.getTime()}`,
@@ -68,7 +86,11 @@ export async function GET(request: Request) {
             participantCount: totalCount,
             leaders,
             guides,
-            observers
+            observers,
+            // ensure lineage defaults are present on virtuals too
+            recurrenceTemplateId: activity.recurrenceTemplateId ?? activity.id,
+            generatedFromTemplateId: activity.id,
+            detachReason: 'none'
           });
         }
       } else {
@@ -100,7 +122,7 @@ export async function POST(request: Request) {
     console.log("POST /api/activities body:", JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
     console.log("POST /api/activities parsedData:", JSON.stringify(parsedData, null, 2));
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -115,6 +137,9 @@ export async function POST(request: Request) {
           duration: Number(duration),
           isRecurring: Boolean(isRecurring),
           recurrenceRule: isRecurring ? recurrenceRule : null,
+          recurrenceTemplateId: recurrenceTemplateId || null,
+          generatedFromTemplateId: generatedFromTemplateId || null,
+          detachReason: detachReason || 'none',
           category: category || 'General',
         }
       }

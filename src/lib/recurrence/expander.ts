@@ -67,9 +67,10 @@ export function applyExdates(
  * Highest-level helper: expand a recurring entity (Activity or Responsibility)
  * into concrete instances for a date range.
  *
- * - If not recurring or no rule → returns a single normalized entry.
+ * - If not recurring or no rule → returns a single normalized entry (lineage preserved or defaulted).
  * - Otherwise → one entry per generated date (end computed via duration).
- * - Preserves every other field on the original entity.
+ * - Preserves every other field + sets recurrence lineage defaults for generated occurrences
+ *   (recurrenceTemplateId = master, generatedFromTemplateId = master, detachReason = 'none').
  * - Does NOT synthesize _inst_ ids (caller responsibility, per plan).
  */
 export function expandRecurringActivity<T extends RecurringEntity>(
@@ -92,6 +93,10 @@ export function expandRecurringActivity<T extends RecurringEntity>(
         ...entity,
         startDateTime: start,
         endDateTime: end,
+        // Preserve or default lineage fields for non-recurring / template rows
+        recurrenceTemplateId: entity.recurrenceTemplateId ?? null,
+        generatedFromTemplateId: entity.generatedFromTemplateId ?? null,
+        detachReason: entity.detachReason ?? 'none',
       } as unknown as T & { startDateTime: Date; endDateTime: Date },
     ];
   }
@@ -109,6 +114,10 @@ export function expandRecurringActivity<T extends RecurringEntity>(
       originalId: entity.id,
       startDateTime: date,
       endDateTime: end,
+      // For synthetically generated occurrences from a template/master
+      recurrenceTemplateId: entity.recurrenceTemplateId ?? entity.id,
+      generatedFromTemplateId: entity.id,
+      detachReason: 'none',
     } as unknown as T & { originalId?: string; startDateTime: Date; endDateTime: Date };
   });
 }

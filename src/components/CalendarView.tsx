@@ -50,6 +50,9 @@ interface ApiActivity {
   participants?: { userId: string }[];
   category?: string;
   state?: string;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
 }
 
 /** The shape used internally by react-big-calendar */
@@ -67,6 +70,9 @@ interface CalendarActivity {
   category?: string;
   state?: string;
   isResponsibility?: boolean;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
   owner?: string;
 }
 

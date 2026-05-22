@@ -51,6 +51,9 @@ interface ActivityData {
   duration: number;
   isRecurring: boolean;
   recurrenceRule?: string | null;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
   category?: string;
 }
 
@@ -244,6 +247,10 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     recurrenceFreq: 'WEEKLY',
     recurrenceDays: parseRecurrenceForForm(initialData?.recurrenceRule).recurrenceDays,
     category: initialData?.category ?? 'General',
+    // Lineage fields (backend-managed for IDs; detachReason may be shown/edited)
+    recurrenceTemplateId: initialData?.recurrenceTemplateId ?? null,
+    generatedFromTemplateId: initialData?.generatedFromTemplateId ?? null,
+    detachReason: initialData?.detachReason ?? 'none',
   });
 
   // Available users for the typeahead dropdowns
@@ -369,7 +376,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         initialData,
       );
 
-      const payload = {
+      let payload: any = {
         name: formData.name,
         leader: formData.leader,
         guide: formData.guide,
@@ -380,19 +387,45 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         isRecurring: formData.isRecurring,
         recurrenceRule: rruleStr,
         category: formData.category,
+        // Lineage will be overridden below for 'this only' detaches
+        recurrenceTemplateId: formData.recurrenceTemplateId,
+        generatedFromTemplateId: formData.generatedFromTemplateId,
+        detachReason: formData.detachReason,
       };
+
+      // If the user chose to edit the entire series (even if the form was opened from a specific instance),
+      // clear any per-occurrence lineage so we don't mutate the master template record.
+      if (saveMode === 'all') {
+        payload.recurrenceTemplateId = null;
+        payload.generatedFromTemplateId = null;
+        payload.detachReason = 'none';
+      }
 
       try {
         if (isInstance && saveMode === 'this') {
           // Create a non-recurring copy of this specific occurrence
+          // Set lineage + explicit detach reason so the stored row is the authoritative "edited" instance
+          const thisOnlyPayload = {
+            ...payload,
+            isRecurring: false,
+            recurrenceRule: null,
+            recurrenceTemplateId: initialData!.originalId || initialData!.id,
+            generatedFromTemplateId: initialData!.originalId || initialData!.id,
+            detachReason: 'edited' as const,
+          };
           const createRes = await secureFetch('/api/activities', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...payload, isRecurring: false, recurrenceRule: null }),
+            body: JSON.stringify(thisOnlyPayload),
           });
           if (!createRes.ok) {
-            const errorData = await createRes.json().catch(() => ({}));
-            throw new Error(errorData.error || ERROR_SAVING_EVENT);
+            const text = await createRes.text().catch(() => '');
+            let errorData: any = {};
+            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            console.error(`Save failed (create detached): HTTP ${createRes.status}`);
+            console.error('Raw response body:', text);
+            console.error('Parsed error data:', errorData);
+            throw new Error(errorData.error || errorData.message || `Save failed (HTTP ${createRes.status})`);
           }
 
           // Exclude this occurrence from the original series
@@ -416,9 +449,13 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           });
 
           if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            console.error('Save failed:', errorData);
-            throw new Error(errorData.error || errorData.message || ERROR_SAVING_EVENT);
+            const text = await res.text().catch(() => '');
+            let errorData: any = {};
+            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            console.error(`Save failed: HTTP ${res.status}`);
+            console.error('Raw response body:', text);
+            console.error('Parsed error data:', errorData);
+            throw new Error(errorData.error || errorData.message || `Save failed (HTTP ${res.status})`);
           }
         }
 
@@ -628,7 +665,34 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             >
               All activities in series
             </button>
-          </div>
+           </div>
+         </div>
+       )}
+
+      {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
+      {(isInstance || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+        <div className="form-group" style={{ marginTop: '12px' }}>
+          <label htmlFor="detach-reason">Detach Reason</label>
+          <select
+            id="detach-reason"
+            value={formData.detachReason || 'none'}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
+              })
+            }
+            style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+          >
+            <option value="none">none (part of series)</option>
+            <option value="edited">edited</option>
+            <option value="cancelled">cancelled</option>
+            <option value="rescheduled">rescheduled</option>
+            <option value="manually_created">manually_created</option>
+          </select>
+          <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+            System-tracked reason this occurrence was detached from its recurrence template.
+          </small>
         </div>
       )}
 

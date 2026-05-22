@@ -10,6 +10,9 @@ const responsibilitySchema = z.object({
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
+  recurrenceTemplateId: z.string().uuid().nullable().optional(),
+  generatedFromTemplateId: z.string().uuid().nullable().optional(),
+  detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),
   category: z.string().default('General'),
   state: z.enum(['Scheduled', 'Completed']).default('Scheduled').optional(),
   owner: z.string().optional().nullable(),
@@ -20,7 +23,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = responsibilitySchema.parse(body);
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, owner, ownerId } = parsedData;
+    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -35,6 +38,9 @@ export async function POST(request: Request) {
           duration: Number(duration),
           isRecurring: Boolean(isRecurring),
           recurrenceRule: isRecurring ? recurrenceRule : null,
+          recurrenceTemplateId: recurrenceTemplateId || null,
+          generatedFromTemplateId: generatedFromTemplateId || null,
+          detachReason: detachReason || 'none',
           category: category || 'General',
           owner: owner || null,
           ownerId: ownerId || null,

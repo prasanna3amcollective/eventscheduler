@@ -9,6 +9,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum DetachReason {
+  none
+  edited
+  cancelled
+  rescheduled
+  manually_created
+}
+
 model Activity {
   id             String   @id @default(uuid()) // sys_id
   name           String
@@ -17,15 +25,27 @@ model Activity {
   duration       Int      // in minutes
   isRecurring    Boolean  @default(false)
   recurrenceRule String?
+  recurrenceTemplateId    String?
+  generatedFromTemplateId String?
+  detachReason            DetachReason @default(none)
+
   category       String   @default("General")
   state          String   @default("Scheduled")
   participants   Participant[]
+
+  // Recurrence lineage relations (for template/instance tracking)
+  recurrenceTemplate    Activity?  @relation("ActivityRecurrenceTemplate", fields: [recurrenceTemplateId], references: [id])
+  generatedFromTemplate Activity?  @relation("ActivityGeneratedFrom", fields: [generatedFromTemplateId], references: [id])
+  generatedInstances    Activity[] @relation("ActivityRecurrenceTemplate")
+  generatedChildren     Activity[] @relation("ActivityGeneratedFrom")
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
   sys_updated_by String?
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
+
+  @@unique([recurrenceTemplateId, startDateTime])
 }
 
 model Responsibility {
@@ -36,16 +56,28 @@ model Responsibility {
   duration       Int      // in minutes
   isRecurring    Boolean  @default(false)
   recurrenceRule String?
+  recurrenceTemplateId    String?
+  generatedFromTemplateId String?
+  detachReason            DetachReason @default(none)
+
   category       String   @default("General")
   state          String   @default("Scheduled")
   owner          String?
   ownerId        String?
+
+  // Recurrence lineage relations (for template/instance tracking)
+  recurrenceTemplate    Responsibility?  @relation("ResponsibilityRecurrenceTemplate", fields: [recurrenceTemplateId], references: [id])
+  generatedFromTemplate Responsibility?  @relation("ResponsibilityGeneratedFrom", fields: [generatedFromTemplateId], references: [id])
+  generatedInstances    Responsibility[] @relation("ResponsibilityRecurrenceTemplate")
+  generatedChildren     Responsibility[] @relation("ResponsibilityGeneratedFrom")
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
   sys_updated_by String?
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
+
+  @@unique([recurrenceTemplateId, startDateTime])
 }
 
 model Participant {

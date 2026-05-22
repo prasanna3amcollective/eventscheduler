@@ -11,6 +11,9 @@ interface Activity {
   startDateTime: string;
   participantCount?: number;
   category?: string;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: string;
 }
 
 interface ActivityCarouselProps {

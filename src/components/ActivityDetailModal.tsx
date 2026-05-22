@@ -30,6 +30,9 @@ interface ActivityData {
   participants?: { userId: string, type?: string }[];
   category?: string;
   state?: string;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
 }
 
 /** Minimal user profile used in the modal */

@@ -40,6 +40,9 @@ interface ResponsibilityData {
   duration: number;
   isRecurring: boolean;
   recurrenceRule?: string | null;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
   category?: string;
 }
 
@@ -81,6 +84,10 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     recurrenceFreq: 'WEEKLY' as 'WEEKLY' | 'MONTHLY',
     recurrenceDays: parseRecurrenceForForm(initialData?.recurrenceRule).recurrenceDays,
     category: initialData?.category ?? 'General',
+    // Lineage (forwarded on submit; IDs backend-driven)
+    recurrenceTemplateId: initialData?.recurrenceTemplateId ?? null,
+    generatedFromTemplateId: initialData?.generatedFromTemplateId ?? null,
+    detachReason: initialData?.detachReason ?? 'none',
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -141,6 +148,9 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         isRecurring: formData.isRecurring,
         recurrenceRule: formData.isRecurring ? recurrenceRule : null,
         category: formData.category,
+        recurrenceTemplateId: formData.recurrenceTemplateId,
+        generatedFromTemplateId: formData.generatedFromTemplateId,
+        detachReason: formData.detachReason,
       };
 
       const res = await secureFetch('/api/responsibilities', {
@@ -296,9 +306,34 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
                 ))}
               </div>
             </div>
-          )}
-        </div>
-      {error && <div role="alert" aria-live="assertive" className="error-banner"><AlertTriangle size={16} aria-hidden="true" /> {error}</div>}
+           )}
+         </div>
+
+       {/* Detach Reason dropdown (Responsibility) - IDs never shown in UI */}
+       {(formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+         <div className="form-group" style={{ marginTop: '8px' }}>
+           <label htmlFor="detach-reason-resp">Detach Reason</label>
+           <select
+             id="detach-reason-resp"
+             value={formData.detachReason || 'none'}
+             onChange={(e) =>
+               setFormData({
+                 ...formData,
+                 detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
+               })
+             }
+             style={{ width: '100%', padding: '6px', borderRadius: '4px' }}
+           >
+             <option value="none">none (part of series)</option>
+             <option value="edited">edited</option>
+             <option value="cancelled">cancelled</option>
+             <option value="rescheduled">rescheduled</option>
+             <option value="manually_created">manually_created</option>
+           </select>
+         </div>
+       )}
+
+       {error && <div role="alert" aria-live="assertive" className="error-banner"><AlertTriangle size={16} aria-hidden="true" /> {error}</div>}
       {success && <div role="status" aria-live="polite" className="success-banner"><Check size={16} aria-hidden="true" /> Responsibility created successfully!</div>}
 
       <div className="form-actions">

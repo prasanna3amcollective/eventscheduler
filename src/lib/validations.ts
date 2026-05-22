@@ -31,6 +31,9 @@ export const activitySchema = z.object({
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
+  recurrenceTemplateId: z.string().uuid().nullable().optional(),
+  generatedFromTemplateId: z.string().uuid().nullable().optional(),
+  detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),
   category: z.string().default('General'),
   state: z.enum(['Scheduled', 'Completed']).default('Scheduled').optional()
 });
@@ -40,6 +43,9 @@ export const checkOverlapSchema = z.object({
   endDateTime: z.string().datetime(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
+  recurrenceTemplateId: z.string().uuid().nullable().optional(),
+  generatedFromTemplateId: z.string().uuid().nullable().optional(),
+  detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),
   duration: z.number().positive(),
   excludeActivityId: z.string().optional()
 });
