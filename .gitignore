@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# =============================================================================
+# Dependencies
+# =============================================================================
 /node_modules
 /.pnp
 .pnp.*
@@ -9,111 +11,99 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+node_modules/
 
-# testing
+# =============================================================================
+# Testing
+# =============================================================================
 /coverage
-/.kilo/
 
-# next.js
+# =============================================================================
+# Next.js
+# =============================================================================
 /.next/
-/out/
+.next/
+out/
 
-# production
+# =============================================================================
+# Production / Build outputs
+# =============================================================================
 /build
+build/
+dist/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# =============================================================================
+# Debug / Logs
+# =============================================================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# =============================================================================
+# Environment files
+# =============================================================================
+# (can opt-in for committing if needed)
 .env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-/src/generated/prisma
-
-
-# Build outputs
-.next/
-out/
-dist/
-build/
-
-# Dependencies
-node_modules/
-
-# Environment
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
-# Prisma generated client
-src/generated/
+# =============================================================================
+# Vercel
+# =============================================================================
+.vercel
 
+# =============================================================================
 # TypeScript
+# =============================================================================
 *.tsbuildinfo
+next-env.d.ts
 tsconfig.tsbuildinfo
 
-# OS
+# =============================================================================
+# Prisma
+# =============================================================================
+# Generated client (migrations in prisma/migrations/ must be committed - do not ignore them)
+/src/generated/prisma
+src/generated/
+
+# =============================================================================
+# OS generated files
+# =============================================================================
 .DS_Store
 Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
 
-# Editor
+# =============================================================================
+# Editor / IDE
+# =============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# =============================================================================
+# Kilo / AI Agent config and artifacts
+# =============================================================================
+# Ignore only runtime/install artifacts and generated plans.
+# Project config (commands/, agents/, skills/, workflows/, setup/run scripts, kilo.json) should be committed.
+.kilo/node_modules/
+.kilo/package.json
+.kilo/package-lock.json
+.kilo/pnpm-lock.yaml
+.kilo/bun.lock
+.kilo/yarn.lock
+.kilo/plans/
+.kilo/worktrees/
+.kilo/agent-manager.json
+.kilo/.gitignore
 
-# Prisma migrations lock (optional — keep if you want migration history tracked)
-# prisma/migrations/  ← do NOT ignore this; migrations should be committed
-
-# Build
-.next/
-out/
-
-# Dependencies
-node_modules/
-
-# Environment
-.env
-.env.local
-.env*.local
-
-# Prisma generated client
-src/generated/
-
-# TypeScript incremental build cache
-tsconfig.tsbuildinfo
-
-# AI agent artifacts
-.kilo/
-
-# Scratch
+# =============================================================================
+# Scratch / temporary files
+# =============================================================================
 scratch/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*

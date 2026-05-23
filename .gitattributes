@@ -1,0 +1,99 @@
+# Ensure consistent line endings across Windows, macOS, and Linux clones.
+# This prevents "modified file" noise, bad diffs, and "it works on my machine" issues
+# for Windows developers pulling the branch.
+#
+# Git will:
+# - Normalize to LF on commit for all text files
+# - Checkout with LF on all platforms (no CRLF in working tree)
+#
+# Windows git default (core.autocrlf=true) is overridden by these rules.
+
+# Default: auto-detect text, force LF everywhere for cross-platform consistency
+* text=auto eol=lf
+
+# Source code - explicit LF
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.mts text eol=lf
+*.cts text eol=lf
+
+# Config / data
+*.json text eol=lf
+*.jsonc text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+
+# Web / styles
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+*.html text eol=lf
+*.htm text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.mdx text eol=lf
+
+# Database / Prisma
+*.prisma text eol=lf
+*.sql text eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+
+# Environment & Next.js / TS config
+*.env* text eol=lf
+*.config.* text eol=lf
+next-env.d.ts text eol=lf
+tsconfig*.json text eol=lf
+eslint.config.* text eol=lf
+
+# Lockfiles (generated but should be consistent)
+package-lock.json text eol=lf
+yarn.lock text eol=lf
+pnpm-lock.yaml text eol=lf
+bun.lock text eol=lf
+
+# Windows scripts - allow CRLF if someone adds them (rare in this repo)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files - do not normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mov binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+
+# Images / assets in public/
+public/**/* binary
+
+# Kilo / agent artifacts that may contain binary or generated data
+.kilo/**/* binary
+.kilo/**/*.md text eol=lf
