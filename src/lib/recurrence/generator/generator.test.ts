@@ -11,6 +11,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  compareVirtualToMaterialized,
   generateOccurrences,
   materializeTemplateWindow,
   reconcileFutureOccurrences,
@@ -285,5 +286,49 @@ describe('materializeTemplateWindow & reconcile (mocked prisma)', () => {
     const stillThere = mock.state.activities.find((a: any) => a.id === 'detached-1');
     assert.ok(stillThere);
     assert.equal(stillThere.detachReason, 'edited');
+  });
+
+  it('compareVirtualToMaterialized reports match when generator output equals virtual expansion', async () => {
+    const tpl = makeActiveActivityTemplate('tpl-compare');
+    const mock = createMockPrisma({
+      state: { templates: new Map([[tpl.id, { ...tpl }]]) },
+    });
+
+    // materialize a small window
+    await materializeTemplateWindow(mock as any, tpl.id, {
+      horizonDays: 14,
+      asOf: new Date('2026-06-01T00:00:00.000Z'),
+    });
+
+    const comparison = await compareVirtualToMaterialized(mock as any, tpl.id, {
+      horizonDays: 14,
+      asOf: new Date('2026-06-01T00:00:00.000Z'),
+    });
+
+    assert.equal(comparison.templateId, tpl.id);
+    assert.equal(comparison.errors.length, 0);
+    assert.equal(comparison.match, true, 'virtual and materialized must agree for a fresh template');
+    assert.ok(comparison.virtualDates.length >= 1);
+    assert.equal(comparison.missingInMaterialized.length, 0);
+    assert.equal(comparison.extraInMaterialized.length, 0);
+    assert.equal(comparison.dataDrift.length, 0);
+  });
+
+  it('compareVirtualToMaterialized accepts context without throwing (PHASE 5 ACL path)', async () => {
+    const tpl = makeActiveActivityTemplate('tpl-ctx');
+    const mock = createMockPrisma({
+      state: { templates: new Map([[tpl.id, { ...tpl }]]) },
+    });
+
+    const ctx = { id: 'user-123', roles: ['core'] };
+    const result = await materializeTemplateWindow(mock as any, tpl.id, {
+      horizonDays: 7,
+      asOf: new Date('2026-06-01'),
+      context: ctx,
+    });
+    assert.equal(result.errors.length, 0);
+
+    const cmp = await compareVirtualToMaterialized(mock as any, tpl.id, { context: ctx });
+    assert.ok(cmp, 'compare must succeed when context is supplied');
   });
 });

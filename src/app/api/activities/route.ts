@@ -5,6 +5,7 @@ import { addMinutes, startOfDay as startOfDayFn } from 'date-fns';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
 import { generateOccurrenceDates } from '@/lib/recurrence';
+import { isShadowGeneratedRow, ensureShadowTemplateAndMaterialize } from '@/lib/recurrence/shadow';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -31,19 +32,26 @@ export async function GET(request: Request) {
       }
     })) as any);
 
+    // PHASE 5 shadow filter — remove materialized shadow rows so UI never sees them.
+    // Backlinked masters (which still carry recurrenceRule) continue to drive virtual expansion.
+    // This filter (and the loosened isTemplateMaster predicate below) are the ONLY changes
+    // to the read path during shadow mode. They will be deleted at cutover.
+    // Do not remove until PHASE 8 cutover.
+    const visibleDbActivities = dbActivities.filter((a: any) => !isShadowGeneratedRow(a));
+
     const expandedActivities: any[] = [];
 
     // Hybrid recurrence support: collect slots that have explicit detached/stored instances
     // so we can suppress the corresponding synthetic occurrence from the master template.
     const overriddenSlots = new Set<string>();
-    for (const act of dbActivities) {
+    for (const act of visibleDbActivities) {
       if (act.recurrenceTemplateId && act.detachReason && act.detachReason !== 'none') {
         const startIso = new Date(act.startDateTime).toISOString();
         overriddenSlots.add(`${act.recurrenceTemplateId}:${startIso}`);
       }
     }
 
-    for (const activity of dbActivities) {
+    for (const activity of visibleDbActivities) {
       // Extract staff members from participants based on their type
       const leaders = activity.participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
       const guides = activity.participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
@@ -66,7 +74,12 @@ export async function GET(request: Request) {
       // Calculate total unique participants
       const totalCount = participantUserNames.size;
 
-      const isTemplateMaster = !activity.recurrenceTemplateId; // templates have null recurrenceTemplateId
+      // PHASE 5: loosened master detection — a row with recurrenceRule is still treated
+      // as an expansion master even after it has been backlinked to a RecurrenceTemplate.
+      // This keeps virtual expansion alive for the original master during shadow validation.
+      // The `|| Boolean(activity.recurrenceRule)` guard is required post-backlink and will
+      // be removed only at cutover when rrule is stripped from masters.
+      const isTemplateMaster = !activity.recurrenceTemplateId || Boolean(activity.recurrenceRule);
 
       if (isTemplateMaster && activity.isRecurring && activity.recurrenceRule) {
         const occurrences = generateOccurrenceDates(activity.recurrenceRule, rangeStart, rangeEnd);
@@ -172,6 +185,33 @@ export async function POST(request: Request) {
             throw err;
           });
         }
+      }
+    }
+
+    // PHASE 5 — shadow generation for newly created recurring masters (best-effort only).
+    // After the legacy master exists we create the RecurrenceTemplate + materialized
+    // children (no rrule on them) and back-link the master. The UI never sees the
+    // shadows because of the filter added in GET. The master keeps its recurrenceRule
+    // for the duration of this phase so virtual expansion is unaffected.
+    // This block is deliberately after the HTTP-relevant work and is wrapped inside
+    // the helper's own try/catch.
+    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
+      const tplId = await ensureShadowTemplateAndMaterialize({
+        prisma,
+        masterId: activity.id,
+        model: 'activity',
+        templateType: 'activity',
+        name,
+        duration: Number(duration),
+        category: category || 'General',
+        recurrenceRule,
+        startDateTime: new Date(startDateTime),
+        context: securityContext,
+      });
+      if (tplId) {
+        // Patch so the 201 response body already shows the backlinks (harmless; UI ignores them for now)
+        (activity as any).recurrenceTemplateId = tplId;
+        (activity as any).generatedFromTemplateId = tplId;
       }
     }
 

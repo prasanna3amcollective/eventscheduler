@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { withAuth } from '@/lib/prisma';
+import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { z } from 'zod';
+import { isShadowGeneratedRow, ensureShadowTemplateAndMaterialize } from '@/lib/recurrence/shadow';
 
 const responsibilitySchema = z.object({
   name: z.string().min(1, 'Responsibility name is required').max(200),
@@ -48,6 +49,31 @@ export async function POST(request: Request) {
       }
     }));
 
+    // PHASE 5 — shadow generation for newly created recurring masters (best-effort only).
+    // Mirrors the activities path exactly. The materialized responsibility shadows
+    // omit owner (per generator contract) and are hidden by the GET filter during
+    // this validation phase. The backlinked master retains its recurrenceRule.
+    // Do not remove until PHASE 8 cutover.
+    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
+      const tplId = await ensureShadowTemplateAndMaterialize({
+        prisma,
+        masterId: responsibility.id,
+        model: 'responsibility',
+        templateType: 'responsibility',
+        name,
+        duration: Number(duration),
+        category: category || 'General',
+        recurrenceRule,
+        startDateTime: new Date(startDateTime),
+        context: securityContext,
+      });
+      if (tplId) {
+        // Patch the 201 response (harmless for now)
+        (responsibility as any).recurrenceTemplateId = tplId;
+        (responsibility as any).generatedFromTemplateId = tplId;
+      }
+    }
+
     return NextResponse.json(responsibility, { status: 201 });
   } catch (error: unknown) {
     console.error("Error creating responsibility:", error);
@@ -76,7 +102,13 @@ export async function GET() {
       }
     }));
 
-    return NextResponse.json(responsibilities);
+    // PHASE 5 shadow filter — pure materialized shadow rows are hidden from the response.
+    // The backlinked master (still carrying its recurrenceRule) is retained so any
+    // future expansion logic (once implemented for responsibilities) continues to work.
+    // Do not remove until PHASE 8 cutover.
+    const visibleResponsibilities = (responsibilities as unknown as any[]).filter((r: any) => !isShadowGeneratedRow(r));
+
+    return NextResponse.json(visibleResponsibilities);
   } catch (error: unknown) {
     console.error("Error fetching responsibilities:", error);
     if (error.message?.includes('Security Restricted')) {

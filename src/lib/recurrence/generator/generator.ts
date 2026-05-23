@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import {
+  CompareResult,
   GenerateOccurrencesOptions,
+  GeneratorContext,
   MaterializeOptions,
   MaterializeResult,
   ReconcileOptions,
@@ -108,10 +110,11 @@ export async function materializeTemplateWindow(
   const asOf = options.asOf ?? new Date();
   const horizonDays = options.horizonDays ?? 60;
   const dryRun = options.dryRun ?? false;
+  const ctx = options.context;
   const errors: string[] = [];
 
   try {
-    const template = await loadTemplateSnapshot(prisma, templateId);
+    const template = await loadTemplateSnapshot(prisma, templateId, ctx);
 
     if (template.status !== 'active') {
       return {
@@ -148,7 +151,8 @@ export async function materializeTemplateWindow(
             generatedUntil: horizonEnd,
             lastGeneratedAt: new Date(),
           },
-        });
+          ...(ctx ? { _context: ctx } : {}),
+        } as any);
       }
       return {
         templateId,
@@ -174,13 +178,15 @@ export async function materializeTemplateWindow(
           const result = await tx.activity.createMany({
             data: payloads as any,
             skipDuplicates: true,
-          });
+            ...(ctx ? { _context: ctx } : {}),
+          } as any);
           created = result.count;
         } else {
           const result = await tx.responsibility.createMany({
             data: payloads as any,
             skipDuplicates: true,
-          });
+            ...(ctx ? { _context: ctx } : {}),
+          } as any);
           created = result.count;
         }
 
@@ -190,7 +196,8 @@ export async function materializeTemplateWindow(
             generatedUntil: horizonEnd,
             lastGeneratedAt: new Date(),
           },
-        });
+          ...(ctx ? { _context: ctx } : {}),
+        } as any);
       });
     } else {
       // Dry run — just count how many would have been new
@@ -231,6 +238,7 @@ export async function reconcileFutureOccurrences(
   const asOf = options.asOf ?? new Date();
   const dryRun = options.dryRun ?? false;
   const newVersionId = options.newVersionId ?? templateId;
+  const ctx = options.context;
   const errors: string[] = [];
 
   let created = 0;
@@ -239,7 +247,7 @@ export async function reconcileFutureOccurrences(
   let skippedDetached = 0;
 
   try {
-    const template = await loadTemplateSnapshot(prisma, templateId);
+    const template = await loadTemplateSnapshot(prisma, templateId, ctx);
 
     if (template.status !== 'active') {
       return {
@@ -265,13 +273,15 @@ export async function reconcileFutureOccurrences(
 
     // Load existing future non-detached occurrences for this template
     const model = template.templateType === 'activity' ? 'activity' : 'responsibility';
-    const existing: any[] = await (prisma as any)[model].findMany({
+    const prismaAny = prisma as any;
+    const existing: any[] = await prismaAny[model].findMany({
       where: {
         recurrenceTemplateId: templateId,
         startDateTime: { gte: asOf },
         detachReason: 'none',
       },
       select: { id: true, startDateTime: true, name: true, duration: true, category: true },
+      ...(ctx ? { _context: ctx } : {}),
     });
 
     const existingByTime = new Map<string, any>();
@@ -289,9 +299,10 @@ export async function reconcileFutureOccurrences(
 
     if (toCancel.length > 0 && !dryRun) {
       const ids = toCancel.map((r) => r.id);
-      const result = await (prisma as any)[model].updateMany({
+      const result = await prismaAny[model].updateMany({
         where: { id: { in: ids } },
         data: { state: 'Cancelled' },
+        ...(ctx ? { _context: ctx } : {}),
       });
       cancelled = result.count;
     } else {
@@ -308,9 +319,10 @@ export async function reconcileFutureOccurrences(
         buildOccurrenceCreatePayload(template, start, newVersionId)
       );
 
-      const result = await (prisma as any)[model].createMany({
+      const result = await prismaAny[model].createMany({
         data: payloads,
         skipDuplicates: true,
+        ...(ctx ? { _context: ctx } : {}),
       });
       created = result.count;
     } else {
@@ -335,7 +347,7 @@ export async function reconcileFutureOccurrences(
     if (needsUpdate.length > 0 && !dryRun) {
       // We update one by one because different models; acceptable for small sets
       for (const id of needsUpdate) {
-        await (prisma as any)[model].update({
+        await prismaAny[model].update({
           where: { id },
           data: {
             name: template.name ?? 'Untitled',
@@ -343,6 +355,7 @@ export async function reconcileFutureOccurrences(
             category: template.category,
             generatedFromTemplateId: newVersionId,
           },
+          ...(ctx ? { _context: ctx } : {}),
         });
       }
       updated = needsUpdate.length;
@@ -351,12 +364,13 @@ export async function reconcileFutureOccurrences(
     }
 
     // Count detached rows we saw (for reporting)
-    const allFutureForTemplate: any[] = await (prisma as any)[model].findMany({
+    const allFutureForTemplate: any[] = await prismaAny[model].findMany({
       where: {
         recurrenceTemplateId: templateId,
         startDateTime: { gte: asOf },
       },
       select: { detachReason: true },
+      ...(ctx ? { _context: ctx } : {}),
     });
     skippedDetached = allFutureForTemplate.filter((r) => r.detachReason !== 'none').length;
 
@@ -367,7 +381,8 @@ export async function reconcileFutureOccurrences(
       await prisma.recurrenceTemplate.update({
         where: { id: templateId },
         data: { generatedUntil: horizonEnd, lastGeneratedAt: new Date() },
-      });
+        ...(ctx ? { _context: ctx } : {}),
+      } as any);
     }
 
     return {
@@ -400,11 +415,13 @@ export async function reconcileFutureOccurrences(
 
 async function loadTemplateSnapshot(
   prisma: PrismaClient,
-  templateId: string
+  templateId: string,
+  context?: GeneratorContext
 ): Promise<TemplateSnapshot> {
   const row = await prisma.recurrenceTemplate.findUnique({
     where: { id: templateId },
-  });
+    ...(context ? { _context: context } : {}),
+  } as any);
 
   if (!row) {
     throw new Error(`RecurrenceTemplate not found: ${templateId}`);
@@ -456,4 +473,138 @@ function buildOccurrenceCreatePayload(
   // Activity and Responsibility have almost identical shapes for these fields.
   // The caller decides which model receives the payload.
   return base;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                     PHASE 5 — SHADOW COMPARISON UTILITY                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Compares the dates that the legacy virtual expander would produce for a
+ * RecurrenceTemplate’s rule against the concrete rows that have been
+ * materialized by the generator for that template.
+ *
+ * This is executed automatically on every shadow creation (best-effort) and
+ * serves as the continuous validation that the new generator path is
+ * bit-for-bit compatible with the old expansion logic before we cut over.
+ *
+ * All dates are normalized to ISO strings for safe Set membership across
+ * time-zone/DST boundaries. End-date stamping is also verified via
+ * computeEndDateTime for drift detection.
+ */
+export async function compareVirtualToMaterialized(
+  prisma: PrismaClient,
+  templateId: string,
+  options: { asOf?: Date; horizonDays?: number; context?: GeneratorContext } = {}
+): Promise<CompareResult> {
+  const asOf = options.asOf ?? new Date();
+  const horizonDays = options.horizonDays ?? 60;
+  const ctx = options.context;
+  const errors: string[] = [];
+  const virtualDates: Date[] = [];
+  const materializedDates: Date[] = [];
+  let dataDrift: any[] = [];
+
+  try {
+    const template = await loadTemplateSnapshot(prisma, templateId, ctx);
+
+    const horizonEnd = new Date(asOf.getTime() + horizonDays * 24 * 60 * 60 * 1000);
+
+    // 1. What the legacy expander (virtual path) would have shown
+    virtualDates.push(
+      ...generateOccurrences(
+        template.recurrenceRule,
+        template.startDate,
+        horizonEnd,
+        {
+          asOf,
+          excludeDates: template.excludeDates,
+          templateId,
+        }
+      )
+    );
+
+    // 2. What the generator actually wrote (only non-detached future rows for this template)
+    const model = template.templateType === 'activity' ? 'activity' : 'responsibility';
+    const prismaAny = prisma as any;
+    const materialized: any[] = await prismaAny[model].findMany({
+      where: {
+        recurrenceTemplateId: templateId,
+        startDateTime: { gte: asOf },
+        detachReason: 'none',
+      },
+      select: {
+        startDateTime: true,
+        name: true,
+        duration: true,
+        category: true,
+        endDateTime: true,
+        generatedFromTemplateId: true,
+      },
+      ...(ctx ? { _context: ctx } : {}),
+    });
+
+    materializedDates.push(...materialized.map((m: any) => new Date(m.startDateTime)));
+
+    // Normalize for comparison (DST-safe)
+    const virtIso = new Set(virtualDates.map((d) => d.toISOString()));
+    const matIso = new Set(materializedDates.map((d) => d.toISOString()));
+
+    const missingInMaterialized = virtualDates.filter((d) => !matIso.has(d.toISOString()));
+    const extraInMaterialized = materializedDates.filter((d) => !virtIso.has(d.toISOString()));
+
+    // 3. Data drift on the overlapping slots (name / duration / category / endDate)
+    const matByIso = new Map<string, any>();
+    for (const m of materialized) {
+      matByIso.set(new Date(m.startDateTime).toISOString(), m);
+    }
+    const drift: any[] = [];
+    for (const d of virtualDates) {
+      const iso = d.toISOString();
+      const m = matByIso.get(iso);
+      if (m) {
+        const expectedEnd = computeEndDateTime(d, template.duration);
+        if (
+          (m.name ?? 'Untitled Recurring') !== (template.name ?? 'Untitled Recurring') ||
+          m.duration !== template.duration ||
+          m.category !== template.category ||
+          new Date(m.endDateTime).getTime() !== expectedEnd.getTime()
+        ) {
+          drift.push({
+            start: iso,
+            template: { name: template.name, duration: template.duration, category: template.category, end: expectedEnd },
+            materialized: { name: m.name, duration: m.duration, category: m.category, end: m.endDateTime },
+          });
+        }
+      }
+    }
+    dataDrift = drift;
+
+    const dateMatch = missingInMaterialized.length === 0 && extraInMaterialized.length === 0;
+    const driftMatch = dataDrift.length === 0;
+    const match = dateMatch && driftMatch;
+
+    return {
+      templateId,
+      virtualDates,
+      materializedDates,
+      match,
+      missingInMaterialized,
+      extraInMaterialized,
+      dataDrift,
+      errors,
+    };
+  } catch (err: any) {
+    errors.push(err?.message ?? String(err));
+    return {
+      templateId,
+      virtualDates,
+      materializedDates,
+      match: false,
+      missingInMaterialized: [],
+      extraInMaterialized: [],
+      dataDrift,
+      errors,
+    };
+  }
 }

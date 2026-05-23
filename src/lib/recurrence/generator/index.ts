@@ -1,19 +1,22 @@
 /**
- * Isolated Recurrence Generator Service — Public API (PHASE 4)
+ * Isolated Recurrence Generator Service — Public API (PHASE 5 shadow mode active)
  *
  * This barrel re-exports the stable contract for the generator.
- * Nothing outside src/lib/recurrence/generator/ should import the internal
- * files directly.
+ * Production call sites are now the two POST handlers via the thin shadow wrapper
+ * (best-effort, never user-visible). Internal files remain private.
  */
 
 export {
   generateOccurrences,
   materializeTemplateWindow,
   reconcileFutureOccurrences,
+  compareVirtualToMaterialized,
 } from './generator';
 
 export type {
+  CompareResult,
   GenerateOccurrencesOptions,
+  GeneratorContext,
   MaterializeOptions,
   MaterializeResult,
   ReconcileOptions,
