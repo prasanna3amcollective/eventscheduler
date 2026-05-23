@@ -17,6 +17,17 @@ enum DetachReason {
   manually_created
 }
 
+enum RecurrenceTemplateType {
+  activity
+  responsibility
+}
+
+enum RecurrenceStatus {
+  active
+  archived
+  draft
+}
+
 model Activity {
   id             String   @id @default(uuid()) // sys_id
   name           String
@@ -33,11 +44,8 @@ model Activity {
   state          String   @default("Scheduled")
   participants   Participant[]
 
-  // Recurrence lineage relations (for template/instance tracking)
-  recurrenceTemplate    Activity?  @relation("ActivityRecurrenceTemplate", fields: [recurrenceTemplateId], references: [id])
-  generatedFromTemplate Activity?  @relation("ActivityGeneratedFrom", fields: [generatedFromTemplateId], references: [id])
-  generatedInstances    Activity[] @relation("ActivityRecurrenceTemplate")
-  generatedChildren     Activity[] @relation("ActivityGeneratedFrom")
+  recurrenceTemplate    RecurrenceTemplate? @relation("RecurrenceTemplate_Activities", fields: [recurrenceTemplateId], references: [id], onDelete: SetNull)
+  generatedFromTemplate RecurrenceTemplate? @relation("RecurrenceTemplate_GeneratedFrom", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
@@ -65,11 +73,8 @@ model Responsibility {
   owner          String?
   ownerId        String?
 
-  // Recurrence lineage relations (for template/instance tracking)
-  recurrenceTemplate    Responsibility?  @relation("ResponsibilityRecurrenceTemplate", fields: [recurrenceTemplateId], references: [id])
-  generatedFromTemplate Responsibility?  @relation("ResponsibilityGeneratedFrom", fields: [generatedFromTemplateId], references: [id])
-  generatedInstances    Responsibility[] @relation("ResponsibilityRecurrenceTemplate")
-  generatedChildren     Responsibility[] @relation("ResponsibilityGeneratedFrom")
+  recurrenceTemplate    RecurrenceTemplate? @relation("RecurrenceTemplate_Responsibilities", fields: [recurrenceTemplateId], references: [id], onDelete: SetNull)
+  generatedFromTemplate RecurrenceTemplate? @relation("RecurrenceTemplate_GeneratedFrom_Resp", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
 
   // System Columns (ServiceNow Style)
   sys_created_by String?
@@ -216,4 +221,39 @@ model AccessControlList {
   sys_updated_at DateTime @updatedAt
 
   @@map("sys_acl")
+}
+
+model RecurrenceTemplate {
+  id                 String   @id @default(uuid())
+  templateType       RecurrenceTemplateType @default(activity)
+  name               String?
+  recurrenceRule     String
+  startDate          DateTime
+  endDate            DateTime?
+  excludeDates       DateTime[] @default([])
+  lastGeneratedAt    DateTime?
+  generatedUntil     DateTime?
+
+  // Versioning
+  versionSeriesId    String
+  version            Int      @default(1)
+  status             RecurrenceStatus @default(active)
+
+  // System columns
+  sys_created_by     String?
+  sys_updated_by     String?
+  sys_created_at     DateTime @default(now())
+  sys_updated_at     DateTime @updatedAt
+
+  // Reverse relations (populated when Activity/Responsibility rows reference this template via their FKs)
+  activities                  Activity[]       @relation("RecurrenceTemplate_Activities")
+  generatedFromActivities     Activity[]       @relation("RecurrenceTemplate_GeneratedFrom")
+  responsibilities            Responsibility[] @relation("RecurrenceTemplate_Responsibilities")
+  generatedFromResponsibilities Responsibility[] @relation("RecurrenceTemplate_GeneratedFrom_Resp")
+
+  @@unique([versionSeriesId, version])
+  @@index([templateType, versionSeriesId, status])
+  @@index([templateType, generatedUntil, status])
+  @@index([templateType, startDate, endDate])
+  @@index([sys_created_at(sort: Desc)])
 }
