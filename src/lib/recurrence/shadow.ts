@@ -61,7 +61,6 @@ export async function ensureShadowTemplateAndMaterialize(params: {
         // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
         startDate: params.recurrenceStart ? new Date(params.recurrenceStart) : params.startDateTime,
         endDate: params.recurrenceUntil ? new Date(params.recurrenceUntil) : null,
-        excludeDates: [],
         versionSeriesId: randomUUID(),
         version: 1,
         status: 'active',

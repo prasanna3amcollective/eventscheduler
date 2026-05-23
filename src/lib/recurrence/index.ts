@@ -12,7 +12,7 @@
  */
 
 export { generateOccurrenceDates, applyExdates, expandRecurringActivity } from './expander';
-export { buildRecurrenceRule, addExdateToRule } from './builder';
+export { buildRecurrenceRule } from './builder';
 export { parseRecurrenceForForm, validateRecurrenceRule } from './parser';
 
 export type { RecurringEntity, ParsedRecurrence, ValidationResult } from './types';

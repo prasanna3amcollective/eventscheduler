@@ -151,3 +151,37 @@ export function validateRecurrenceRule(rule: string | null | undefined): Validat
   }
   return { valid: true };
 }
+
+/**
+ * Parse an EXDATE line (e.g., "EXDATE:20200101T100000Z") into a Date object.
+ * Assumes the line is already trimmed and starts with "EXDATE:".
+ */
+export function parseExdate(exdateLine: string): Date {
+  const value = exdateLine.substring('EXDATE:'.length).trim();
+  // Handle different formats: YYYYMMDD, YYYYMMDDTHHMMSS, YYYYMMDDTHHMMSSZ
+  // We'll parse with JavaScript Date, which handles ISO 8601 and basic formats.
+  // If the value is just a date (8 chars), we assume UTC midnight.
+  // Otherwise, we let Date.parse handle it (which may be UTC or local depending on format).
+  // To be safe, we'll treat as UTC if it ends with 'Z' or has a timezone offset.
+  // For simplicity, we'll use Date.parse and assume the string is in a format Date understands.
+  // Note: Date.parse is not fully reliable for all formats, but the EXDATE in RRULE should be in ISO 8601.
+  // If the value is only 8 characters (YYYYMMDD), we parse as YYYY-MM-DDTHH:mm:ssZ (midnight UTC).
+  if (/^\d{8}$/.test(value)) {
+    const year = parseInt(value.substring(0, 4), 10);
+    const month = parseInt(value.substring(4, 6), 10) - 1; // Month is 0-indexed
+    const day = parseInt(value.substring(6, 8), 10);
+    return new Date(Date.UTC(year, month, day));
+  }
+  // Otherwise, try parsing as ISO string (with or without time)
+  const date = new Date(value);
+  if (isNaN(date.getTime())) {
+    // Fallback: try to parse as UTC if ends with Z
+    if (value.endsWith('Z')) {
+      const withoutZ = value.substring(0, value.length - 1);
+      return new Date(withoutZ + 'Z');
+    }
+    // If still invalid, return an invalid date (caller should handle)
+    return date;
+  }
+  return date;
+}

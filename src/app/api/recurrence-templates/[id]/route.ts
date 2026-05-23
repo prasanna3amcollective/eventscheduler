@@ -11,7 +11,6 @@ const updateTemplateSchema = z.object({
   category: z.string().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().nullable().optional(),
-  // allow passing excludeDates etc if needed in future
 });
 
 export async function GET(

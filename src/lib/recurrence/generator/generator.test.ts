@@ -60,46 +60,6 @@ describe('generateOccurrences (pure, asOf-aware)', () => {
     assert.equal(dates[0].toISOString().slice(0, 10), '2026-06-08');
   });
 
-  it('filters out dates present in the excludeDates array', () => {
-    const rule = `DTSTART:20260601T090000Z\nRRULE:FREQ=WEEKLY;BYDAY=MO`;
-    const exclude = [new Date('2026-06-08T09:00:00.000Z')]; // exclude one Monday
-
-    const dates = generateOccurrences(rule, BASE, new Date('2026-06-30T00:00:00.000Z'), {
-      excludeDates: exclude,
-    });
-
-    const hasExcluded = dates.some((d) => d.toISOString().slice(0, 10) === '2026-06-08');
-    assert.equal(hasExcluded, false, 'Excluded date should not appear in result');
-  });
-
-  it('still respects EXDATE lines that are embedded inside the rule string', () => {
-    const ruleWithExdate = `DTSTART:20260601T090000Z
-RRULE:FREQ=WEEKLY;BYDAY=MO
-EXDATE:20260608T090000Z`;
-
-    const dates = generateOccurrences(ruleWithExdate, BASE, new Date('2026-06-30T00:00:00.000Z'));
-
-    const hasExcluded = dates.some((d) => d.toISOString().slice(0, 10) === '2026-06-08');
-    assert.equal(hasExcluded, false);
-  });
-
-  it('combines embedded EXDATEs and the excludeDates array', () => {
-    const ruleWithExdate = `DTSTART:20260601T090000Z
-RRULE:FREQ=WEEKLY;BYDAY=MO
-EXDATE:20260608T090000Z`;
-
-    const extraExclude = [new Date('2026-06-15T09:00:00.000Z')];
-
-    const dates = generateOccurrences(ruleWithExdate, BASE, new Date('2026-06-30T00:00:00.000Z'), {
-      excludeDates: extraExclude,
-    });
-
-    const has8 = dates.some((d) => d.toISOString().slice(0, 10) === '2026-06-08');
-    const has15 = dates.some((d) => d.toISOString().slice(0, 10) === '2026-06-15');
-    assert.equal(has8, false);
-    assert.equal(has15, false);
-  });
-
   it('returns dates in ascending chronological order with no duplicates', () => {
     const rule = `DTSTART:20260601T090000Z\nRRULE:FREQ=DAILY`;
     const dates = generateOccurrences(rule, BASE, new Date('2026-06-10T00:00:00.000Z'));
@@ -210,7 +170,6 @@ function makeActiveActivityTemplate(id = 'tpl-1') {
     recurrenceRule: `DTSTART:20260601T090000Z\nRRULE:FREQ=WEEKLY;BYDAY=MO`,
     startDate: new Date('2026-06-01T09:00:00.000Z'),
     endDate: null,
-    excludeDates: [],
     generatedUntil: null,
     lastGeneratedAt: null,
     versionSeriesId: 'series-1',

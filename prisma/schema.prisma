@@ -227,14 +227,13 @@ model RecurrenceTemplate {
   id                 String   @id @default(uuid())
   templateType       RecurrenceTemplateType @default(activity)
   name               String?
-  duration           Int      @default(60)
-  category           String   @default("General")
-  recurrenceRule     String
-  startDate          DateTime
-  endDate            DateTime?
-  excludeDates       DateTime[] @default([])
-  lastGeneratedAt    DateTime?
-  generatedUntil     DateTime?
+   duration           Int      @default(60)
+   category           String   @default("General")
+   recurrenceRule     String
+   startDate          DateTime
+   endDate            DateTime?
+   lastGeneratedAt    DateTime?
+   generatedUntil     DateTime?
 
   // Versioning
   versionSeriesId    String

@@ -11,8 +11,8 @@ import {
 } from './types';
 
 // Stable recurrence library (read-only reuse — never modify during PHASE 4)
-import { generateOccurrenceDates, applyExdates } from '../expander';
-import { toIcalDtstart, computeEndDateTime } from '../utils';
+import { generateOccurrenceDates } from '../expander';
+import { computeEndDateTime } from '../utils';
 import type { RecurrenceTemplateType } from '@prisma/client';
 
 /**
@@ -37,11 +37,8 @@ import type { RecurrenceTemplateType } from '@prisma/client';
  * Generate occurrence start dates for a recurrence rule within a range.
  *
  * Key behaviors (per PHASE 4 spec):
- * - Re-uses the stable `generateOccurrenceDates` + EXDATE handling from the
- *   sibling recurrence library.
+ * - Re-uses the stable `generateOccurrenceDates` (which already respects embedded EXDATE lines).
  * - Automatically filters the result to dates >= `asOf` (default = now()).
- * - Respects both EXDATE lines embedded in the rule string AND the
- *   `excludeDates` array stored on the template.
  * - Returns a sorted, deduplicated list of Date objects (start of each occurrence).
  *
  * This function is intentionally pure / side-effect free so it can be
@@ -56,16 +53,9 @@ export function generateOccurrences(
   const asOf = options.asOf ?? new Date();
 
   // 1. Get candidate dates from the stable engine (handles embedded EXDATEs in the rule string)
-  let dates = generateOccurrenceDates(recurrenceRule, rangeStart, rangeEnd);
+  const dates = generateOccurrenceDates(recurrenceRule, rangeStart, rangeEnd);
 
-  // 2. If the template also carries an excludeDates[] array, convert them to EXDATE lines
-  //    and post-filter using the existing applyExdates helper (keeps logic in one place).
-  if (options.excludeDates && options.excludeDates.length > 0) {
-    const exdateLines = options.excludeDates.map((d) => `EXDATE:${toIcalDtstart(d)}`);
-    dates = applyExdates(dates, exdateLines);
-  }
-
-  // 3. Generator is asOf-aware: only return dates at/after the reference point (future materialization)
+  // 2. Generator is asOf-aware: only return dates at/after the reference point (future materialization)
   const filtered = dates.filter((d) => d >= asOf);
 
   // 4. Ensure stable ordering and remove any accidental duplicates (rrule should not produce them, but be defensive)
@@ -141,7 +131,6 @@ export async function materializeTemplateWindow(
       effectiveHorizon,
       {
         asOf,
-        excludeDates: template.excludeDates,
         templateId,
       }
     );
@@ -275,7 +264,7 @@ export async function reconcileFutureOccurrences(
       template.recurrenceRule,
       template.startDate,
       effectiveHorizon,
-      { asOf, excludeDates: template.excludeDates, templateId }
+      { asOf, templateId }
     );
 
     // Load existing future non-detached occurrences for this template
@@ -446,7 +435,6 @@ async function loadTemplateSnapshot(
     recurrenceRule: row.recurrenceRule,
     startDate: row.startDate,
     endDate: row.endDate,
-    excludeDates: row.excludeDates,
     generatedUntil: row.generatedUntil,
     lastGeneratedAt: row.lastGeneratedAt,
     versionSeriesId: row.versionSeriesId,
@@ -525,7 +513,6 @@ export async function compareVirtualToMaterialized(
         horizonEnd,
         {
           asOf,
-          excludeDates: template.excludeDates,
           templateId,
         }
       )

@@ -94,7 +94,6 @@ export async function POST(request: Request) {
             // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
             startDate: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
             endDate: recurrenceUntil ? new Date(recurrenceUntil) : null,
-            excludeDates: [],
             versionSeriesId: randomUUID(),
             version: 1,
             status: 'active',
