@@ -129,12 +129,16 @@ export async function materializeTemplateWindow(
 
     // Compute the target horizon
     const horizonEnd = new Date(asOf.getTime() + horizonDays * 24 * 60 * 60 * 1000);
+    const effectiveHorizon = template.endDate && template.endDate < horizonEnd
+      ? template.endDate
+      : horizonEnd;
 
     // Generate all candidate dates in the window (asOf-aware)
+    // effectiveHorizon respects template.endDate (from Recur Until) so materialization stops at user's chosen series end
     const desiredDates = generateOccurrences(
       template.recurrenceRule,
       template.startDate,
-      horizonEnd,
+      effectiveHorizon,
       {
         asOf,
         excludeDates: template.excludeDates,
@@ -158,7 +162,7 @@ export async function materializeTemplateWindow(
         templateId,
         created: 0,
         skipped: 0,
-        newGeneratedUntil: horizonEnd,
+        newGeneratedUntil: effectiveHorizon,
         errors,
         dryRun,
       };
@@ -193,7 +197,7 @@ export async function materializeTemplateWindow(
         await tx.recurrenceTemplate.update({
           where: { id: templateId },
           data: {
-            generatedUntil: horizonEnd,
+            generatedUntil: effectiveHorizon,
             lastGeneratedAt: new Date(),
           },
           ...(ctx ? { _context: ctx } : {}),
@@ -209,7 +213,7 @@ export async function materializeTemplateWindow(
       templateId,
       created,
       skipped: desiredDates.length - created,
-      newGeneratedUntil: horizonEnd,
+      newGeneratedUntil: effectiveHorizon,
       errors,
       dryRun,
     };
@@ -263,11 +267,14 @@ export async function reconcileFutureOccurrences(
 
     // Use a generous future window for reconciliation (60 days from asOf)
     const horizonEnd = new Date(asOf.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const effectiveHorizon = template.endDate && template.endDate < horizonEnd
+      ? template.endDate
+      : horizonEnd;
 
     const desiredDates = generateOccurrences(
       template.recurrenceRule,
       template.startDate,
-      horizonEnd,
+      effectiveHorizon,
       { asOf, excludeDates: template.excludeDates, templateId }
     );
 
@@ -377,10 +384,10 @@ export async function reconcileFutureOccurrences(
     // Advance horizon if we did real work
     let newGeneratedUntil: Date | undefined;
     if (!dryRun) {
-      newGeneratedUntil = horizonEnd;
+      newGeneratedUntil = effectiveHorizon;
       await prisma.recurrenceTemplate.update({
         where: { id: templateId },
-        data: { generatedUntil: horizonEnd, lastGeneratedAt: new Date() },
+        data: { generatedUntil: effectiveHorizon, lastGeneratedAt: new Date() },
         ...(ctx ? { _context: ctx } : {}),
       } as any);
     }

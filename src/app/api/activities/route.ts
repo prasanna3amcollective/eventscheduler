@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     console.log("POST /api/activities body:", JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
     console.log("POST /api/activities parsedData:", JSON.stringify(parsedData, null, 2));
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -91,8 +91,9 @@ export async function POST(request: Request) {
             duration: Number(duration),
             category: category || 'General',
             recurrenceRule,
-            startDate: new Date(startDateTime),
-            endDate: null,
+            // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
+            startDate: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
+            endDate: recurrenceUntil ? new Date(recurrenceUntil) : null,
             excludeDates: [],
             versionSeriesId: randomUUID(),
             version: 1,
@@ -102,7 +103,7 @@ export async function POST(request: Request) {
         });
 
         await materializeTemplateWindow(prisma, tpl.id, {
-          asOf: new Date(startDateTime),
+          asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
           horizonDays: 60,
           context: securityContext,
         });

@@ -80,6 +80,39 @@ export function extractFreq(rule: string | null | undefined): string {
 }
 
 /**
+ * Extract DTSTART date from rule (for separate Recurrence Start field).
+ */
+export function extractRecurrenceStart(rule: string | null | undefined): Date | undefined {
+  const rrule = safeRrulestr(rule);
+  if (rrule && rrule.options.dtstart) {
+    return rrule.options.dtstart;
+  }
+  return undefined;
+}
+
+/**
+ * Extract UNTIL date from rule (for Recur until field).
+ */
+export function extractRecurrenceUntil(rule: string | null | undefined): Date | null {
+  const rrule = safeRrulestr(rule);
+  if (rrule && rrule.options.until) {
+    return rrule.options.until;
+  }
+  return null;
+}
+
+/**
+ * Extract INTERVAL (defaults to 1).
+ */
+export function extractRecurrenceInterval(rule: string | null | undefined): number {
+  const rrule = safeRrulestr(rule);
+  if (rrule && typeof rrule.options.interval === 'number' && rrule.options.interval > 0) {
+    return rrule.options.interval;
+  }
+  return 1;
+}
+
+/**
  * High-level parser for form initialization. Replaces all `split('BYDAY=')` hacks.
  */
 export function parseRecurrenceForForm(
@@ -89,12 +122,18 @@ export function parseRecurrenceForForm(
   const exdates = extractExdates(normalized);
   const days = extractByDays(normalized);
   const freq = extractFreq(normalized);
+  const recStart = extractRecurrenceStart(normalized);
+  const recUntil = extractRecurrenceUntil(normalized);
+  const recInterval = extractRecurrenceInterval(normalized);
 
   return {
     recurrenceDays: days,
     recurrenceFreq: freq,
     hasExdates: exdates.length > 0,
     exdateCount: exdates.length,
+    recurrenceStart: recStart,
+    recurrenceUntil: recUntil,
+    recurrenceInterval: recInterval,
   };
 }
 

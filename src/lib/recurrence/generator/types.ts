@@ -80,7 +80,7 @@ export interface TemplateSnapshot {
   category: string;
   recurrenceRule: string;
   startDate: Date;
-  endDate: Date | null;
+  endDate: Date | null; // startDate / endDate define the query bounds for materialization. The actual occurrence dates are produced by the embedded recurrenceRule (DTSTART / UNTIL / INTERVAL). When the new Recurrence-* form fields are used they are written into both the rule and these two columns.
   excludeDates: Date[];
   generatedUntil: Date | null;
   lastGeneratedAt: Date | null;

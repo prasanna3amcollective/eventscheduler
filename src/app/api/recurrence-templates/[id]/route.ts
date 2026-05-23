@@ -9,6 +9,8 @@ const updateTemplateSchema = z.object({
   recurrenceRule: z.string().optional(),
   duration: z.number().positive().optional(),
   category: z.string().optional(),
+  startDate: z.string().datetime().optional(),
+  endDate: z.string().datetime().nullable().optional(),
   // allow passing excludeDates etc if needed in future
 });
 
@@ -59,6 +61,8 @@ export async function PUT(
     if (parsed.recurrenceRule !== undefined) data.recurrenceRule = parsed.recurrenceRule;
     if (parsed.duration !== undefined) data.duration = parsed.duration;
     if (parsed.category !== undefined) data.category = parsed.category;
+    if (parsed.startDate !== undefined) data.startDate = new Date(parsed.startDate);
+    if (parsed.endDate !== undefined) data.endDate = parsed.endDate ? new Date(parsed.endDate) : null;
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'No updatable fields provided' }, { status: 400 });

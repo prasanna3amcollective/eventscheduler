@@ -12,6 +12,9 @@ const responsibilitySchema = z.object({
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
+  recurrenceStart: z.string().datetime().optional().nullable(),
+  recurrenceUntil: z.string().datetime().optional().nullable(),
+  recurrenceWeeks: z.number().int().positive().optional().nullable(),
   recurrenceTemplateId: z.string().uuid().nullable().optional(),
   generatedFromTemplateId: z.string().uuid().nullable().optional(),
   detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),
@@ -25,7 +28,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = responsibilitySchema.parse(body);
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -38,8 +41,9 @@ export async function POST(request: Request) {
           duration: Number(duration),
           category: category || 'General',
           recurrenceRule,
-          startDate: new Date(startDateTime),
-          endDate: null,
+          // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
+          startDate: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
+          endDate: recurrenceUntil ? new Date(recurrenceUntil) : null,
           excludeDates: [],
           versionSeriesId: randomUUID(),
           version: 1,
@@ -49,7 +53,7 @@ export async function POST(request: Request) {
       });
 
       await materializeTemplateWindow(prisma, tpl.id, {
-        asOf: new Date(startDateTime),
+        asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
         horizonDays: 60,
         context: securityContext,
       });

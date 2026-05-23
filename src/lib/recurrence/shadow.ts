@@ -45,6 +45,9 @@ export async function ensureShadowTemplateAndMaterialize(params: {
   category: string;
   recurrenceRule: string;
   startDateTime: Date;
+  recurrenceStart?: string | Date | null;
+  recurrenceUntil?: string | Date | null;
+  recurrenceWeeks?: number | null;
   context?: { id: string; roles: string[] };
 }): Promise<string | null> {
   try {
@@ -55,8 +58,9 @@ export async function ensureShadowTemplateAndMaterialize(params: {
         duration: params.duration,
         category: params.category,
         recurrenceRule: params.recurrenceRule,
-        startDate: params.startDateTime,
-        endDate: null,
+        // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
+        startDate: params.recurrenceStart ? new Date(params.recurrenceStart) : params.startDateTime,
+        endDate: params.recurrenceUntil ? new Date(params.recurrenceUntil) : null,
         excludeDates: [],
         versionSeriesId: randomUUID(),
         version: 1,
@@ -67,7 +71,7 @@ export async function ensureShadowTemplateAndMaterialize(params: {
 
     // Materialize the *new* records (they correctly have no rrule)
     await materializeTemplateWindow(params.prisma, tpl.id, {
-      asOf: params.startDateTime,
+      asOf: params.recurrenceStart ? new Date(params.recurrenceStart) : params.startDateTime,
       horizonDays: 60,
       context: params.context,
     });
@@ -84,7 +88,7 @@ export async function ensureShadowTemplateAndMaterialize(params: {
     });
 
     const comparison = await compareVirtualToMaterialized(params.prisma, tpl.id, {
-      asOf: params.startDateTime,
+      asOf: params.recurrenceStart ? new Date(params.recurrenceStart) : params.startDateTime,
       horizonDays: 60,
     });
     if (!comparison.match) {

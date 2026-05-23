@@ -331,4 +331,44 @@ describe('materializeTemplateWindow & reconcile (mocked prisma)', () => {
     const cmp = await compareVirtualToMaterialized(mock as any, tpl.id, { context: ctx });
     assert.ok(cmp, 'compare must succeed when context is supplied');
   });
+
+  it('respects template.endDate (Recur Until) to cap materialization and generatedUntil', async () => {
+    const tpl = makeActiveActivityTemplate('tpl-endcap');
+    tpl.endDate = new Date('2026-06-08T00:00:00.000Z'); // soon cap
+    const mock = createMockPrisma({
+      state: { templates: new Map([[tpl.id, { ...tpl }]]) },
+    });
+
+    const result = await materializeTemplateWindow(mock as any, tpl.id, {
+      horizonDays: 60,
+      asOf: new Date('2026-06-01'),
+    });
+
+    assert.equal(result.errors.length, 0);
+    assert.ok(result.newGeneratedUntil && result.newGeneratedUntil <= tpl.endDate!, 'horizon must be capped at endDate');
+    const dates = mock.state.activities.map((a: any) => new Date(a.startDateTime));
+    for (const d of dates) {
+      assert.ok(d <= tpl.endDate!, 'no date should be materialized past template.endDate');
+    }
+  });
+
+  it('handles DTSTART in rule later than template.startDate (mismatch) and only produces on/after DTSTART', async () => {
+    const tpl = makeActiveActivityTemplate('tpl-mismatch');
+    tpl.startDate = new Date('2026-05-20T00:00:00.000Z'); // earlier than rule DTSTART
+    const mock = createMockPrisma({
+      state: { templates: new Map([[tpl.id, { ...tpl }]]) },
+    });
+
+    const result = await materializeTemplateWindow(mock as any, tpl.id, {
+      horizonDays: 30,
+      asOf: new Date('2026-05-20'),
+    });
+    assert.equal(result.errors.length, 0);
+
+    if (mock.state.activities.length > 0) {
+      const first = new Date(mock.state.activities[0].startDateTime);
+      // rule DTSTART is 2026-06-01, so first should be on/after that
+      assert.ok(first >= new Date('2026-06-01T00:00:00.000Z'), 'must not produce before rule DTSTART even if tpl.startDate earlier');
+    }
+  });
 });

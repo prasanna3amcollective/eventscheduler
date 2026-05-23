@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from 'react';
-import { addMinutes, differenceInMinutes } from 'date-fns';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
+import { addMinutes, differenceInMinutes, addWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { secureFetch } from '@/lib/fetch';
@@ -80,6 +80,12 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     ? new Date(initialData.endDateTime)
     : addMinutes(new Date(), DEFAULT_DURATION_MINUTES);
 
+  // Compute recurrence defaults (parsed from rule if present)
+  const parsedRecurrence = parseRecurrenceForForm(initialData?.recurrenceRule);
+  const defaultRecStart = parsedRecurrence.recurrenceStart || initialStartDate;
+  const defaultRecWeeks = parsedRecurrence.recurrenceInterval || 4;
+  const defaultRecUntil = parsedRecurrence.recurrenceUntil || addWeeks(defaultRecStart, defaultRecWeeks);
+
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
     owner: initialData?.owner ?? '',
@@ -88,8 +94,11 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     endDateTime: initialEndDate,
     isRecurring: initialData?.isRecurring ?? false,
-    recurrenceFreq: 'WEEKLY' as 'WEEKLY' | 'MONTHLY',
-    recurrenceDays: parseRecurrenceForForm(initialData?.recurrenceRule).recurrenceDays,
+    recurrenceFreq: (parsedRecurrence.recurrenceFreq as 'WEEKLY' | 'MONTHLY') || 'WEEKLY',
+    recurrenceDays: parsedRecurrence.recurrenceDays,
+    recurrenceStart: defaultRecStart,
+    recurrenceUntil: defaultRecUntil,
+    recurrenceWeeks: defaultRecWeeks,
     category: initialData?.category ?? 'General',
     // Lineage (forwarded on submit; IDs backend-driven)
     recurrenceTemplateId: initialData?.recurrenceTemplateId ?? null,
@@ -101,6 +110,10 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [recurrenceWarning, setRecurrenceWarning] = useState<string | null>(null);
+
+  // Guard so we fetch the authoritative template data only once on mount for series edits
+  const hasLoadedTemplateRef = useRef(false);
 
   // Fetch users for the typeahead
   useEffect(() => {
@@ -119,6 +132,32 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     fetchUsers();
     return () => { cancelled = true; };
   }, []);
+
+  // For series (edit this or all), fetch live RecurrenceTemplate to populate freq/days + start/until/weeks
+  // from the real rule + template.startDate/endDate (instead of child row defaults)
+  useEffect(() => {
+    if (hasLoadedTemplateRef.current) return;
+    if (!isSeriesOccurrence || !initialData?.recurrenceTemplateId) return;
+    hasLoadedTemplateRef.current = true;
+
+    const tplId = initialData.recurrenceTemplateId;
+    fetch(`/api/recurrence-templates/${tplId}`)
+      .then((r) => r.json())
+      .then((tpl) => {
+        if (tpl && tpl.recurrenceRule) {
+          const p = parseRecurrenceForForm(tpl.recurrenceRule);
+          setFormData((prev) => ({
+            ...prev,
+            recurrenceDays: p.recurrenceDays.length ? p.recurrenceDays : prev.recurrenceDays,
+            recurrenceFreq: (p.recurrenceFreq as 'WEEKLY' | 'MONTHLY') || prev.recurrenceFreq,
+            recurrenceStart: p.recurrenceStart || (tpl.startDate ? new Date(tpl.startDate) : prev.recurrenceStart),
+            recurrenceUntil: p.recurrenceUntil || (tpl.endDate ? new Date(tpl.endDate) : prev.recurrenceUntil),
+            recurrenceWeeks: p.recurrenceInterval || prev.recurrenceWeeks,
+          }));
+        }
+      })
+      .catch((err) => console.error('Failed to load series template for responsibility edit:', err));
+  }, [isSeriesOccurrence, initialData]);
 
   const updateEndFromDuration = (newDuration: number) => {
     const newEnd = addMinutes(formData.startDateTime, newDuration);
@@ -142,7 +181,11 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         formData.startDateTime,
         formData.isRecurring,
         formData.recurrenceDays,
-        formData.recurrenceFreq
+        formData.recurrenceFreq,
+        undefined,
+        formData.recurrenceStart,
+        formData.recurrenceUntil,
+        formData.recurrenceWeeks
       );
 
       const payload: any = {
@@ -154,6 +197,9 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         duration: formData.duration,
         isRecurring: formData.isRecurring,
         recurrenceRule: formData.isRecurring ? recurrenceRule : null,
+        recurrenceStart: formData.recurrenceStart?.toISOString?.() ?? null,
+        recurrenceUntil: formData.recurrenceUntil?.toISOString?.() ?? null,
+        recurrenceWeeks: formData.recurrenceWeeks,
         category: formData.category,
         recurrenceTemplateId: formData.recurrenceTemplateId,
         generatedFromTemplateId: formData.generatedFromTemplateId,
@@ -179,9 +225,23 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         }
       }
 
+      // For series 'all' saves, send a clean template update payload (maps recurrence range -> startDate/endDate)
+      // so edits to Recurrence Start/Until/weeks are persisted and used by generator for capping.
+      let submitBody: any = payload;
+      if (url.includes('recurrence-templates')) {
+        submitBody = {
+          recurrenceRule,
+          name: formData.name.trim(),
+          duration: formData.duration,
+          category: formData.category,
+          startDate: formData.recurrenceStart?.toISOString?.() ?? undefined,
+          endDate: formData.recurrenceUntil?.toISOString?.() ?? null,
+        };
+      }
+
       const res = await secureFetch(url, {
         method,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(submitBody),
       });
 
       if (!res.ok) {
@@ -241,7 +301,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         </div>
 
         <div className="form-group">
-          <label><Calendar size={16} aria-hidden="true" /> Start Date & Time</label>
+           <label><Calendar size={16} aria-hidden="true" /> Responsibility start</label>
           <DatePicker
             selected={formData.startDateTime}
             onChange={(date: Date | null) => {
@@ -283,7 +343,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       </div>
 
         <div className="form-group">
-          <label><Calendar size={16} aria-hidden="true" /> End Date & Time</label>
+           <label><Calendar size={16} aria-hidden="true" /> Responsibility end</label>
           <DatePicker
             selected={formData.endDateTime}
             onChange={(date: Date | null) => {
@@ -329,11 +389,75 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
                   >
                     {day.label}
                   </button>
-                ))}
+                 ))}
+               </div>
+
+              {/* Recurrence range controls (auto-sync weeks <-> until) */}
+              <div style={{ marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>how many weeks recurrence?</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={formData.recurrenceWeeks}
+                      onChange={(e) => {
+                        const w = Math.max(1, parseInt(e.target.value) || 1);
+                        const newUntil = addWeeks(formData.recurrenceStart, w);
+                        setFormData(prev => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
+                      }}
+                      style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '13px' }}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>Recurrence Start</label>
+                    <DatePicker
+                      selected={formData.recurrenceStart}
+                      onChange={(date: Date | null) => {
+                        if (!date) return;
+                        const today = new Date(); today.setHours(0, 0, 0, 0);
+                        const d0 = new Date(date); d0.setHours(0, 0, 0, 0);
+                        if (d0.getTime() < today.getTime()) {
+                          setRecurrenceWarning('Recurrence start is in the past');
+                        } else {
+                          setRecurrenceWarning(null);
+                        }
+                        const w = formData.recurrenceWeeks || 1;
+                        const newU = addWeeks(date, w);
+                        setFormData(prev => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
+                      }}
+                      showTimeSelect
+                      dateFormat="MMM d, yyyy h:mm aa"
+                      className="date-picker-input"
+                    />
+                  </div>
+                </div>
+                <div style={{ marginTop: '6px' }}>
+                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>Recur until</label>
+                  <DatePicker
+                    selected={formData.recurrenceUntil}
+                    onChange={(date: Date | null) => {
+                      if (!date) return;
+                      const start = formData.recurrenceStart;
+                      const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
+                      const w = Math.max(1, Math.round(diffDays / 7));
+                      setFormData(prev => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
+                    }}
+                    showTimeSelect
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    className="date-picker-input"
+                  />
+                </div>
+                {recurrenceWarning && (
+                  <div style={{ color: '#d97706', fontSize: '11px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <AlertTriangle size={11} /> {recurrenceWarning}
+                  </div>
+                )}
               </div>
-            </div>
-           )}
-          </div>
+             </div>
+            )}
+           </div>
 
         {(isEditing && isSeriesOccurrence) && (
           <div className="edit-choice-container" style={{ margin: '12px 0' }}>

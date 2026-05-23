@@ -19,6 +19,9 @@ export interface ParsedRecurrence {
   recurrenceFreq: string;
   hasExdates: boolean;
   exdateCount: number;
+  recurrenceStart?: Date;
+  recurrenceUntil?: Date | null;
+  recurrenceInterval: number;
 }
 
 export interface ValidationResult {
