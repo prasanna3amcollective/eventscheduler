@@ -15,7 +15,6 @@ import { buildGoogleCalendarUrl } from '@/lib/calendar';
 /** Shape of an activity record from the API or internal calendar events */
 interface ActivityData {
   id: string;
-  originalId?: string;
   name: string;
   startDateTime: string;
   endDateTime?: string;
@@ -159,8 +158,8 @@ export default function ActivityDetailModal({
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // The activity ID to use for API calls (prefers the original recurring ID if available)
-  const activityId = activity ? activity.originalId ?? activity.id : '';
+  // The activity ID to use for API calls (real UUID post-PHASE 6)
+  const activityId = activity ? activity.id : '';
 
   // Whether the current user is a leader of this activity
   const isLeader = useMemo(() => {

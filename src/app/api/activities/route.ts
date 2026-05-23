@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
-import { addMinutes, startOfDay as startOfDayFn } from 'date-fns';
+import { startOfDay as startOfDayFn } from 'date-fns';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
-import { generateOccurrenceDates } from '@/lib/recurrence';
-import { isShadowGeneratedRow, ensureShadowTemplateAndMaterialize } from '@/lib/recurrence/shadow';
+import { materializeTemplateWindow } from '@/lib/recurrence/generator';
+import { randomUUID } from 'crypto';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,10 +18,16 @@ export async function GET(request: Request) {
   try {
     const securityContext = await getSessionContext();
 
+    // PHASE 6: Real occurrence APIs — return only persisted rows (no virtual expansion, no _inst_ ids).
+    // Date range pushed into Prisma for efficiency with many concrete occurrences.
     const dbActivities: any[] = await (withAuth(securityContext, () => ({
       model: 'activity',
       operation: 'findMany',
       args: {
+        where: {
+          startDateTime: { lte: rangeEnd },
+          endDateTime: { gte: rangeStart }
+        },
         include: {
           participants: {
             include: {
@@ -32,94 +38,29 @@ export async function GET(request: Request) {
       }
     })) as any);
 
-    // PHASE 5 shadow filter — remove materialized shadow rows so UI never sees them.
-    // Backlinked masters (which still carry recurrenceRule) continue to drive virtual expansion.
-    // This filter (and the loosened isTemplateMaster predicate below) are the ONLY changes
-    // to the read path during shadow mode. They will be deleted at cutover.
-    // Do not remove until PHASE 8 cutover.
-    const visibleDbActivities = dbActivities.filter((a: any) => !isShadowGeneratedRow(a));
-
-    const expandedActivities: any[] = [];
-
-    // Hybrid recurrence support: collect slots that have explicit detached/stored instances
-    // so we can suppress the corresponding synthetic occurrence from the master template.
-    const overriddenSlots = new Set<string>();
-    for (const act of visibleDbActivities) {
-      if (act.recurrenceTemplateId && act.detachReason && act.detachReason !== 'none') {
-        const startIso = new Date(act.startDateTime).toISOString();
-        overriddenSlots.add(`${act.recurrenceTemplateId}:${startIso}`);
-      }
-    }
-
-    for (const activity of visibleDbActivities) {
-      // Extract staff members from participants based on their type
+    const enrichedActivities: any[] = dbActivities.map((activity: any) => {
       const leaders = activity.participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
       const guides = activity.participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
       const observers = activity.participants.filter((p: any) => p.type === 'Observer').map((p: any) => p.user?.name).filter(Boolean);
 
-      const staffNames = [...leaders, ...guides, ...observers];
       const participantUserNames = new Set<string>();
-
       for (const p of activity.participants) {
-        if (p.user) {
-          participantUserNames.add(p.user.name);
-        }
+        if (p.user) participantUserNames.add(p.user.name);
       }
-
-      // Add staff names to participant names set (just for count calculation)
-      for (const name of staffNames) {
+      for (const name of [...leaders, ...guides, ...observers]) {
         if (name) participantUserNames.add(name);
       }
 
-      // Calculate total unique participants
-      const totalCount = participantUserNames.size;
+      return {
+        ...activity,
+        participantCount: participantUserNames.size,
+        leaders,
+        guides,
+        observers
+      };
+    });
 
-      // PHASE 5: loosened master detection — a row with recurrenceRule is still treated
-      // as an expansion master even after it has been backlinked to a RecurrenceTemplate.
-      // This keeps virtual expansion alive for the original master during shadow validation.
-      // The `|| Boolean(activity.recurrenceRule)` guard is required post-backlink and will
-      // be removed only at cutover when rrule is stripped from masters.
-      const isTemplateMaster = !activity.recurrenceTemplateId || Boolean(activity.recurrenceRule);
-
-      if (isTemplateMaster && activity.isRecurring && activity.recurrenceRule) {
-        const occurrences = generateOccurrenceDates(activity.recurrenceRule, rangeStart, rangeEnd);
-        for (const date of occurrences) {
-          const key = `${activity.id}:${date.toISOString()}`;
-          if (overriddenSlots.has(key)) {
-            // Hybrid transition: a stored detached row (edited/cancelled/...) exists for this slot.
-            // Skip synthetic so the real persisted row (with correct detachReason and real id) is the only one.
-            continue;
-          }
-          expandedActivities.push({
-            ...activity,
-            id: `${activity.id}_inst_${date.getTime()}`,
-            originalId: activity.id,
-            startDateTime: date,
-            endDateTime: addMinutes(date, activity.duration),
-            participantCount: totalCount,
-            leaders,
-            guides,
-            observers,
-            // ensure lineage defaults are present on virtuals too
-            recurrenceTemplateId: activity.recurrenceTemplateId ?? activity.id,
-            generatedFromTemplateId: activity.id,
-            detachReason: 'none'
-          });
-        }
-      } else {
-        if (activity.endDateTime >= rangeStart && activity.startDateTime <= rangeEnd) {
-          expandedActivities.push({
-            ...activity,
-            participantCount: totalCount,
-            leaders,
-            guides,
-            observers
-          });
-        }
-      }
-    }
-
-    return NextResponse.json(expandedActivities);
+    return NextResponse.json(enrichedActivities);
   } catch (error: any) {
     console.error("Error fetching activities:", error);
     if (error.message?.includes('Security Restricted')) {
@@ -139,6 +80,83 @@ export async function POST(request: Request) {
 
     const securityContext = await getSessionContext();
 
+    // PHASE 6: new recurring series — always create via RecurrenceTemplate + materialize real children.
+    // Staff attached to children. No legacy master row with recurrenceRule is ever created.
+    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
+      try {
+        const tpl = await prisma.recurrenceTemplate.create({
+          data: {
+            templateType: 'activity',
+            name,
+            duration: Number(duration),
+            category: category || 'General',
+            recurrenceRule,
+            startDate: new Date(startDateTime),
+            endDate: null,
+            excludeDates: [],
+            versionSeriesId: randomUUID(),
+            version: 1,
+            status: 'active',
+          },
+          ...(securityContext ? { _context: securityContext } : {}),
+        });
+
+        await materializeTemplateWindow(prisma, tpl.id, {
+          asOf: new Date(startDateTime),
+          horizonDays: 60,
+          context: securityContext,
+        });
+
+        // Attach staff to every materialized child
+        const staffRoles = [
+          { names: leader, type: 'Leader' },
+          { names: guide, type: 'Guide' },
+          { names: observer, type: 'Observer' }
+        ];
+        const children: any[] = await prisma.activity.findMany({
+          where: {
+            recurrenceTemplateId: tpl.id,
+            startDateTime: { gte: new Date(startDateTime) }
+          },
+          select: { id: true }
+        });
+        for (const child of children) {
+          for (const role of staffRoles) {
+            for (const n of role.names) {
+              const user = await prisma.user.findFirst({ where: { name: n } });
+              if (user) {
+                await prisma.participant.create({
+                  data: { activityId: child.id, userId: user.id, type: role.type }
+                }).catch((err: any) => {
+                  if (err.code === 'P2002') return;
+                  throw err;
+                });
+              }
+            }
+          }
+        }
+
+        const firstChild = children[0];
+        return NextResponse.json({
+          id: firstChild ? firstChild.id : tpl.id,
+          name,
+          startDateTime,
+          endDateTime: endDateTime,
+          duration: Number(duration),
+          isRecurring: true,
+          recurrenceRule: null,
+          recurrenceTemplateId: tpl.id,
+          generatedFromTemplateId: tpl.id,
+          detachReason: 'none',
+          category: category || 'General'
+        }, { status: 201 });
+      } catch (recurringErr) {
+        console.error("Recurring activity create failed (FULL):", recurringErr);
+        throw recurringErr; // let the outer catch turn it into 500 with details
+      }
+    }
+
+    // Non-recurring or explicit child of existing template
     const activity = await withAuth(securityContext, () => ({
       model: 'activity',
       operation: 'create',
@@ -158,7 +176,7 @@ export async function POST(request: Request) {
       }
     }));
 
-    // Create staff participants (leader/guide/observer)
+    // Create staff participants
     const staffRoles = [
       { names: leader, type: 'Leader' },
       { names: guide, type: 'Guide' },
@@ -179,39 +197,11 @@ export async function POST(request: Request) {
             }
           }).catch((err: any) => {
             if (err.code === 'P2002') {
-              // User already has a participant record for this activity — skip
               return;
             }
             throw err;
           });
         }
-      }
-    }
-
-    // PHASE 5 — shadow generation for newly created recurring masters (best-effort only).
-    // After the legacy master exists we create the RecurrenceTemplate + materialized
-    // children (no rrule on them) and back-link the master. The UI never sees the
-    // shadows because of the filter added in GET. The master keeps its recurrenceRule
-    // for the duration of this phase so virtual expansion is unaffected.
-    // This block is deliberately after the HTTP-relevant work and is wrapped inside
-    // the helper's own try/catch.
-    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
-      const tplId = await ensureShadowTemplateAndMaterialize({
-        prisma,
-        masterId: activity.id,
-        model: 'activity',
-        templateType: 'activity',
-        name,
-        duration: Number(duration),
-        category: category || 'General',
-        recurrenceRule,
-        startDateTime: new Date(startDateTime),
-        context: securityContext,
-      });
-      if (tplId) {
-        // Patch so the 201 response body already shows the backlinks (harmless; UI ignores them for now)
-        (activity as any).recurrenceTemplateId = tplId;
-        (activity as any).generatedFromTemplateId = tplId;
       }
     }
 

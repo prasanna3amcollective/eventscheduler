@@ -284,7 +284,7 @@ function HomeContent() {
           currentUser={null}
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
           onSwitchToRegister={() => {
-            setPendingEventId(detailActivity.originalId || detailActivity.id);
+            setPendingEventId(detailActivity.id);
             setAuthMode('register');
             setIsDetailOpen(false);
             // Smooth scroll to auth section

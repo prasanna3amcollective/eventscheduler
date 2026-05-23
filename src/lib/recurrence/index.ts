@@ -6,7 +6,8 @@
  * - Engine (rrule) is fully encapsulated; can be swapped internally without changing callers.
  *
  * Primary exports (as specified in architecture plan):
- *   generateOccurrenceDates, applyExdates, expandRecurringActivity
+ *   generateOccurrenceDates, applyExdates
+ *   + expandRecurringActivity (deprecated in PHASE 6; real rows replace virtual expansion)
  *   + supporting builder/parser helpers for forms and mutation flows.
  */
 

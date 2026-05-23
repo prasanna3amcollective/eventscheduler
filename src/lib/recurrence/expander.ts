@@ -64,6 +64,10 @@ export function applyExdates(
 }
 
 /**
+ * @deprecated PHASE 6: virtual expansion no longer used by list APIs or forms.
+ * Real rows from DB (with recurrenceTemplateId) replace the need for this.
+ * Kept only for any external/legacy callers; will be removed in future.
+ *
  * Highest-level helper: expand a recurring entity (Activity or Responsibility)
  * into concrete instances for a date range.
  *
@@ -77,7 +81,7 @@ export function expandRecurringActivity<T extends RecurringEntity>(
   entity: T,
   rangeStart?: Date,
   rangeEnd?: Date
-): Array<T & { originalId?: string; startDateTime: Date; endDateTime: Date }> {
+): Array<T & { startDateTime: Date; endDateTime: Date }> {
   const start = entity.startDateTime instanceof Date
     ? entity.startDateTime
     : new Date(entity.startDateTime);
@@ -111,13 +115,12 @@ export function expandRecurringActivity<T extends RecurringEntity>(
     const end = computeEndDateTime(date, entity.duration);
     return {
       ...entity,
-      originalId: entity.id,
       startDateTime: date,
       endDateTime: end,
       // For synthetically generated occurrences from a template/master
       recurrenceTemplateId: entity.recurrenceTemplateId ?? entity.id,
       generatedFromTemplateId: entity.id,
       detachReason: 'none',
-    } as unknown as T & { originalId?: string; startDateTime: Date; endDateTime: Date };
+    } as unknown as T & { startDateTime: Date; endDateTime: Date };
   });
 }

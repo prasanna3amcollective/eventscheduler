@@ -23,7 +23,6 @@ import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import {
   buildRecurrenceRule,
   parseRecurrenceForForm,
-  addExdateToRule,
 } from '@/lib/recurrence';
 
 // ---------------------------------------------------------------------------
@@ -41,7 +40,6 @@ interface User {
 /** Shape of activity data used in the form */
 interface ActivityData {
   id?: string;
-  originalId?: string;
   name: string;
   leaders?: string[];
   guides?: string[];
@@ -225,7 +223,8 @@ function MultiUserSelect({
  */
 export default function ActivityForm({ onActivityCreated, initialData, onCancel }: ActivityFormProps) {
   const isEditing = !!initialData?.id;
-  const isInstance = !!initialData?.originalId;
+  const isSeriesOccurrence = !!initialData?.recurrenceTemplateId &&
+    (initialData?.detachReason ?? 'none') === 'none'; // real non-detached series occurrence (PHASE 6)
 
   const initialStartDate = initialData
     ? new Date(initialData.startDateTime)
@@ -261,7 +260,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   const [isSubmitting, setIsSubmitting] = useState(false);
   // 'this' for single occurrence, 'all' for entire recurring series
   const [saveMode, setSaveMode] = useState<'this' | 'all'>(
-    isInstance ? 'this' : 'all',
+    isSeriesOccurrence ? 'this' : 'all',
   );
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [confirmMessage, setConfirmMessage] = useState('');
@@ -315,10 +314,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         if (!data.overlap) return;
 
         const otherActivities = isEditing
-          ? data.activities.filter(
-              (e: ActivityData) =>
-                e.id !== initialData.originalId && e.id !== initialData.id,
-            )
+          ? data.activities.filter((e: ActivityData) => e.id !== initialData.id)
           : data.activities;
 
         if (otherActivities.length > 0) {
@@ -376,7 +372,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         initialData,
       );
 
-      let payload: any = {
+      const payload: any = {
         name: formData.name,
         leader: formData.leader,
         guide: formData.guide,
@@ -387,58 +383,57 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         isRecurring: formData.isRecurring,
         recurrenceRule: rruleStr,
         category: formData.category,
-        // Lineage will be overridden below for 'this only' detaches
-        recurrenceTemplateId: formData.recurrenceTemplateId,
-        generatedFromTemplateId: formData.generatedFromTemplateId,
-        detachReason: formData.detachReason,
+        // When editing entire series, clear per-occurrence lineage (legacy master path); real series 'all' goes to template endpoint instead.
+        recurrenceTemplateId: saveMode === 'all' ? null : formData.recurrenceTemplateId,
+        generatedFromTemplateId: saveMode === 'all' ? null : formData.generatedFromTemplateId,
+        detachReason: saveMode === 'all' ? 'none' : formData.detachReason,
       };
 
-      // If the user chose to edit the entire series (even if the form was opened from a specific instance),
-      // clear any per-occurrence lineage so we don't mutate the master template record.
-      if (saveMode === 'all') {
-        payload.recurrenceTemplateId = null;
-        payload.generatedFromTemplateId = null;
-        payload.detachReason = 'none';
-      }
-
       try {
-        if (isInstance && saveMode === 'this') {
-          // Create a non-recurring copy of this specific occurrence
-          // Set lineage + explicit detach reason so the stored row is the authoritative "edited" instance
+        if (isSeriesOccurrence && saveMode === 'this') {
+          // PHASE 6 "this only": PUT the real persisted row, mark as edited (no EXDATE, no new row)
+          const url = `/api/activities/${initialData!.id}`;
+          const method = 'PUT';
           const thisOnlyPayload = {
             ...payload,
             isRecurring: false,
             recurrenceRule: null,
-            recurrenceTemplateId: initialData!.originalId || initialData!.id,
-            generatedFromTemplateId: initialData!.originalId || initialData!.id,
             detachReason: 'edited' as const,
+            recurrenceTemplateId: initialData!.recurrenceTemplateId,
+            generatedFromTemplateId: initialData!.generatedFromTemplateId,
           };
-          const createRes = await secureFetch('/api/activities', {
-            method: 'POST',
+          const res = await secureFetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(thisOnlyPayload),
           });
-          if (!createRes.ok) {
-            const text = await createRes.text().catch(() => '');
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
             let errorData: any = {};
             try { errorData = text ? JSON.parse(text) : {}; } catch {}
-            console.error(`Save failed (create detached): HTTP ${createRes.status}`);
-            console.error('Raw response body:', text);
-            console.error('Parsed error data:', errorData);
-            throw new Error(errorData.error || errorData.message || `Save failed (HTTP ${createRes.status})`);
+            console.error(`Save failed (this-only): HTTP ${res.status}`);
+            throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
           }
-
-          // Exclude this occurrence from the original series
-          const newRRule = addExdateToRule(initialData!.recurrenceRule || '', start);
-
-          await fetch(`/api/activities/${initialData!.originalId}`, {
-            method: 'PUT',
+        } else if (isSeriesOccurrence && saveMode === 'all') {
+          // "All in series": update via RecurrenceTemplate endpoint + reconcile
+          const url = `/api/recurrence-templates/${initialData!.recurrenceTemplateId}`;
+          const method = 'PUT';
+          const res = await secureFetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
+            body: JSON.stringify(payload),
           });
+          if (!res.ok) {
+            const text = await res.text().catch(() => '');
+            let errorData: any = {};
+            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            console.error(`Save failed (series): HTTP ${res.status}`);
+            throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
+          }
         } else {
+          // Normal create or edit of non-series (or already-detached) item
           const url = isEditing
-            ? `/api/activities/${initialData!.originalId || initialData!.id}`
+            ? `/api/activities/${initialData!.id}`
             : '/api/activities';
           const method = isEditing ? 'PUT' : 'POST';
 
@@ -453,9 +448,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             let errorData: any = {};
             try { errorData = text ? JSON.parse(text) : {}; } catch {}
             console.error(`Save failed: HTTP ${res.status}`);
-            console.error('Raw response body:', text);
-            console.error('Parsed error data:', errorData);
-            throw new Error(errorData.error || errorData.message || `Save failed (HTTP ${res.status})`);
+            throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
           }
         }
 
@@ -468,7 +461,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         setIsSubmitting(false);
       }
     },
-    [formData, isEditing, isInstance, saveMode, initialData, onActivityCreated],
+    [formData, isEditing, isSeriesOccurrence, saveMode, initialData, onActivityCreated],
   );
 
   /**
@@ -476,19 +469,22 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
    * Prompts the user for confirmation before proceeding.
    */
   const handleDelete = useCallback(() => {
-    const msg = `Are you sure you want to delete ${isInstance && saveMode === 'this' ? 'this specific occurrence' : 'the entire series'}?`;
+    const isThisOnly = isSeriesOccurrence && saveMode === 'this';
+    const msg = `Are you sure you want to delete ${isThisOnly ? 'this specific occurrence' : 'the entire series'}?`;
     setConfirmMessage(msg);
     setConfirmAction(() => async () => {
       try {
-        if (isInstance && saveMode === 'this') {
-          const newRRule = addExdateToRule(initialData!.recurrenceRule || '', formData.startDateTime);
-          await secureFetch(`/api/activities/${initialData!.originalId}`, {
+        if (isSeriesOccurrence && saveMode === 'this') {
+          // Real "this" delete: mark the row cancelled (history preserved)
+          await secureFetch(`/api/activities/${initialData!.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...initialData!, recurrenceRule: newRRule }),
+            body: JSON.stringify({ ...initialData!, detachReason: 'cancelled' }),
           });
+        } else if (isSeriesOccurrence && saveMode === 'all') {
+          await secureFetch(`/api/recurrence-templates/${initialData!.recurrenceTemplateId}`, { method: 'DELETE' });
         } else {
-          await secureFetch(`/api/activities/${initialData!.originalId || initialData!.id}`, { method: 'DELETE' });
+          await secureFetch(`/api/activities/${initialData!.id}`, { method: 'DELETE' });
         }
         onActivityCreated();
       } catch (err) {
@@ -497,7 +493,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         setConfirmAction(() => () => {});
       }
     });
-  }, [isInstance, saveMode, formData.startDateTime, initialData, onActivityCreated]);
+  }, [isSeriesOccurrence, saveMode, formData.startDateTime, initialData, onActivityCreated]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -632,7 +628,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           Enable Recurrence
         </label>
 
-        {formData.isRecurring && !isInstance && (
+        {formData.isRecurring && !isSeriesOccurrence && (
           <div className="recurring-options fade-in" style={{ marginTop: '16px' }}>
             <label style={{ marginBottom: '8px' }}>Repeat on specific days:</label>
             <DaySelector
@@ -643,7 +639,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         )}
       </div>
 
-      {isInstance && (
+      {isSeriesOccurrence && (
         <div className="edit-choice-container">
           <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
             This is part of a recurring series.
@@ -670,7 +666,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
        )}
 
       {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
-      {(isInstance || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+      {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
         <div className="form-group" style={{ marginTop: '12px' }}>
           <label htmlFor="detach-reason">Detach Reason</label>
           <select

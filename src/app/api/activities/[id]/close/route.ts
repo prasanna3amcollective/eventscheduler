@@ -8,7 +8,7 @@ export async function PATCH(
 ) {
     try {
         const { id } = await params;
-        const baseId = id.split('_inst_')[0];
+        const activityId = id; // real UUID post-PHASE 6 flag flip
 
         const securityContext = await getSessionContext();
         if (!securityContext) {
@@ -18,7 +18,7 @@ export async function PATCH(
         // Verify the current user is a leader of this activity
         const participant = await prisma.participant.findFirst({
             where: {
-                activityId: baseId,
+                activityId: activityId,
                 userId: securityContext.id,
                 type: 'Leader'
             }
@@ -35,7 +35,7 @@ export async function PATCH(
           model: 'activity',
           operation: 'update',
           args: {
-            where: { id: baseId },
+            where: { id: activityId },
             data: { state: 'Completed' },
             _context: securityContext
           }

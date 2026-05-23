@@ -14,15 +14,14 @@ export async function POST(
        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Determine the true activity ID. Recurring activities have composite IDs like "originalId_inst_timestamp"
-    const originalEventId = id.includes('_inst_') ? id.split('_inst_')[0] : id;
+    const activityId = id; // real UUID post-PHASE 6 flag flip (no _inst_ parsing)
 
     const registration = await withAuth(securityContext, () => ({
       model: 'participant',
       operation: 'create',
       args: {
         data: {
-          activityId: originalEventId,
+          activityId: activityId,
           userId: securityContext.id
         }
       }

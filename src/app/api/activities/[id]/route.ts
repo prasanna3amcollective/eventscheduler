@@ -4,6 +4,8 @@ import { getSessionContext } from '@/lib/auth';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
 
+
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -16,13 +18,13 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const baseId = id.split('_inst_')[0];
+    const activityId = id; // real UUID post-PHASE 6 flag flip (no more _inst_ parsing)
 
     const activity = await withAuth(securityContext, () => ({
       model: 'activity',
       operation: 'findUnique',
       args: {
-        where: { id: baseId },
+        where: { id: activityId },
         include: {
           participants: {
             include: {
@@ -65,11 +67,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const baseId = id.split('_inst_')[0];
+    const activityId = id; // real UUID post-PHASE 6 flag flip
     const body = await request.json();
-    console.log(`PUT /api/activities/${baseId} body:`, JSON.stringify(body, null, 2));
+    console.log(`PUT /api/activities/${activityId} body:`, JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
-    console.log(`PUT /api/activities/${baseId} parsedData:`, JSON.stringify(parsedData, null, 2));
+    console.log(`PUT /api/activities/${activityId} parsedData:`, JSON.stringify(parsedData, null, 2));
     const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
@@ -78,7 +80,7 @@ export async function PUT(
       model: 'activity',
       operation: 'update',
       args: {
-        where: { id: baseId },
+        where: { id: activityId },
         data: {
           name,
           startDateTime: new Date(startDateTime),
@@ -106,7 +108,7 @@ export async function PUT(
     for (const role of staffRoles) {
       await prisma.participant.deleteMany({
         where: {
-          activityId: baseId,
+          activityId: activityId,
           type: role.type
         }
       });
@@ -116,9 +118,9 @@ export async function PUT(
           where: { name: name }
         });
         if (user && !addedUserIds.has(user.id)) {
-          await prisma.participant.create({
+            await prisma.participant.create({
             data: {
-              activityId: baseId,
+              activityId: activityId,
               userId: user.id,
               type: role.type
             }
@@ -153,13 +155,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Session expired or missing. Please log in again.' }, { status: 401 });
     }
 
-    const baseId = id.split('_inst_')[0];
+    const activityId = id; // real UUID post-PHASE 6 flag flip
 
     await withAuth(securityContext, () => ({
       model: 'activity',
       operation: 'delete',
       args: {
-        where: { id: baseId },
+        where: { id: activityId },
         _context: securityContext
       }
     }));
@@ -182,7 +184,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const baseId = id.split('_inst_')[0];
+    const activityId = id; // real UUID post-PHASE 6 flag flip
     const { participantId, attendance } = await request.json();
 
     const securityContext = await getSessionContext();
@@ -194,7 +196,7 @@ export async function PATCH(
       model: 'participant',
       operation: 'update',
       args: {
-        where: { id: participantId, activityId: baseId },
+        where: { id: participantId, activityId: activityId },
         data: { attendance: Number(attendance) }
       }
     }));

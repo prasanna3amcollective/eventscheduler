@@ -66,6 +66,13 @@ const DEFAULT_DURATION_MINUTES = 60;
 
 export default function ResponsibilityForm({ onResponsibilityCreated, initialData, onCancel }: ResponsibilityFormProps) {
   const isEditing = !!initialData?.id;
+  const isSeriesOccurrence = !!initialData?.recurrenceTemplateId &&
+    (initialData?.detachReason ?? 'none') === 'none';
+
+  const [saveMode, setSaveMode] = useState<'this' | 'all'>(
+    isSeriesOccurrence ? 'this' : 'all'
+  );
+
   const initialStartDate = initialData
     ? new Date(initialData.startDateTime)
     : new Date();
@@ -138,7 +145,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         formData.recurrenceFreq
       );
 
-      const payload = {
+      const payload: any = {
         name: formData.name.trim(),
         owner: formData.owner.trim() || null,
         ownerId: formData.ownerId || null,
@@ -153,14 +160,33 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         detachReason: formData.detachReason,
       };
 
-      const res = await secureFetch('/api/responsibilities', {
-        method: 'POST',
+      let url = '/api/responsibilities';
+      let method: 'POST' | 'PUT' = 'POST';
+
+      if (isEditing) {
+        if (isSeriesOccurrence && saveMode === 'this') {
+          url = `/api/responsibilities/${initialData!.id}`;
+          method = 'PUT';
+          payload.detachReason = 'edited';
+          payload.isRecurring = false;
+          payload.recurrenceRule = null;
+        } else if (isSeriesOccurrence && saveMode === 'all') {
+          url = `/api/recurrence-templates/${initialData!.recurrenceTemplateId}`;
+          method = 'PUT';
+        } else {
+          url = `/api/responsibilities/${initialData!.id}`;
+          method = 'PUT';
+        }
+      }
+
+      const res = await secureFetch(url, {
+        method,
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to create responsibility');
+        throw new Error(errData.error || (method === 'PUT' ? 'Failed to update responsibility' : 'Failed to create responsibility'));
       }
 
       setSuccess(true);
@@ -307,10 +333,36 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
               </div>
             </div>
            )}
-         </div>
+          </div>
 
-       {/* Detach Reason dropdown (Responsibility) - IDs never shown in UI */}
-       {(formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+        {(isEditing && isSeriesOccurrence) && (
+          <div className="edit-choice-container" style={{ margin: '12px 0' }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              This is part of a recurring series.
+            </p>
+            <div className="edit-choice-buttons" style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className={`nav-tab ${saveMode === 'this' ? 'active' : ''}`}
+                onClick={() => setSaveMode('this')}
+                style={{ flex: 1 }}
+              >
+                This occurrence only
+              </button>
+              <button
+                type="button"
+                className={`nav-tab ${saveMode === 'all' ? 'active' : ''}`}
+                onClick={() => setSaveMode('all')}
+                style={{ flex: 1 }}
+              >
+                All in series
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Detach Reason dropdown (Responsibility) - IDs never shown in UI */}
+        {(formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
          <div className="form-group" style={{ marginTop: '8px' }}>
            <label htmlFor="detach-reason-resp">Detach Reason</label>
            <select

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { z } from 'zod';
-import { isShadowGeneratedRow, ensureShadowTemplateAndMaterialize } from '@/lib/recurrence/shadow';
+import { materializeTemplateWindow } from '@/lib/recurrence/generator';
+import { randomUUID } from 'crypto';
 
 const responsibilitySchema = z.object({
   name: z.string().min(1, 'Responsibility name is required').max(200),
@@ -28,6 +29,67 @@ export async function POST(request: Request) {
 
     const securityContext = await getSessionContext();
 
+    // PHASE 6: new recurring responsibilities via template + materialize (no legacy master)
+    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
+      const tpl = await prisma.recurrenceTemplate.create({
+        data: {
+          templateType: 'responsibility',
+          name,
+          duration: Number(duration),
+          category: category || 'General',
+          recurrenceRule,
+          startDate: new Date(startDateTime),
+          endDate: null,
+          excludeDates: [],
+          versionSeriesId: randomUUID(),
+          version: 1,
+          status: 'active',
+        },
+        ...(securityContext ? { _context: securityContext } : {}),
+      });
+
+      await materializeTemplateWindow(prisma, tpl.id, {
+        asOf: new Date(startDateTime),
+        horizonDays: 60,
+        context: securityContext,
+      });
+
+      // Backfill owner onto the materialized children (the generator does not set owner/ownerId)
+      if (ownerId || owner) {
+        await prisma.responsibility.updateMany({
+          where: { recurrenceTemplateId: tpl.id },
+          data: {
+            owner: owner || null,
+            ownerId: ownerId || null,
+          },
+          ...(securityContext ? { _context: securityContext } : {}),
+        });
+      }
+
+      // Return a real child id when possible (so client treats it like a normal row)
+      const firstChild = await prisma.responsibility.findFirst({
+        where: { recurrenceTemplateId: tpl.id },
+        orderBy: { startDateTime: 'asc' },
+        select: { id: true },
+      });
+
+      return NextResponse.json({
+        id: firstChild?.id ?? tpl.id,
+        name,
+        startDateTime,
+        endDateTime: endDateTime,
+        duration: Number(duration),
+        isRecurring: true,
+        recurrenceRule: null,
+        recurrenceTemplateId: tpl.id,
+        generatedFromTemplateId: tpl.id,
+        detachReason: 'none',
+        category: category || 'General',
+        owner: owner || null,
+        ownerId: ownerId || null,
+      }, { status: 201 });
+    }
+
     const responsibility = await withAuth(securityContext, () => ({
       model: 'responsibility',
       operation: 'create',
@@ -49,31 +111,6 @@ export async function POST(request: Request) {
       }
     }));
 
-    // PHASE 5 — shadow generation for newly created recurring masters (best-effort only).
-    // Mirrors the activities path exactly. The materialized responsibility shadows
-    // omit owner (per generator contract) and are hidden by the GET filter during
-    // this validation phase. The backlinked master retains its recurrenceRule.
-    // Do not remove until PHASE 8 cutover.
-    if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
-      const tplId = await ensureShadowTemplateAndMaterialize({
-        prisma,
-        masterId: responsibility.id,
-        model: 'responsibility',
-        templateType: 'responsibility',
-        name,
-        duration: Number(duration),
-        category: category || 'General',
-        recurrenceRule,
-        startDateTime: new Date(startDateTime),
-        context: securityContext,
-      });
-      if (tplId) {
-        // Patch the 201 response (harmless for now)
-        (responsibility as any).recurrenceTemplateId = tplId;
-        (responsibility as any).generatedFromTemplateId = tplId;
-      }
-    }
-
     return NextResponse.json(responsibility, { status: 201 });
   } catch (error: unknown) {
     console.error("Error creating responsibility:", error);
@@ -87,28 +124,36 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const startParam = searchParams.get('start');
+  const endParam = searchParams.get('end');
+
   try {
     const securityContext = await getSessionContext();
+
+    // PHASE 6: real rows with optional date-range filter for consistency.
+    // No shadow filter, no virtual expansion.
+    const where: any = {
+      ownerId: securityContext?.id || undefined,
+    };
+    if (startParam && endParam) {
+      const rangeStart = new Date(startParam);
+      const rangeEnd = new Date(endParam);
+      where.startDateTime = { lte: rangeEnd };
+      where.endDateTime = { gte: rangeStart };
+    }
 
     const responsibilities = await withAuth(securityContext, () => ({
       model: 'responsibility',
       operation: 'findMany',
       args: {
-        where: {
-          ownerId: securityContext?.id || undefined,
-        },
+        where,
         orderBy: { startDateTime: 'asc' }
       }
     }));
 
-    // PHASE 5 shadow filter — pure materialized shadow rows are hidden from the response.
-    // The backlinked master (still carrying its recurrenceRule) is retained so any
-    // future expansion logic (once implemented for responsibilities) continues to work.
-    // Do not remove until PHASE 8 cutover.
-    const visibleResponsibilities = (responsibilities as unknown as any[]).filter((r: any) => !isShadowGeneratedRow(r));
-
-    return NextResponse.json(visibleResponsibilities);
+    return NextResponse.json(responsibilities);
   } catch (error: unknown) {
     console.error("Error fetching responsibilities:", error);
     if (error.message?.includes('Security Restricted')) {

@@ -34,7 +34,9 @@ export async function POST(request: Request) {
 
       let eventInstances: { start: Date, end: Date }[] = [];
       if (activity.isRecurring && activity.recurrenceRule) {
-        // Only check instances around the new event's time range
+        // Legacy master (pre-PHASE 6) still carries rrule — fall back to expansion for graceful support of old data.
+        // Real PHASE 6 child rows have recurrenceRule:null (isRecurring:false) so they contribute their concrete persisted date here.
+        // This prefers real rows (one row per occurrence) while still covering any remaining legacy masters.
         const checkStart = new Date(newStart);
         checkStart.setMonth(checkStart.getMonth() - 1);
         const checkEnd = new Date(newStart);
