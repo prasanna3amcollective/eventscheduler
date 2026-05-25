@@ -64,8 +64,12 @@ const createPrismaClient = () => {
                     throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
                   }
                 } else {
-                  const hasRole = acls.some(acl => userContext.roles.includes(acl.roleId));
+                  const aclRoleIds = acls.map(acl => acl.roleId);
+                  const userRoleIds = userContext.roles;
+                  console.log(`[ACL DIAG] ${model}.${aclOp} | user=${userContext.id} | userRoles=[${userRoleIds.join(',')}] | aclRequiredRoles=[${aclRoleIds.join(',')}]`);
+                  const hasRole = acls.some(acl => userRoleIds.includes(acl.roleId));
                   if (!hasRole) {
+                    console.error(`[ACL DIAG] BLOCKED: no role match for ${model}.${aclOp}`);
                     throw new Error(`Security Restricted: User does not have the required role for ${model}.${aclOp}`);
                   }
                 }

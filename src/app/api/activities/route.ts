@@ -17,6 +17,7 @@ export async function GET(request: Request) {
 
   try {
     const securityContext = await getSessionContext();
+    console.log(`[ACT GET] securityContext id=${securityContext?.id} roles=[${securityContext?.roles?.join(',') || 'none'}]`);
 
     // PHASE 6: Real occurrence APIs — return only persisted rows (no virtual expansion, no _inst_ ids).
     // Date range pushed into Prisma for efficiency with many concrete occurrences.

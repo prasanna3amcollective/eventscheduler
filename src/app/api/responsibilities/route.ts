@@ -134,6 +134,7 @@ export async function GET(request: Request) {
 
   try {
     const securityContext = await getSessionContext();
+    console.log(`[RESP GET] securityContext id=${securityContext?.id} roles=[${securityContext?.roles?.join(',') || 'none'}]`);
 
     // PHASE 6: real rows with optional date-range filter for consistency.
     // No shadow filter, no virtual expansion.

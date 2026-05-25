@@ -136,6 +136,7 @@ export default function ActivityManagementPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [closingActivity, setClosingActivity] = useState(false);
     const [isStaffOpen, setIsStaffOpen] = useState(false);
+    const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -194,9 +195,12 @@ export default function ActivityManagementPage() {
         return matchesSearch;
     });
 
-    const handleCloseActivity = async () => {
+    const isLeader = !!currentUser && !!activity?.participants?.some(
+        p => p.user?.id === currentUser.id && p.type === 'Leader'
+    );
+
+    const performCloseActivity = async () => {
         if (!activity) return;
-        if (!confirm('Are you sure you want to close this activity? This will mark it as Completed.')) return;
         setClosingActivity(true);
         try {
             const res = await secureFetch(`/api/activities/${activityId}/close`, {
@@ -344,23 +348,6 @@ export default function ActivityManagementPage() {
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {activity.state !== 'Completed' && new Date(activity.endDateTime) < new Date() && (
-                                <button
-                                    onClick={handleCloseActivity}
-                                    disabled={closingActivity}
-                                    className="btn-primary"
-                                    style={{
-                                        background: 'var(--primary-color)',
-                                        fontSize: '13px',
-                                        padding: '8px 16px',
-                                        whiteSpace: 'nowrap',
-                                    }}
-                                    title="Close this activity"
-                                >
-                                    <CheckCircle size={16} />
-                                    {closingActivity ? 'Closing...' : 'Close Activity'}
-                                </button>
-                            )}
                             <button onClick={handleRefresh} className="refresh-button" title="Refresh participants">
                                 <Refresh size={20} className={loading ? 'spinning' : ''} />
                             </button>
@@ -436,9 +423,9 @@ export default function ActivityManagementPage() {
                                                  {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
                                              </td>
                                               <td>
-                                                  <select
-                                                      value={participant.attendance ?? 0}
-                                                      disabled={!['Leader', 'Guide', 'Observer'].includes(participant.type)}
+                                                   <select
+                                                       value={participant.attendance ?? 0}
+                                                       disabled={activity.state === 'Completed' || !['Leader', 'Guide', 'Observer'].includes(participant.type ?? '')}
                                                       onChange={(e) => {
                                                           const newVal = parseInt(e.target.value);
                                                           setActivity(prev => {
@@ -468,30 +455,50 @@ export default function ActivityManagementPage() {
                             <p className="empty-text">No participants found</p>
                         </div>
                      )}
-                     <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)' }}>
-                         <button
-                             onClick={async () => {
-                                 if (!activity?.participants) return;
-                                 try {
-                                     for (const p of activity.participants) {
-                                         if (['Leader', 'Guide', 'Observer'].includes(p.type || '')) {
-                                             await secureFetch(`/api/activities/${activityId}`, {
-                                                 method: 'PATCH',
-                                                 headers: { 'Content-Type': 'application/json' },
-                                                 body: JSON.stringify({ participantId: p.id, attendance: p.attendance ?? 0 })
-                                             });
+                       {activity.state !== 'Completed' && (
+                         <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                             <button
+                                 onClick={async () => {
+                                     if (!activity?.participants) return;
+                                     try {
+                                         for (const p of activity.participants) {
+                                             if (['Leader', 'Guide', 'Observer'].includes(p.type || '')) {
+                                                 await secureFetch(`/api/activities/${activityId}`, {
+                                                     method: 'PATCH',
+                                                     headers: { 'Content-Type': 'application/json' },
+                                                     body: JSON.stringify({ participantId: p.id, attendance: p.attendance ?? 0 })
+                                                 });
+                                             }
                                          }
+                                         alert('Attendance saved');
+                                     } catch {
+                                         console.error('Failed to save attendance');
                                      }
-                                     alert('Attendance saved');
-                                 } catch {
-                                     console.error('Failed to save attendance');
-                                 }
-                             }}
-                             className="btn-primary"
-                         >
-                             Save Attendance
-                         </button>
-                     </div>
+                                 }}
+                                 className="btn-primary"
+                             >
+                                 Save Attendance
+                             </button>
+ 
+                             {new Date(activity.endDateTime) < new Date() &&
+                               isLeader && (
+                                 <button
+                                   onClick={() => setShowCloseConfirm(true)}
+                                   disabled={closingActivity}
+                                   className="btn-primary"
+                                   style={{
+                                     background: 'var(--primary-color)',
+                                     fontSize: '13px',
+                                     padding: '8px 16px',
+                                   }}
+                                   title="Close this activity"
+                                 >
+                                   <CheckCircle size={16} />
+                                   Close this activity
+                                 </button>
+                               )}
+                         </div>
+                       )}
                  </div>
  
                  {/* Staff Related List Section */}
@@ -531,9 +538,46 @@ export default function ActivityManagementPage() {
                             />
                         </div>
                      </div>
-                     )}
-                 </div>
-             </main>
-        </div>
-    );
-}
+                      )}
+                   </div>
+               </main>
+
+              {showCloseConfirm && (
+                <div
+                  className="modal-overlay"
+                  onClick={() => setShowCloseConfirm(false)}
+                >
+                  <div
+                    className="modal-content"
+                    style={{ maxWidth: '420px', padding: '24px', textAlign: 'center' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <p style={{ marginBottom: '24px', fontWeight: 500, lineHeight: 1.5 }}>
+                      Make sure you mark the attendance for participants correctly. It is
+                      important for credit calculations.
+                    </p>
+                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setShowCloseConfirm(false)}
+                        disabled={closingActivity}
+                      >
+                        Back
+                      </button>
+                      <button
+                        className="btn-primary"
+                        onClick={() => {
+                          setShowCloseConfirm(false);
+                          performCloseActivity();
+                        }}
+                        disabled={closingActivity}
+                      >
+                        {closingActivity ? 'Closing...' : 'I marked attendance'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+         </div>
+     );
+ }
