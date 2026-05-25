@@ -81,7 +81,17 @@ async function main() {
     }
   }
 
-  console.log('Seed completed successfully');
+  // Bootstrap the dedicated system automation account used by nightly jobs
+  // (materialization window advancement + gap reconciliation)
+  console.log('\n→ Running system-cron seed...');
+  const { execSync } = require('child_process');
+  try {
+    execSync('node prisma/seed/seed-system-cron.js', { stdio: 'inherit' });
+  } catch (e) {
+    console.error('⚠️  system-cron seed encountered an error (continuing):', e.message || e);
+  }
+
+  console.log('\nSeed completed successfully');
 }
 
 main()

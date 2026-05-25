@@ -1,6 +1,6 @@
 # Isolated Recurrence Generator Service
 
-**Status:** PHASE 5 — Shadow generation complete (compare + best-effort wiring live; cutover pending in later phases)
+**Status:** PHASE 5 — Shadow generation complete + nightly materialization job implemented (45-day horizon + gap reconciliation via dedicated system-cron account)
 
 This directory contains the heart of the hybrid rolling materialization architecture for the 3AM Collective Movement event scheduler.
 
@@ -104,11 +104,18 @@ the exact `isShadowGeneratedRow` predicate, rollback story, and the post-PHASE-5
 
 See the master plan at `.kilo/plans/1779521965088-clever-engine.md`.
 
-## Future Integration (not yet)
+## Current Status (as of 2026-05)
 
-- Called from a `RecurrenceTemplateService`
-- Nightly / scheduled job for window advancement
-- Versioning flows (`createNewVersion` → reconcile with `newVersionId`)
+- Nightly / scheduled job for window advancement **is implemented**.
+  - See `src/lib/recurrence/maintenance/advanceWindows.ts`
+  - HTTP endpoint: `GET /api/cron/advance-materialization` (protected by `CRON_SECRET`)
+  - CLI: `npm run cron:advance`
+  - Uses the dedicated `system-cron` database user for all writes (full audit trail).
+  - Performs both 45-day horizon advancement **and** gap reconciliation for stale templates.
+
+- Still future:
+  - Called from a higher-level `RecurrenceTemplateService`
+  - Versioning flows (`createNewVersion` → reconcile with `newVersionId`)
 
 ---
 

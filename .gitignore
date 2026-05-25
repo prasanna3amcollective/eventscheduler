@@ -102,6 +102,7 @@ $RECYCLE.BIN/
 .kilo/worktrees/
 .kilo/agent-manager.json
 .kilo/.gitignore
+.kilo/
 
 # =============================================================================
 # Scratch / temporary files

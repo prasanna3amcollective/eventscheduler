@@ -55,8 +55,11 @@ const createPrismaClient = () => {
 
               if (acls.length > 0) {
                 if (!userContext) {
-                  if (model === 'User' && (aclOp === 'create' || aclOp === 'read')) {
-                    // Allow public registration and login (reading user by username/email)
+                  if ((model === 'User' && (aclOp === 'create' || aclOp === 'read')) ||
+                      ((model === 'Activity' || model === 'Responsibility') && aclOp === 'read')) {
+                    // Public reads for activities/responsibilities (landing page, calendar, detail views).
+                    // Also public user registration/login. Matches documented policy that "read is open when no ACL".
+                    // Internal system-cron automation supplies _context when it needs to read.
                   } else {
                     throw new Error(`Security Restricted: No user context provided for ${model}.${aclOp}`);
                   }
