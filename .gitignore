@@ -103,6 +103,7 @@ $RECYCLE.BIN/
 .kilo/agent-manager.json
 .kilo/.gitignore
 .kilo/
+.kilo/plans
 
 # =============================================================================
 # Scratch / temporary files
