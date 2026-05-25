@@ -66,7 +66,7 @@
 }
 
 .btn-primary {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-6 py-[14px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(180,83,61,0.15)] disabled:opacity-60;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[15px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#a13a2a] hover:shadow-[0_6px_16px_rgba(180,83,61,0.25)] disabled:opacity-60;
 }
 
 .btn-secondary {
@@ -908,10 +908,11 @@ input:not([type="checkbox"]):focus {
 
 .auth-toggle button {
   flex: 1;
-  padding: 12px;
+  padding: 14px;
   border: none;
   background: transparent;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--text-secondary);
   border-radius: 8px;
   cursor: pointer;
@@ -922,6 +923,24 @@ input:not([type="checkbox"]):focus {
   background: var(--surface-color);
   color: var(--primary-color);
   box-shadow: var(--shadow-sm);
+}
+
+/* Auth login/register buttons - aligned to match input widths, styled bold/beautiful like .btn-secondary */
+.auth-card .btn-primary {
+  width: 100%;
+  padding: 16px 32px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: var(--primary-color);
+  box-shadow: 0 4px 14px rgba(180, 83, 61, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-card .btn-primary:hover {
+  box-shadow: 0 8px 20px rgba(180, 83, 61, 0.3);
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--primary-color) 90%, black);
 }
 
 /* Dashboard Header */
@@ -982,6 +1001,57 @@ input:not([type="checkbox"]):focus {
   background: #f5dfda;
   color: #a13a2a;
   border-color: #ebcec7;
+}
+
+/* === Brutalist Marquee Top Banner === */
+.marquee-banner {
+  background: var(--surface-color);
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+.marquee {
+  overflow: hidden;
+}
+
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 44s linear infinite;
+  transition: animation-duration 1.8s ease-out;
+}
+
+.marquee-text {
+  font-family: var(--heading-font);
+  font-size: 92px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -2.5px;
+  color: var(--primary-color);
+  padding-right: 60px;
+  line-height: 0.95;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Slowly halt on hover (brutalist "coasting to stop" feel) */
+.marquee-banner:hover .marquee-track {
+  animation-duration: 180s;
+}
+
+/* Responsive: smaller on mobile */
+@media (max-width: 768px) {
+  .marquee-text {
+    font-size: 48px;
+    padding-right: 30px;
+    letter-spacing: -1.5px;
+  }
+  .marquee-banner {
+    padding: 4px 0;
+  }
 }
 
 /* ── Carousel: Horizontal scroll-snapping strip ──────────────────────── */

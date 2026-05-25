@@ -13,6 +13,7 @@ import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
+import MarqueeBanner from '@/components/MarqueeBanner';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
 function HomeContent() {
@@ -232,12 +233,7 @@ function HomeContent() {
   if (!isLoggedIn) {
     return (
       <div className="landing-page fade-in">
-        <header className="dashboard-header">
-          <div className="header-brand">
-            <img src="/fist.png" alt="Clenched Fist" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-            <h1>3AM Collective Movement</h1>
-          </div>
-        </header>
+        <MarqueeBanner />
 
         <ActivityCarousel
           refreshTrigger={refreshTrigger}
@@ -266,7 +262,7 @@ function HomeContent() {
             <div className="info-card">
               <Info size={32} color="var(--primary-color)" />
               <h2>Explore Activities</h2>
-              <p>Welcome to the 3AM Collective Movement. Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
+              <p>Welcome to the 3AM COLLECTIVE MOVEMENT . Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
               <ul className="feature-list">
                 <li>Click on any carousel item above to view details</li>
                 <li>Register to participate in upcoming activities</li>
@@ -297,11 +293,10 @@ function HomeContent() {
 
   return (
     <div className="dashboard-layout fade-in">
+      <MarqueeBanner />
+
+      {/* Thin controls bar below the banner (user controls only; title moved to marquee above) */}
       <header className="dashboard-header">
-        <div className="header-brand">
-          <img src="/fist.png" alt="Clenched Fist" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
-          <h1>3AM Collective Movement</h1>
-        </div>
         <div className="header-user">
           <div className="user-menu-container">
             <button
