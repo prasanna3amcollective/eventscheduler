@@ -20,6 +20,10 @@ interface RegisterFormProps {
   onSuccess?: (user: UserData) => void;
   /** If set, the user will be auto-enrolled in this activity after registration */
   pendingEventId?: string | null;
+  /** When true, hides the "User Registration" title and description (useful for popups) */
+  hideTitle?: boolean;
+  /** Custom text for the submit button (defaults to "Complete Registration") */
+  submitText?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,7 +99,7 @@ function ErrorBanner({ message }: { message: string | null }) {
  * Performs client-side validation, submits to the API, and optionally auto-enrolls
  * the new user in a pending activity.
  */
-export default function RegisterForm({ onSuccess, pendingEventId }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = false, submitText = 'Complete Registration' }: RegisterFormProps) {
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [selectedDialCode, setSelectedDialCode] = useState('+91');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -196,10 +200,12 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
   return (
     <form className="activity-form" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>User Registration</h2>
-        <p>Create a new user account for the system</p>
-      </div>
+      {!hideTitle && (
+        <div className="form-header">
+          <h2>User Registration</h2>
+          <p>Create a new user account for the system</p>
+        </div>
+      )}
 
       <ErrorBanner message={error} />
 
@@ -227,48 +233,48 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
         />
       </div>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>
-            <Mail size={16} /> Email Address
-          </label>
+      <div className="form-group">
+        <label>
+          <Mail size={16} /> Email Address
+        </label>
+        <input
+          type="email"
+          required
+          value={formData.email}
+          onChange={updateField('email')}
+          placeholder="jane@example.com"
+          className={fieldErrors.email ? 'input-error' : ''}
+        />
+        {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
+      </div>
+      <div className="form-group">
+        <label>
+          <Phone size={16} /> Phone Number
+        </label>
+        <div className="phone-input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <select
+            value={selectedDialCode}
+            onChange={(e) => setSelectedDialCode(e.target.value)}
+            className="country-select"
+            style={{ width: '80px' }}
+          >
+            {COUNTRY_CODES.map((c) => (
+              <option key={c.code} value={c.dialCode}>
+                {c.flag} {c.dialCode}
+              </option>
+            ))}
+          </select>
           <input
-            type="email"
             required
-            value={formData.email}
-            onChange={updateField('email')}
-            placeholder="jane@example.com"
-            className={fieldErrors.email ? 'input-error' : ''}
+            type="tel"
+            value={formData.phone}
+            onChange={updateField('phone')}
+            placeholder="9876543210"
+            className={fieldErrors.phone ? 'input-error' : ''}
+            style={{ flex: 1 }}
           />
-          {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
         </div>
-        <div className="form-group">
-          <label>
-            <Phone size={16} /> Phone Number
-          </label>
-          <div className="phone-input-group">
-            <select
-              value={selectedDialCode}
-              onChange={(e) => setSelectedDialCode(e.target.value)}
-              className="country-select"
-            >
-              {COUNTRY_CODES.map((c) => (
-                <option key={c.code} value={c.dialCode}>
-                  {c.flag} {c.dialCode}
-                </option>
-              ))}
-            </select>
-            <input
-              required
-              type="tel"
-              value={formData.phone}
-              onChange={updateField('phone')}
-              placeholder="9876543210"
-              className={fieldErrors.phone ? 'input-error' : ''}
-            />
-          </div>
-          {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
-        </div>
+        {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
       </div>
 
       <div className="form-group">
@@ -291,7 +297,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
         className="btn-primary"
         style={{ marginTop: '10px' }}
       >
-        {isSubmitting ? 'Registering...' : 'Complete Registration'}
+        {isSubmitting ? 'Registering...' : submitText}
         {!isSubmitting && <UserPlus size={18} />}
       </button>
     </form>

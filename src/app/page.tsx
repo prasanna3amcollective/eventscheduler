@@ -7,13 +7,13 @@ import ActivityForm from '@/components/ActivityForm';
 import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
-import LoginForm from '@/components/LoginForm';
 import ActivityCarousel from '@/components/ActivityCarousel';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
+import InstagramEmbed from '@/components/InstagramEmbed';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
 function HomeContent() {
@@ -22,11 +22,20 @@ function HomeContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   const [activeTab, setActiveTab] = useState<'calendar' | 'scheduler' | 'admin'>('calendar');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // New top auth UI states
+  const [showSignInPanel, setShowSignInPanel] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  // Local state for compact sign-in panel
+  const [signinUsername, setSigninUsername] = useState('');
+  const [signinPassword, setSigninPassword] = useState('');
+  const [signinError, setSigninError] = useState<string | null>(null);
+  const [signinSubmitting, setSigninSubmitting] = useState(false);
 
   // Theme switcher
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -118,6 +127,36 @@ function HomeContent() {
       }
     } catch (e) { /* ignore */ }
     setPendingEventId(null);
+  };
+
+  const handlePanelSignIn = async () => {
+    if (!signinUsername.trim() || !signinPassword) {
+      setSigninError('Please enter username and password');
+      return;
+    }
+    setSigninSubmitting(true);
+    setSigninError(null);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: signinUsername.trim(), password: signinPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        handleLoginSuccess(data.user);
+        setShowSignInPanel(false);
+        setSigninUsername('');
+        setSigninPassword('');
+        setSigninError(null);
+      } else {
+        setSigninError(data.error || 'Login failed');
+      }
+    } catch (_err) {
+      setSigninError('An unexpected error occurred');
+    } finally {
+      setSigninSubmitting(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -239,25 +278,147 @@ function HomeContent() {
           refreshTrigger={refreshTrigger}
           onActivityClick={handleCarouselClick}
           isLoggedIn={isLoggedIn}
+          headerRight={
+            !isLoggedIn ? (
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    onClick={() => {
+                      const next = !showSignInPanel;
+                      setShowSignInPanel(next);
+                      if (next) setShowRegisterModal(false);
+                      setSigninError(null);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color)',
+                      padding: '4px 10px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      color: 'var(--text-primary)',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowRegisterModal(true);
+                      setShowSignInPanel(false);
+                    }}
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color)',
+                      padding: '4px 10px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      color: 'var(--text-primary)',
+                      borderRadius: '4px'
+                    }}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+
+                {/* Dropdown panel right below the Sign In button */}
+                {showSignInPanel && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '4px',
+                      background: 'var(--surface-color)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '6px',
+                      padding: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      zIndex: 100
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Username"
+                      value={signinUsername}
+                      onChange={(e) => setSigninUsername(e.target.value)}
+                      style={{
+                        padding: '5px 8px',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        width: '110px'
+                      }}
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={signinPassword}
+                      onChange={(e) => setSigninPassword(e.target.value)}
+                      style={{
+                        padding: '5px 8px',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        width: '110px'
+                      }}
+                    />
+                    <button
+                      onClick={handlePanelSignIn}
+                      disabled={signinSubmitting}
+                      style={{
+                        background: 'var(--primary-color)',
+                        color: 'white',
+                        border: 'none',
+                        padding: '5px 12px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        borderRadius: '4px',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {signinSubmitting ? '...' : 'Sign In'}
+                    </button>
+                    {signinError && (
+                      <span style={{ color: '#a13a2a', fontSize: '12px', whiteSpace: 'nowrap' }}>{signinError}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : null
+          }
         />
 
-        <div className="landing-content">
-          <div className="auth-section">
-            <div className="auth-card">
-              <div className="auth-toggle">
-                <button className={authMode === 'login' ? 'active' : ''} onClick={() => setAuthMode('login')}>Login</button>
-                <button className={authMode === 'register' ? 'active' : ''} onClick={() => setAuthMode('register')}>Register</button>
-              </div>
-              {authMode === 'login'
-                ? <LoginForm onLoginSuccess={handleLoginSuccess} onSwitchToRegister={() => setAuthMode('register')} />
-                : <RegisterForm
-                  onSuccess={handleLoginSuccess}
-                  pendingEventId={pendingEventId}
-                />
-              }
-            </div>
-          </div>
+        <div className="instagram-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+          <section className="instagram-section">
+            <InstagramEmbed postUrl="https://www.instagram.com/p/DU8tXhgkngk" />
+          </section>
+          <section className="instagram-section">
+            <InstagramEmbed postUrl="https://www.instagram.com/p/DWIzJ7QEsQp" />
+          </section>
+        </div>
 
+{/* ===================== Latest Posts Section ===================== */}
+<section className="latest-posts-section" style={{ marginTop: '48px' }}>
+  <h2 className="section-title">Latest Posts</h2>
+  <p className="section-description">
+    Stay updated with the newest activities and community highlights.
+  </p>
+  <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+    <div className="post-card">Post 1</div>
+    <div className="post-card">Post 2</div>
+    <div className="post-card">Post 3</div>
+    <div className="post-card">Post 4</div>
+  </div>
+</section>
+
+
+        {/* <div className="landing-content">
           <div className="info-section">
             <div className="info-card">
               <Info size={32} color="var(--primary-color)" />
@@ -271,7 +432,7 @@ function HomeContent() {
             </div>
           </div>
         </div>
-
+ */}
         <ActivityDetailModal
           activity={detailActivity}
           isOpen={isDetailOpen}
@@ -281,13 +442,46 @@ function HomeContent() {
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
           onSwitchToRegister={() => {
             setPendingEventId(detailActivity.id);
-            setAuthMode('register');
             setIsDetailOpen(false);
-            // Smooth scroll to auth section
-            document.querySelector('.auth-section')?.scrollIntoView({ behavior: 'smooth' });
+            setShowRegisterModal(true);
           }}
         />
-      </div>
+
+        {/* Register popup modal */}
+        {
+          showRegisterModal && (
+            <div
+              className="modal-overlay"
+              onClick={() => setShowRegisterModal(false)}
+              style={{ zIndex: 2000 }}
+            >
+              <div
+                className="modal-content register-modal"
+                style={{ maxWidth: '560px', padding: '32px' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
+                  <button
+                    onClick={() => setShowRegisterModal(false)}
+                    style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <RegisterForm
+                  onSuccess={(user) => {
+                    handleLoginSuccess(user);
+                    setShowRegisterModal(false);
+                  }}
+                  pendingEventId={pendingEventId}
+                  hideTitle
+                  submitText="Join"
+                />
+              </div>
+            </div>
+          )
+        }
+      </div >
     );
   }
 

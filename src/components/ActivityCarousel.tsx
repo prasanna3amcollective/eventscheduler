@@ -23,6 +23,8 @@ interface ActivityCarouselProps {
   onActivityClick?: (activity: any) => void;
   /** Whether the user is logged in; controls collapse toggle visibility */
   isLoggedIn?: boolean;
+  /** Optional content to render on the right side of the carousel header (e.g. Sign In / Sign Up buttons) */
+  headerRight?: React.ReactNode;
 }
 
 /**
@@ -30,7 +32,7 @@ interface ActivityCarouselProps {
  * Fetches future activities, renders them as swipeable cards with date/time/category badges.
  * Shows a collapse/expand toggle when the user is logged in.
  */
-export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLoggedIn }: ActivityCarouselProps) {
+export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLoggedIn, headerRight }: ActivityCarouselProps) {
   // List of upcoming activities fetched from the API
   const [upcomingActivities, setUpcomingActivities] = useState<Activity[]>([]);
   // Loading state while fetching
@@ -125,6 +127,12 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
 
           <span className="carousel-count">{filteredActivities.length} activities</span>
         </div>
+
+        {headerRight && (
+          <div className="carousel-header-right">
+            {headerRight}
+          </div>
+        )}
       </div>
 
       {categoryList.length > 1 && (

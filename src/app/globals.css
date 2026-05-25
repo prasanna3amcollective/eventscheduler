@@ -203,18 +203,7 @@ h4 {
 }
 
 /* Form Styling - Premium Material */
-.activity-form,
-.responsibility-form {
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--surface-color);
-  padding: 40px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+
 
 .responsibility-form select {
   height: 48px;
@@ -461,6 +450,84 @@ input:not([type="checkbox"]):focus {
   background: #fee2e2;
   color: #ef4444;
 }
+
+/* Instagram grid layout */
+.instagram-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+.instagram-section {
+  flex: 1 1 calc(50% - 12px);
+  max-width: 500px;
+}
+@media (max-width: 768px) {
+  .instagram-section {
+    flex-basis: 100%;
+  }
+}
+
+/* Latest Posts grid */
+.latest-posts-section .post-card {
+  flex: 1 1 calc(50% - 12px);
+  min-height: 180px;
+  background: var(--hover-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+@media (max-width: 768px) {
+  .latest-posts-section .post-card {
+    flex-basis: 100%;
+  }
+}
+
+/* Register modal responsive fixes */
+.modal-content.register-modal {
+  width: 90vw;
+  max-width: 560px;
+  padding: 32px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+/* Reduce padding on very small screens */
+@media (max-width: 480px) {
+  .modal-content.register-modal {
+    padding: 16px;
+  }
+}
+/* Ensure form fields respect container width */
+.register-modal .activity-form {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure inputs within register modal respect container width */
+.register-modal .activity-form input,
+.register-modal .activity-form select,
+.register-modal .activity-form textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Phone input group wrap on narrow viewports */
+@media (max-width: 480px) {
+  .register-modal .phone-input-group {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .register-modal .phone-input-group .country-select {
+    width: 100% !important;
+  }
+}
+
 
 /* Day Selector - Material UI Style */
 .days-selector {
@@ -943,6 +1010,27 @@ input:not([type="checkbox"]):focus {
   background: color-mix(in srgb, var(--primary-color) 90%, black);
 }
 
+/* Make Complete Registration button in sign-up popup match the compact Sign In button style */
+.register-modal .btn-primary {
+  padding: 6px 16px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+}
+.register-modal {
+  max-width: 480px;
+  padding: 20px;
+}
+.register-modal .activity-form {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  gap: 16px;
+}
+
 /* Dashboard Header */
 .dashboard-header {
   display: flex;
@@ -1003,55 +1091,89 @@ input:not([type="checkbox"]):focus {
   border-color: #ebcec7;
 }
 
-/* === Brutalist Marquee Top Banner === */
+/* === Brutalist Top Banner (static) === */
 .marquee-banner {
   background: var(--surface-color);
-  overflow: hidden;
-  padding: 8px 0;
+  padding: 24px 0;
+  text-align: center;
 }
 
-.marquee {
-  overflow: hidden;
-}
-
-.marquee-track {
-  display: inline-flex;
-  white-space: nowrap;
-  animation: marquee 44s linear infinite;
-  transition: animation-duration 1.8s ease-out;
-}
-
-.marquee-text {
+.banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   font-family: var(--heading-font);
   font-size: 92px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: -2.5px;
   color: var(--primary-color);
-  padding-right: 60px;
-  line-height: 0.95;
+  line-height: 0.9;
 }
 
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-/* Slowly halt on hover (brutalist "coasting to stop" feel) */
-.marquee-banner:hover .marquee-track {
-  animation-duration: 180s;
+.center-fist {
+  height: 0.9em;
+  width: auto;
+  opacity: 0.9;
+  flex-shrink: 0;
 }
 
 /* Responsive: smaller on mobile */
 @media (max-width: 768px) {
-  .marquee-text {
+  .banner-content {
     font-size: 48px;
-    padding-right: 30px;
-    letter-spacing: -1.5px;
+    gap: 10px;
   }
   .marquee-banner {
-    padding: 4px 0;
+    padding: 16px 0;
   }
+}
+
+/* Subtle "3AM" stamp watermark on auth card - CSS only, feels hand-printed */
+.auth-card {
+  position: relative;
+}
+
+.auth-card::after {
+  content: "3AM";
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  font-family: var(--heading-font);
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -3px;
+  color: var(--primary-color);
+  opacity: 0.07;
+  transform: rotate(-14deg);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* Ink bleed press effect on the bold login button - matches brutalist stamp feel */
+.auth-card .btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-card .btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: var(--primary-color);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 140ms ease;
+}
+
+.auth-card .btn-primary:hover::after {
+  opacity: 0.08;
+}
+
+.auth-card .btn-primary:active::after {
+  opacity: 0.18;
 }
 
 /* ── Carousel: Horizontal scroll-snapping strip ──────────────────────── */
@@ -1071,6 +1193,13 @@ input:not([type="checkbox"]):focus {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.carousel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .carousel-dot {
@@ -1468,11 +1597,9 @@ input:not([type="checkbox"]):focus {
 }
 
 .landing-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  display: block;
   padding: 0 40px 60px;
-  max-width: 1400px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
@@ -1481,6 +1608,27 @@ input:not([type="checkbox"]):focus {
   flex-direction: column;
   justify-content: center;
 }
+
+.activity-form,
+.responsibility-form {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--surface-color);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Register modal specific overrides */
+.register-modal .activity-form {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 
 .info-card {
   background: var(--surface-color);
