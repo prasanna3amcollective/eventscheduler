@@ -395,9 +395,7 @@ export default function ActivityDetailModal({
           )}
 
           {isStaffForActivity ? (
-            <button className="btn-secondary" onClick={() => {
-              onClose();
-            }}>
+            <button className="btn-secondary" onClick={handleEdit}>
               Switch Responsibility
             </button>
           ) : isRegistered ? (
