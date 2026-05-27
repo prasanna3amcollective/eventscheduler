@@ -394,6 +394,8 @@ function HomeContent() {
           }
         />
 
+        {/* we are hiding the instagram grid */}
+        {/* 
         <div className="instagram-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
           <section className="instagram-section">
             <InstagramEmbed postUrl="https://www.instagram.com/p/DU8tXhgkngk" />
@@ -401,21 +403,22 @@ function HomeContent() {
           <section className="instagram-section">
             <InstagramEmbed postUrl="https://www.instagram.com/p/DWIzJ7QEsQp" />
           </section>
-        </div>
+        </div> */}
 
-{/* ===================== Latest Posts Section ===================== */}
-<section className="latest-posts-section" style={{ marginTop: '48px' }}>
-  <h2 className="section-title">Latest Posts</h2>
-  <p className="section-description">
-    Stay updated with the newest activities and community highlights.
-  </p>
-  <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-    <div className="post-card">Post 1</div>
-    <div className="post-card">Post 2</div>
-    <div className="post-card">Post 3</div>
-    <div className="post-card">Post 4</div>
-  </div>
-</section>
+
+        {/* ===================== Latest Posts Section ===================== */}
+        <section className="latest-posts-section" style={{ marginTop: '48px' }}>
+          <h2 className="section-title">Explore our Communities</h2>
+          <p className="section-description">
+            Stay updated with the newest activities and community highlights.
+          </p>
+          <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+            <div className="post-card">Writer's Community</div>
+            <div className="post-card">Cinemat Community</div>
+            <div className="post-card">Music Community</div>
+            <div className="post-card">Tech Community</div>
+          </div>
+        </section>
 
 
         {/* <div className="landing-content">
