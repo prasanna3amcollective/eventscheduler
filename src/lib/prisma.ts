@@ -103,6 +103,30 @@ const createPrismaClient = () => {
           if (record) await syncUserRoles(record.userId, client);
           return result;
         }
+      },
+      // Sync user roles when roles are assigned/removed from groups
+      roleGroupM2M: {
+        async create({ args, query }) {
+          const result = await query(args);
+          const groupMembers = await client.userGroupM2M.findMany({
+            where: { groupId: result.groupId },
+            select: { userId: true }
+          });
+          await Promise.all(groupMembers.map((m: any) => syncUserRoles(m.userId, client)));
+          return result;
+        },
+        async delete({ args, query }) {
+          const record = await client.roleGroupM2M.findUnique({ where: args.where });
+          const result = await query(args);
+          if (record) {
+            const groupMembers = await client.userGroupM2M.findMany({
+              where: { groupId: record.groupId },
+              select: { userId: true }
+            });
+            await Promise.all(groupMembers.map((m: any) => syncUserRoles(m.userId, client)));
+          }
+          return result;
+        }
       }
     }
   });
