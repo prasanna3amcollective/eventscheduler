@@ -1571,16 +1571,22 @@ input:not([type="checkbox"]):focus {
 }
 
 .detail-footer-flat {
-  padding: 16px 28px 24px;
+  padding: 20px 28px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
   border-top: 1px dashed var(--border-color);
 }
 
-.detail-footer-flat > *:not(button) {
-  flex: 1;
-  min-width: 120px;
+.detail-footer-flat .full-width-message {
+  flex: 0 0 100%;
+  text-align: center;
+  color: var(--success-color);
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
 .error-message {

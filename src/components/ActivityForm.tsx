@@ -817,7 +817,27 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+      <div className="form-actions" style={{ marginTop: '32px' }}>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="btn-secondary"
+          >
+            <X size={18} />
+            Cancel
+          </button>
+        )}
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="btn-danger"
+          >
+            <Trash size={18} />
+            Delete
+          </button>
+        )}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -830,28 +850,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               : 'Confirm Schedule'}
           {!isSubmitting && <Check size={18} />}
         </button>
-        {isEditing && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="btn-danger"
-          >
-            <Trash size={18} />
-          </button>
-        )}
       </div>
-
-      {onCancel && (
-        <button
-          type="button"
-          onClick={onCancel}
-          className="btn-secondary"
-          style={{ marginTop: '12px' }}
-        >
-          <X size={18} />
-          Cancel
-        </button>
-      )}
     </form>
 
       {confirmAction && (
