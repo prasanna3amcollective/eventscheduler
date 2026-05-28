@@ -1,0 +1,83 @@
+/* HeaderPanel Component Styling - Premium Glassmorphism Header */
+
+/* Ensure smooth scrolling for anchor navigation */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Container for the header navigation panel */
+.header-panel {
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 0;
+  /* Stick just below the banner when scrolling */
+  position: sticky;
+  top: 0;
+  z-index: 40; /* below the sticky banner which has higher z-index */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Left‑align items; auth pushes right via margin-left:auto */
+}
+
+.header-panel ul {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+}
+
+.header-panel li {
+  /* No extra styling needed for list items */
+}
+
+.header-panel a {
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: background 0.3s ease, color 0.3s ease, transform 0.2s;
+}
+
+.header-panel a:hover {
+  background: var(--hover-color);
+  color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+/* Active state when section is in view – can be toggled via JS later */
+.header-panel a.active {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+/* Auth button container – aligns to the right */
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* pushes auth area to the far right */
+  position: relative; /* for absolute dropdown positioning */
+}
+
+/* Sign‑in dropdown panel */
+.sign-in-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 100;
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import HeaderPanel from '@/components/HeaderPanel';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
 import ResponsibilityForm from '@/components/ResponsibilityForm';
@@ -24,7 +25,17 @@ function HomeContent() {
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<'calendar' | 'scheduler' | 'admin'>('calendar');
+  const [activeSection, setActiveSection] = useState('participate');
+  const [activeTab, setActiveTab] = useState('calendar');
+
+  // Initialize activeSection from URL hash on mount
+  useEffect(() => {
+    const hash = window.location.hash.replace('#', '') || 'participate';
+    setActiveSection(hash);
+  }, []);
+
+
+
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // New top auth UI states
@@ -261,152 +272,62 @@ function HomeContent() {
     return (
       <div className="landing-page fade-in">
         <MarqueeBanner />
-
-        <ActivityCarousel
-          refreshTrigger={refreshTrigger}
-          onActivityClick={handleCarouselClick}
+        <HeaderPanel
           isLoggedIn={isLoggedIn}
-          headerRight={
-            !isLoggedIn ? (
-              <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <button
-                    onClick={() => {
-                      const next = !showSignInPanel;
-                      setShowSignInPanel(next);
-                      if (next) setShowRegisterModal(false);
-                      setSigninError(null);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: '1px solid var(--border-color)',
-                      padding: '4px 10px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      color: 'var(--text-primary)',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowRegisterModal(true);
-                      setShowSignInPanel(false);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: '1px solid var(--border-color)',
-                      padding: '4px 10px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      color: 'var(--text-primary)',
-                      borderRadius: '4px'
-                    }}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-
-                {/* Dropdown panel right below the Sign In button */}
-                {showSignInPanel && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '4px',
-                      background: 'var(--surface-color)',
-                      border: '1px solid var(--border-color)',
-                      borderRadius: '6px',
-                      padding: '10px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      zIndex: 100
-                    }}
-                  >
-                    <input
-                      type="text"
-                      placeholder="Username"
-                      value={signinUsername}
-                      onChange={(e) => setSigninUsername(e.target.value)}
-                      style={{
-                        padding: '5px 8px',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        width: '110px'
-                      }}
-                    />
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={signinPassword}
-                      onChange={(e) => setSigninPassword(e.target.value)}
-                      style={{
-                        padding: '5px 8px',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        width: '110px'
-                      }}
-                    />
-                    <button
-                      onClick={handlePanelSignIn}
-                      disabled={signinSubmitting}
-                      style={{
-                        background: 'var(--primary-color)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '5px 12px',
-                        fontSize: '13px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        borderRadius: '4px',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {signinSubmitting ? '...' : 'Sign In'}
-                    </button>
-                    {signinError && (
-                      <span style={{ color: '#a13a2a', fontSize: '12px', whiteSpace: 'nowrap' }}>{signinError}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : null
-          }
+          showSignInPanel={showSignInPanel}
+          setShowSignInPanel={setShowSignInPanel}
+          setShowRegisterModal={setShowRegisterModal}
+          signinUsername={signinUsername}
+          setSigninUsername={setSigninUsername}
+          signinPassword={signinPassword}
+          setSigninPassword={setSigninPassword}
+          signinSubmitting={signinSubmitting}
+          setSigninSubmitting={setSigninSubmitting}
+          signinError={signinError}
+          setSigninError={setSigninError}
+          handlePanelSignIn={handlePanelSignIn}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
         />
 
-        {/* we are hiding the instagram grid */}
-        {/* 
-        <div className="instagram-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-          <section className="instagram-section">
-            <InstagramEmbed postUrl="https://www.instagram.com/p/DU8tXhgkngk" />
-          </section>
-          <section className="instagram-section">
-            <InstagramEmbed postUrl="https://www.instagram.com/p/DWIzJ7QEsQp" />
-          </section>
-        </div> */}
 
-
-        {/* ===================== Latest Posts Section ===================== */}
-        <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-          <h2 className="section-title">Explore our Communities</h2>
-          <p className="section-description">
-            Stay updated with the newest activities and community highlights.
-          </p>
-          <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-            <div className="post-card">Writer's Community</div>
-            <div className="post-card">Cinemat Community</div>
-            <div className="post-card">Music Community</div>
-            <div className="post-card">Tech Community</div>
-          </div>
+        <section id="about-us" style={{ display: activeSection === 'about-us' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
+          <h2>About Us</h2>
+          <p>Welcome to the 3AM Collective Movement. Learn more about our mission and values.</p>
         </section>
+        <section id="participate" style={{ display: activeSection === 'participate' ? 'block' : 'none', textAlign: 'left', padding: '40px 0' }}>
+          <p>Join our events, volunteer, or become a member of the community.</p>
+          <ActivityCarousel
+            refreshTrigger={refreshTrigger}
+            onActivityClick={handleCarouselClick}
+            isLoggedIn={isLoggedIn}
+            headerRight={null}
+          />
+        </section>
+        <section id="gallery" style={{ display: activeSection === 'gallery' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
+          <h2>Gallery</h2>
+          <p>Explore photos and videos from past activities.</p>
+        </section>
+        <section id="explore" style={{ display: activeSection === 'explore' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
+  <h2>Explore</h2>
+  <p>Discover new projects and community initiatives.</p>
+  {/* Latest Posts Section */}
+  <section className="latest-posts-section" style={{ marginTop: '48px' }}>
+    <h2 className="section-title">Explore our Communities</h2>
+    <p className="section-description">
+      Stay updated with the newest activities and community highlights.
+    </p>
+    <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+      <div className="post-card">Writer's Community</div>
+      <div className="post-card">Cinemat Community</div>
+      <div className="post-card">Music Community</div>
+      <div className="post-card">Tech Community</div>
+    </div>
+  </section>
+</section>
+
+
+
 
 
         {/* <div className="landing-content">
@@ -530,7 +451,7 @@ function HomeContent() {
         {activeTab === 'calendar' && (
           <div className="content-section">
             <CalendarView
-              refreshTrigger={refreshTrigger}
+
               onSelectActivity={handleSelectActivity}
               onSelectSlot={handleSelectSlot}
               onCreateActivity={onCreateActivity}
