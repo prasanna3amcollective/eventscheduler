@@ -380,34 +380,33 @@ export default function ActivityDetailModal({
             </div>
           )}
 
-          <button
-            onClick={handleSyncCalendar}
-            className="btn-outline"
-            disabled={!googleCalendarUrl}
-          >
-            <Calendar size={16} /> Sync
-          </button>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'nowrap', overflowX: 'auto', width: '100%', justifyContent: 'flex-end' }}>
+            <button
+              onClick={handleSyncCalendar}
+              className="btn-secondary"
+              disabled={!googleCalendarUrl}
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              <Calendar size={16} /> Sync
+            </button>
 
-          {isLeader && (
-            <a href={`/activities/${activityId}`} className="btn-outline">
-              <Users size={16} /> Manage
-            </a>
-          )}
+            {isLeader && (
+              <button onClick={() => router.push(`/activities/${activityId}`)} className="btn-secondary" style={{ whiteSpace: 'nowrap' }}>
+                <Users size={16} /> Manage
+              </button>
+            )}
 
-          {isStaffForActivity ? (
-            <button className="btn-secondary" onClick={handleEdit}>
-              Switch Responsibility
-            </button>
-          ) : isRegistered ? (
-            <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting}>
-              {isSubmitting ? 'Unregistering...' : 'Unregister'}
-            </button>
-          ) : (
-            <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting}>
-              {isSubmitting ? 'Registering...' : 'Register'}
-              <CheckCircle size={16} />
-            </button>
-          )}
+            {isStaffForActivity ? null : isRegistered ? (
+              <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+                {isSubmitting ? 'Unregistering...' : 'Unregister'}
+              </button>
+            ) : (
+              <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+                {isSubmitting ? 'Registering...' : 'Register'}
+                <CheckCircle size={16} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
