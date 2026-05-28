@@ -115,3 +115,8 @@ scratch/
 # =============================================================================
 package-lock.json
 internal/plans/
+
+# AI Agent tools and generated folders
+graphify-out/
+.gemini/
+
