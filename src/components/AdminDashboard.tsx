@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { secureFetch } from '@/lib/fetch';
 import {
   Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight, User
@@ -68,7 +69,7 @@ interface ParticipantRecord {
   sys_created_at: string;
 }
 
-type AdminTab = 'roles' | 'user-roles' | 'groups' | 'group-members' | 'group-roles' | 'acls' | 'participants';
+type AdminTab = 'roles' | 'groups' | 'group-members' | 'acls' | 'participants';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -201,6 +202,7 @@ function Pagination({
 // ---------------------------------------------------------------------------
 
 export default function AdminDashboard({ currentUser }: { currentUser: User }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>('roles');
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -598,7 +600,12 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                   )
                   .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((r) => (
-                    <tr key={r.id}>
+                    <tr
+                      key={r.id}
+                      onClick={() => router.push(`/roles/${r.id}`)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-bg"
+                    >
                       <td className="font-bold">{r.name}</td>
                       <td>{r.description}</td>
                     </tr>
@@ -673,7 +680,12 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                   )
                   .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((g) => (
-                    <tr key={g.id}>
+                    <tr
+                      key={g.id}
+                      onClick={() => router.push(`/groups/${g.id}`)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-bg"
+                    >
                       <td className="font-bold">{g.name}</td>
                       <td>{g.description}</td>
                       <td>
@@ -733,121 +745,121 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [groups, filters, renderFilterHeader, newGroupName, newGroupDesc, newGroupCategory, handleCreateGroup],
   );
 
-  const groupMembersTab = useMemo(
-    () => (
-      <div className="admin-panel">
-        <h3>Group Members</h3>
-        <p className="panel-subtitle">
-          Manage which users belong to which groups. Adding a user to a group
-          automatically inherits all roles assigned to that group.
-        </p>
+  // const groupMembersTab = useMemo(
+  //   () => (
+  //     <div className="admin-panel">
+  //       <h3>Group Members</h3>
+  //       <p className="panel-subtitle">
+  //         Manage which users belong to which groups. Adding a user to a group
+  //         automatically inherits all roles assigned to that group.
+  //       </p>
 
-        <div className="table-container">
-          {groupMembers.length === 0 ? (
-            <div className="empty-state">No group memberships yet</div>
-          ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  {renderFilterHeader('User', 'gm_user')}
-                  {renderFilterHeader('Group', 'gm_group')}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupMembers
-                  .filter(
-                    (gm) =>
-                      (matchesFilter(gm.user.name, filters.gm_user) ||
-                        matchesFilter(gm.user.username, filters.gm_user)) &&
-                      matchesFilter(gm.group.name, filters.gm_group),
-                  )
-                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
-                  .map((gm) => (
-                    <tr key={gm.id}>
-                      <td>
-                        <div className="item-info">
-                          <strong>{gm.user.name}</strong>
-                          <span>{gm.user.username}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="font-bold">{gm.group.name}</span>
-                      </td>
-                      <td>
-                        <button
-                          className="btn-icon-danger"
-                          onClick={() =>
-                            requestRemoveMember(gm.id, gm.user.name, gm.group.name)
-                          }
-                          title="Remove from group"
-                        >
-                          <Trash size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          )}
-          <Pagination
-            currentPage={currentPage}
-            totalRecords={
-              groupMembers.filter(
-                (gm) =>
-                  (matchesFilter(gm.user.name, filters.gm_user) ||
-                    matchesFilter(gm.user.username, filters.gm_user)) &&
-                  matchesFilter(gm.group.name, filters.gm_group),
-              ).length
-            }
-            onPageChange={setCurrentPage}
-          />
-        </div>
+  //       <div className="table-container">
+  //         {groupMembers.length === 0 ? (
+  //           <div className="empty-state">No group memberships yet</div>
+  //         ) : (
+  //           <table className="admin-table">
+  //             <thead>
+  //               <tr>
+  //                 {renderFilterHeader('User', 'gm_user')}
+  //                 {renderFilterHeader('Group', 'gm_group')}
+  //                 <th>Actions</th>
+  //               </tr>
+  //             </thead>
+  //             <tbody>
+  //               {groupMembers
+  //                 .filter(
+  //                   (gm) =>
+  //                     (matchesFilter(gm.user.name, filters.gm_user) ||
+  //                       matchesFilter(gm.user.username, filters.gm_user)) &&
+  //                     matchesFilter(gm.group.name, filters.gm_group),
+  //                 )
+  //                 .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
+  //                 .map((gm) => (
+  //                   <tr key={gm.id}>
+  //                     <td>
+  //                       <div className="item-info">
+  //                         <strong>{gm.user.name}</strong>
+  //                         <span>{gm.user.username}</span>
+  //                       </div>
+  //                     </td>
+  //                     <td>
+  //                       <span className="font-bold">{gm.group.name}</span>
+  //                     </td>
+  //                     <td>
+  //                       <button
+  //                         className="btn-icon-danger"
+  //                         onClick={() =>
+  //                           requestRemoveMember(gm.id, gm.user.name, gm.group.name)
+  //                         }
+  //                         title="Remove from group"
+  //                       >
+  //                         <Trash size={16} />
+  //                       </button>
+  //                     </td>
+  //                   </tr>
+  //                 ))}
+  //             </tbody>
+  //           </table>
+  //         )}
+  //         <Pagination
+  //           currentPage={currentPage}
+  //           totalRecords={
+  //             groupMembers.filter(
+  //               (gm) =>
+  //                 (matchesFilter(gm.user.name, filters.gm_user) ||
+  //                   matchesFilter(gm.user.username, filters.gm_user)) &&
+  //                 matchesFilter(gm.group.name, filters.gm_group),
+  //             ).length
+  //           }
+  //           onPageChange={setCurrentPage}
+  //         />
+  //       </div>
 
-        <form className="admin-form" onSubmit={handleAddMember}>
-          <h4>Add User to Group</h4>
-          <select
-            value={memberUser}
-            onChange={(e) => setMemberUser(e.target.value)}
-            required
-          >
-            <option value="">Select User...</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.username})
-              </option>
-            ))}
-          </select>
-          <select
-            value={memberGroup}
-            onChange={(e) => setMemberGroup(e.target.value)}
-            required
-          >
-            <option value="">Select Group...</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name} — {g.category}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="btn-primary">
-            <UserPlus size={16} /> Add to Group
-          </button>
-        </form>
-      </div>
-    ),
-    [
-      groupMembers,
-      filters,
-      renderFilterHeader,
-      users,
-      groups,
-      memberUser,
-      memberGroup,
-      handleAddMember,
-      requestRemoveMember,
-    ],
-  );
+  //       <form className="admin-form" onSubmit={handleAddMember}>
+  //         <h4>Add User to Group</h4>
+  //         <select
+  //           value={memberUser}
+  //           onChange={(e) => setMemberUser(e.target.value)}
+  //           required
+  //         >
+  //           <option value="">Select User...</option>
+  //           {users.map((u) => (
+  //             <option key={u.id} value={u.id}>
+  //               {u.name} ({u.username})
+  //             </option>
+  //           ))}
+  //         </select>
+  //         <select
+  //           value={memberGroup}
+  //           onChange={(e) => setMemberGroup(e.target.value)}
+  //           required
+  //         >
+  //           <option value="">Select Group...</option>
+  //           {groups.map((g) => (
+  //             <option key={g.id} value={g.id}>
+  //               {g.name} — {g.category}
+  //             </option>
+  //           ))}
+  //         </select>
+  //         <button type="submit" className="btn-primary">
+  //           <UserPlus size={16} /> Add to Group
+  //         </button>
+  //       </form>
+  //     </div>
+  //   ),
+  //   [
+  //     groupMembers,
+  //     filters,
+  //     renderFilterHeader,
+  //     users,
+  //     groups,
+  //     memberUser,
+  //     memberGroup,
+  //     handleAddMember,
+  //     requestRemoveMember,
+  //   ],
+  // );
 
   const groupRolesTab = useMemo(
     () => (
@@ -1188,17 +1200,17 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       </td>
                       <td>
                         <span className={`role-badge ${p.type.toLowerCase()}`} style={{
-                             background: p.type === 'Leader' ? 'var(--primary-glow)' : 
-                                        p.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
-                                        p.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
-                             color: p.type === 'Leader' ? 'var(--primary-color)' :
-                                    p.type === 'Guide' ? '#10b981' :
-                                    p.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
-                             padding: '2px 8px',
-                             borderRadius: '12px',
-                             fontSize: '11px',
-                             fontWeight: 700,
-                             textTransform: 'uppercase'
+                          background: p.type === 'Leader' ? 'var(--primary-glow)' :
+                            p.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
+                              p.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
+                          color: p.type === 'Leader' ? 'var(--primary-color)' :
+                            p.type === 'Guide' ? '#10b981' :
+                              p.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase'
                         }}>
                           {p.type}
                         </span>
@@ -1219,16 +1231,16 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
-           <Pagination 
-             currentPage={currentPage}
-             totalRecords={participants.filter(p => 
-               (matchesFilter(p.user.name, filters.p_user) ||
-                 matchesFilter(p.user.username, filters.p_user)) &&
-               matchesFilter(p.activity.name, filters.p_activity) &&
-               matchesFilter(p.type, filters.p_role)
-             ).length} 
-             onPageChange={setCurrentPage}
-           />
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={participants.filter(p =>
+              (matchesFilter(p.user.name, filters.p_user) ||
+                matchesFilter(p.user.username, filters.p_user)) &&
+              matchesFilter(p.activity.name, filters.p_activity) &&
+              matchesFilter(p.type, filters.p_role)
+            ).length}
+            onPageChange={setCurrentPage}
+          />
 
         </div>
       </div>
@@ -1246,12 +1258,6 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         return rolesTab;
       case 'groups':
         return groupsTab;
-      case 'group-members':
-        return groupMembersTab;
-      case 'group-roles':
-        return groupRolesTab;
-      case 'user-roles':
-        return userRolesTab;
       case 'acls':
         return aclsTab;
       case 'participants':
@@ -1259,7 +1265,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
       default:
         return null;
     }
-  }, [activeTab, rolesTab, groupsTab, groupMembersTab, groupRolesTab, userRolesTab, aclsTab, participantsTab]);
+  }, [activeTab, rolesTab, groupsTab, aclsTab, participantsTab]);
 
   return (
     <div className="admin-dashboard fade-in">
@@ -1279,36 +1285,24 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         >
           <Layers size={16} /> Groups
         </button>
-        <button
+        {/* <button
           className={activeTab === 'group-members' ? 'active' : ''}
           onClick={() => handleTabChange('group-members')}
         >
           <UserPlus size={16} /> Group Members
-        </button>
-         <button
-           className={activeTab === 'group-roles' ? 'active' : ''}
-           onClick={() => handleTabChange('group-roles')}
-         >
-           <Link size={16} /> Group Roles
-         </button>
-         <button
-           className={activeTab === 'user-roles' ? 'active' : ''}
-           onClick={() => handleTabChange('user-roles')}
-         >
-           <User size={16} /> User Roles
-         </button>
-         <button
-           className={activeTab === 'acls' ? 'active' : ''}
-           onClick={() => handleTabChange('acls')}
-         >
+        </button> */}
+        <button
+          className={activeTab === 'acls' ? 'active' : ''}
+          onClick={() => handleTabChange('acls')}
+        >
           <Key size={16} /> ACLs
         </button>
-        <button
+        {/* <button
           className={activeTab === 'participants' ? 'active' : ''}
           onClick={() => handleTabChange('participants')}
         >
           <Users size={16} /> Participants
-        </button>
+        </button> */}
       </div>
 
       <SuccessBanner message={success} />
