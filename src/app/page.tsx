@@ -37,22 +37,10 @@ function HomeContent() {
   const [signinError, setSigninError] = useState<string | null>(null);
   const [signinSubmitting, setSigninSubmitting] = useState(false);
 
-  // Theme switcher
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-
+  // Theme switcher removed; using permanent dark theme
   useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'dark' | 'light' | null;
-    const initial = saved || 'dark';
-    setTheme(initial);
-    document.documentElement.dataset.theme = initial;
+    document.documentElement.dataset.theme = 'dark';
   }, []);
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.dataset.theme = next;
-    localStorage.setItem('theme', next);
-  };
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResponsibility, setSelectedResponsibility] = useState<any>(null);
@@ -523,14 +511,6 @@ function HomeContent() {
               </div>
             )}
           </div>
-          <button
-            onClick={toggleTheme}
-            className="btn-logout"
-            title="Switch theme"
-            style={{ marginRight: '6px' }}
-          >
-            {theme === 'dark' ? '☀︎' : '☾'}
-          </button>
           <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
         </div>
       </header>

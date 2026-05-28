@@ -192,7 +192,7 @@ function MultiUserSelect({
             </div>
           ))
         ) : (
-          <div className="no-users-placeholder">No {label.toLowerCase()}s assigned</div>
+          <div className="no-users-placeholder">No {label.toLowerCase()} assigned</div>
         )}
       </div>
 
@@ -459,7 +459,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           if (!res.ok) {
             const text = await res.text().catch(() => '');
             let errorData: any = {};
-            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            try { errorData = text ? JSON.parse(text) : {}; } catch { }
             console.error(`Save failed (this-only): HTTP ${res.status}`);
             throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
           }
@@ -485,7 +485,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           if (!res.ok) {
             const text = await res.text().catch(() => '');
             let errorData: any = {};
-            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            try { errorData = text ? JSON.parse(text) : {}; } catch { }
             console.error(`Save failed (series): HTTP ${res.status}`);
             throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
           }
@@ -505,7 +505,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           if (!res.ok) {
             const text = await res.text().catch(() => '');
             let errorData: any = {};
-            try { errorData = text ? JSON.parse(text) : {}; } catch {}
+            try { errorData = text ? JSON.parse(text) : {}; } catch { }
             console.error(`Save failed: HTTP ${res.status}`);
             throw new Error(errorData.error || `Save failed (HTTP ${res.status})`);
           }
@@ -516,7 +516,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       } catch (err) {
         console.error(err);
         setConfirmMessage(err instanceof Error ? err.message : ERROR_SAVING_EVENT);
-        setConfirmAction(() => () => {});
+        setConfirmAction(() => () => { });
         setIsSubmitting(false);
       }
     },
@@ -549,7 +549,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       } catch (err) {
         console.error(err);
         setConfirmMessage(ERROR_DELETING_EVENT);
-        setConfirmAction(() => () => {});
+        setConfirmAction(() => () => { });
       }
     });
   }, [isSeriesOccurrence, saveMode, formData.startDateTime, initialData, onActivityCreated]);
@@ -558,300 +558,300 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
   return (
     <>
-    <form className="activity-form" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
-      </div>
-
-      <OverlapWarningBanner message={overlapWarning} />
-
-      <div className="form-row" style={{ gridTemplateColumns: '3fr 1fr' }}>
-        <div className="form-group">
-          <label>
-            <Tag size={16} /> Activity Name
-          </label>
-          <input
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g. Project Sync-up"
-          />
+      <form className="activity-form" onSubmit={handleSubmit}>
+        <div className="form-header">
+          <h2>{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
         </div>
 
-        <div className="form-group">
-          <label>
-            <Tag size={16} /> Category
-          </label>
-          <select
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="premium-select"
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--surface-color)',
-              color: 'var(--text-primary)',
-              fontSize: '14px'
-            }}
-          >
-            {ACTIVITY_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+        <OverlapWarningBanner message={overlapWarning} />
 
-      <div className="form-section-divider">
-        <span>Participants & Staff</span>
-      </div>
-
-      <div className="staff-related-list">
-        <MultiUserSelect
-          label="Leaders"
-          selectedNames={formData.leader}
-          onChange={(names) => setFormData({ ...formData, leader: names })}
-          icon={<UserIcon size={16} />}
-          users={users}
-        />
-        <MultiUserSelect
-          label="Guides"
-          selectedNames={formData.guide}
-          onChange={(names) => setFormData({ ...formData, guide: names })}
-          icon={<Users size={16} />}
-          users={users}
-        />
-        <MultiUserSelect
-          label="Observers"
-          selectedNames={formData.observer}
-          onChange={(names) => setFormData({ ...formData, observer: names })}
-          icon={<Eye size={16} />}
-          users={users}
-        />
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>
-            <Calendar size={16} /> Activity start
-          </label>
-          <DatePicker
-            selected={formData.startDateTime}
-            onChange={(date: Date | null) =>
-              date && setFormData({ ...formData, startDateTime: date })
-            }
-            showTimeSelect
-            dateFormat="MMMM d, yyyy h:mm aa"
-            className="premium-datepicker"
-            placeholderText="Select start date and time"
-          />
-        </div>
-        <div className="form-group">
-          <label>
-            <Repeat size={16} /> Duration (mins)
-          </label>
-          <input
-            type="number"
-            min="1"
-            required
-            value={formData.duration}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                duration: parseInt(e.target.value) || 0,
-              })
-            }
-          />
-        </div>
-      </div>
-
-      <div className="form-group">
-        <label>Activity end (Calculated)</label>
-        <div className="read-only-field">
-          {format(formData.endDateTime, 'MMMM d, yyyy h:mm aa')}
-        </div>
-      </div>
-
-      <div className="form-group recurring-section">
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={formData.isRecurring}
-            onChange={(e) =>
-              setFormData({ ...formData, isRecurring: e.target.checked })
-            }
-          />
-          Enable Recurrence
-        </label>
-
-        {formData.isRecurring && (!isSeriesOccurrence || saveMode === 'all') && (
-          <div className="recurring-options fade-in" style={{ marginTop: '16px' }}>
-            <label style={{ marginBottom: '8px' }}>Repeat on specific days:</label>
-            <DaySelector
-              selectedDays={formData.recurrenceDays}
-              onChange={(days) => setFormData({ ...formData, recurrenceDays: days })}
+        <div className="form-row" style={{ gridTemplateColumns: '3fr 1fr' }}>
+          <div className="form-group">
+            <label>
+              <Tag size={16} /> Activity Name
+            </label>
+            <input
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Project Sync-up"
             />
+          </div>
 
-            {/* New recurrence range fields (visible only for non-series recurrence) */}
-            <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label style={{ fontSize: '13px' }}>how many weeks recurrence?</label>
-                <input
-                  type="number"
-                  min="1"
-                  step="1"
-                  value={formData.recurrenceWeeks}
-                  onChange={(e) => {
-                    const w = Math.max(1, parseInt(e.target.value) || 1);
-                    const newUntil = addWeeks(formData.recurrenceStart, w);
-                    setFormData((prev) => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
-                  }}
-                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
-                />
+          <div className="form-group">
+            <label>
+              <Tag size={16} /> Category
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="premium-select"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: 'var(--surface-color)',
+                color: 'var(--text-primary)',
+                fontSize: '14px'
+              }}
+            >
+              {ACTIVITY_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="form-section-divider">
+          <span>Participants & Staff</span>
+        </div>
+
+        <div className="staff-related-list">
+          <MultiUserSelect
+            label="Leaders"
+            selectedNames={formData.leader}
+            onChange={(names) => setFormData({ ...formData, leader: names })}
+            icon={<UserIcon size={16} />}
+            users={users}
+          />
+          <MultiUserSelect
+            label="Guides"
+            selectedNames={formData.guide}
+            onChange={(names) => setFormData({ ...formData, guide: names })}
+            icon={<Users size={16} />}
+            users={users}
+          />
+          <MultiUserSelect
+            label="Observers"
+            selectedNames={formData.observer}
+            onChange={(names) => setFormData({ ...formData, observer: names })}
+            icon={<Eye size={16} />}
+            users={users}
+          />
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>
+              <Calendar size={16} /> Activity start
+            </label>
+            <DatePicker
+              selected={formData.startDateTime}
+              onChange={(date: Date | null) =>
+                date && setFormData({ ...formData, startDateTime: date })
+              }
+              showTimeSelect
+              dateFormat="MMMM d, yyyy h:mm aa"
+              className="premium-datepicker"
+              placeholderText="Select start date and time"
+            />
+          </div>
+          <div className="form-group">
+            <label>
+              <Repeat size={16} /> Duration (mins)
+            </label>
+            <input
+              type="number"
+              min="1"
+              required
+              value={formData.duration}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  duration: parseInt(e.target.value) || 0,
+                })
+              }
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Activity end (Calculated)</label>
+          <div className="read-only-field">
+            {format(formData.endDateTime, 'MMMM d, yyyy h:mm aa')}
+          </div>
+        </div>
+
+        <div className="form-group recurring-section">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={formData.isRecurring}
+              onChange={(e) =>
+                setFormData({ ...formData, isRecurring: e.target.checked })
+              }
+            />
+            Enable Recurrence
+          </label>
+
+          {formData.isRecurring && (!isSeriesOccurrence || saveMode === 'all') && (
+            <div className="recurring-options fade-in" style={{ marginTop: '16px' }}>
+              <label style={{ marginBottom: '8px' }}>Repeat on specific days:</label>
+              <DaySelector
+                selectedDays={formData.recurrenceDays}
+                onChange={(days) => setFormData({ ...formData, recurrenceDays: days })}
+              />
+
+              {/* New recurrence range fields (visible only for non-series recurrence) */}
+              <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '13px' }}>how many weeks recurrence?</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.recurrenceWeeks}
+                    onChange={(e) => {
+                      const w = Math.max(1, parseInt(e.target.value) || 1);
+                      const newUntil = addWeeks(formData.recurrenceStart, w);
+                      setFormData((prev) => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
+                    }}
+                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label style={{ fontSize: '13px' }}>Recurrence Start</label>
+                  <DatePicker
+                    selected={formData.recurrenceStart}
+                    onChange={(date: Date | null) => {
+                      if (!date) return;
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const d0 = new Date(date);
+                      d0.setHours(0, 0, 0, 0);
+                      if (d0.getTime() < today.getTime()) {
+                        setRecurrenceWarning('Recurrence start is in the past');
+                      } else {
+                        setRecurrenceWarning(null);
+                      }
+                      const w = formData.recurrenceWeeks || 1;
+                      const newU = addWeeks(date, w);
+                      setFormData((prev) => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
+                    }}
+                    showTimeSelect
+                    dateFormat="MMM d, yyyy h:mm aa"
+                    className="premium-datepicker"
+                    placeholderText="Recurrence start"
+                  />
+                </div>
               </div>
-              <div className="form-group" style={{ margin: 0 }}>
-                <label style={{ fontSize: '13px' }}>Recurrence Start</label>
+              <div className="form-group" style={{ marginTop: '8px' }}>
+                <label style={{ fontSize: '13px' }}>Recur until</label>
                 <DatePicker
-                  selected={formData.recurrenceStart}
+                  selected={formData.recurrenceUntil}
                   onChange={(date: Date | null) => {
                     if (!date) return;
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const d0 = new Date(date);
-                    d0.setHours(0, 0, 0, 0);
-                    if (d0.getTime() < today.getTime()) {
-                      setRecurrenceWarning('Recurrence start is in the past');
-                    } else {
-                      setRecurrenceWarning(null);
-                    }
-                    const w = formData.recurrenceWeeks || 1;
-                    const newU = addWeeks(date, w);
-                    setFormData((prev) => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
+                    const start = formData.recurrenceStart;
+                    const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
+                    const w = Math.max(1, Math.round(diffDays / 7));
+                    setFormData((prev) => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
                   }}
                   showTimeSelect
                   dateFormat="MMM d, yyyy h:mm aa"
                   className="premium-datepicker"
-                  placeholderText="Recurrence start"
+                  placeholderText="Recur until"
                 />
               </div>
+              {recurrenceWarning && (
+                <div style={{ color: '#d97706', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <AlertTriangle size={12} /> {recurrenceWarning}
+                </div>
+              )}
             </div>
-            <div className="form-group" style={{ marginTop: '8px' }}>
-              <label style={{ fontSize: '13px' }}>Recur until</label>
-              <DatePicker
-                selected={formData.recurrenceUntil}
-                onChange={(date: Date | null) => {
-                  if (!date) return;
-                  const start = formData.recurrenceStart;
-                  const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
-                  const w = Math.max(1, Math.round(diffDays / 7));
-                  setFormData((prev) => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
-                }}
-                showTimeSelect
-                dateFormat="MMM d, yyyy h:mm aa"
-                className="premium-datepicker"
-                placeholderText="Recur until"
-              />
+          )}
+        </div>
+
+        {isSeriesOccurrence && (
+          <div className="edit-choice-container">
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              This is part of a recurring series.
+            </p>
+            <div className="edit-choice-buttons">
+              <button
+                type="button"
+                className={`nav-tab ${saveMode === 'this' ? 'active' : ''}`}
+                onClick={() => setSaveMode('this')}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                This occurrence only
+              </button>
+              <button
+                type="button"
+                className={`nav-tab ${saveMode === 'all' ? 'active' : ''}`}
+                onClick={() => setSaveMode('all')}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                All activities in series
+              </button>
             </div>
-            {recurrenceWarning && (
-              <div style={{ color: '#d97706', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <AlertTriangle size={12} /> {recurrenceWarning}
-              </div>
-            )}
           </div>
         )}
-      </div>
 
-      {isSeriesOccurrence && (
-        <div className="edit-choice-container">
-          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            This is part of a recurring series.
-          </p>
-          <div className="edit-choice-buttons">
+        {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
+        {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+          <div className="form-group" style={{ marginTop: '12px' }}>
+            <label htmlFor="detach-reason">Detach Reason</label>
+            <select
+              id="detach-reason"
+              value={formData.detachReason || 'none'}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
+                })
+              }
+              style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+            >
+              <option value="none">none (part of series)</option>
+              <option value="edited">edited</option>
+              <option value="cancelled">cancelled</option>
+              <option value="rescheduled">rescheduled</option>
+              <option value="manually_created">manually_created</option>
+            </select>
+            <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+              System-tracked reason this occurrence was detached from its recurrence template.
+            </small>
+          </div>
+        )}
+
+        <div className="form-actions" style={{ marginTop: '32px' }}>
+          {onCancel && (
             <button
               type="button"
-              className={`nav-tab ${saveMode === 'this' ? 'active' : ''}`}
-              onClick={() => setSaveMode('this')}
-              style={{ flex: 1, justifyContent: 'center' }}
+              onClick={onCancel}
+              className="btn-secondary"
             >
-              This occurrence only
+              <X size={18} />
+              Cancel
             </button>
+          )}
+          {isEditing && (
             <button
               type="button"
-              className={`nav-tab ${saveMode === 'all' ? 'active' : ''}`}
-              onClick={() => setSaveMode('all')}
-              style={{ flex: 1, justifyContent: 'center' }}
+              onClick={handleDelete}
+              className="btn-danger"
             >
-              All activities in series
+              <Trash size={18} />
+              Delete
             </button>
-           </div>
-         </div>
-       )}
-
-      {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
-      {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
-        <div className="form-group" style={{ marginTop: '12px' }}>
-          <label htmlFor="detach-reason">Detach Reason</label>
-          <select
-            id="detach-reason"
-            value={formData.detachReason || 'none'}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
-              })
-            }
-            style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+          )}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="btn-primary"
           >
-            <option value="none">none (part of series)</option>
-            <option value="edited">edited</option>
-            <option value="cancelled">cancelled</option>
-            <option value="rescheduled">rescheduled</option>
-            <option value="manually_created">manually_created</option>
-          </select>
-          <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-            System-tracked reason this occurrence was detached from its recurrence template.
-          </small>
+            {isSubmitting
+              ? 'Saving...'
+              : isEditing
+                ? 'Save Changes'
+                : 'Confirm Schedule'}
+            {!isSubmitting && <Check size={18} />}
+          </button>
         </div>
-      )}
-
-      <div className="form-actions" style={{ marginTop: '32px' }}>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-secondary"
-          >
-            <X size={18} />
-            Cancel
-          </button>
-        )}
-        {isEditing && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="btn-danger"
-          >
-            <Trash size={18} />
-            Delete
-          </button>
-        )}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-primary"
-        >
-          {isSubmitting
-            ? 'Saving...'
-            : isEditing
-              ? 'Save Changes'
-              : 'Confirm Schedule'}
-          {!isSubmitting && <Check size={18} />}
-        </button>
-      </div>
-    </form>
+      </form>
 
       {confirmAction && (
         <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
