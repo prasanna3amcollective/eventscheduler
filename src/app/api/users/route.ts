@@ -29,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, phone, email, password } = userRegistrationSchema.parse(body);
+    const { name, username, phone, email, password, skills } = userRegistrationSchema.parse(body);
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -39,7 +39,8 @@ export async function POST(request: Request) {
         username,
         phone,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        skills: skills || []
       }
     });
 

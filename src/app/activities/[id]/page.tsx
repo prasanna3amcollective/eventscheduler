@@ -18,7 +18,8 @@ interface Participant {
     };
     sys_created_at: string;
     attendance?: number;
- }
+    payAsYouWish?: number;
+}
 
 interface Activity {
     id: string;
@@ -306,21 +307,21 @@ export default function ActivityManagementPage() {
                         <div className="activity-info">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
                                 <h1 className="activity-title" style={{ margin: 0 }}>{activity.name}</h1>
-                                 <span style={{
-                                     background: activity.state === 'Completed' ? 'var(--primary-glow)' : 'rgba(107, 114, 128, 0.1)',
-                                     color: activity.state === 'Completed' ? 'var(--primary-color)' : '#6b7280',
-                                     padding: '2px 8px',
-                                     borderRadius: '12px',
-                                     fontSize: '11px',
-                                     fontWeight: 600,
-                                     letterSpacing: '0.5px',
-                                     lineHeight: 1,
-                                     textTransform: 'uppercase',
-                                     display: 'inline-block',
-                                     alignSelf: 'center'
-                                 }}>
-                                     {activity.state || 'Scheduled'}
-                                 </span>
+                                <span style={{
+                                    background: activity.state === 'Completed' ? 'var(--primary-glow)' : 'rgba(107, 114, 128, 0.1)',
+                                    color: activity.state === 'Completed' ? 'var(--primary-color)' : '#6b7280',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: 600,
+                                    letterSpacing: '0.5px',
+                                    lineHeight: 1,
+                                    textTransform: 'uppercase',
+                                    display: 'inline-block',
+                                    alignSelf: 'center'
+                                }}>
+                                    {activity.state || 'Scheduled'}
+                                </span>
                             </div>
                             <div className="activity-datetime">
                                 <div className="datetime-item">
@@ -389,10 +390,11 @@ export default function ActivityManagementPage() {
                                         <th>Role</th>
                                         <th>Username</th>
                                         <th>Email</th>
-                                         <th>Phone</th>
-                                         <th>Registered</th>
-                                         <th>Attendance</th>
-                                     </tr>
+                                        <th>Phone</th>
+                                        <th>Registered</th>
+                                        <th>Attendance</th>
+                                        <th>PayAsYouWish</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     {filteredParticipants.map((participant) => (
@@ -419,32 +421,57 @@ export default function ActivityManagementPage() {
                                             <td className="text-secondary">{participant.user.username}</td>
                                             <td className="text-secondary">{participant.user.email}</td>
                                             <td className="text-secondary">{participant.user.phone}</td>
-                                             <td className="text-secondary text-sm">
-                                                 {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
-                                             </td>
-                                              <td>
-                                                   <select
-                                                       value={participant.attendance ?? 0}
-                                                       disabled={activity.state === 'Completed' || !['Leader', 'Guide', 'Observer'].includes(participant.type ?? '')}
-                                                      onChange={(e) => {
-                                                          const newVal = parseInt(e.target.value);
-                                                          setActivity(prev => {
-                                                              if (!prev) return prev;
-                                                              return {
-                                                                  ...prev,
-                                                                  participants: prev.participants?.map(p =>
-                                                                      p.id === participant.id ? { ...p, attendance: newVal } : p
-                                                                  )
-                                                              };
-                                                          });
-                                                      }}
-                                                  >
-                                                      <option value={0}>Present</option>
-                                                      <option value={1}>Half</option>
-                                                      <option value={2}>Absent</option>
-                                                  </select>
-                                              </td>
-                                         </tr>
+                                            <td className="text-secondary text-sm">
+                                                {format(new Date(participant.sys_created_at), 'MMM d, yyyy')}
+                                            </td>
+                                            <td>
+                                                <select
+                                                    value={participant.attendance ?? 0}
+                                                    disabled={activity.state === 'Completed' || !['Leader', 'Guide', 'Observer'].includes(participant.type ?? '')}
+                                                    onChange={(e) => {
+                                                        const newVal = parseInt(e.target.value);
+                                                        setActivity(prev => {
+                                                            if (!prev) return prev;
+                                                            return {
+                                                                ...prev,
+                                                                participants: prev.participants?.map(p =>
+                                                                    p.id === participant.id ? { ...p, attendance: newVal } : p
+                                                                )
+                                                            };
+                                                        });
+                                                    }}
+                                                >
+                                                    <option value={0}>Present</option>
+                                                    <option value={1}>Half</option>
+                                                    <option value={2}>Absent</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <span className="text-secondary">Rs</span>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        value={participant.payAsYouWish ?? 0}
+                                                        disabled={!['Leader', 'Guide', 'Observer'].includes(participant.type ?? '')}
+                                                        onChange={(e) => {
+                                                            const newVal = parseFloat(e.target.value) || 0;
+                                                            setActivity(prev => {
+                                                                if (!prev) return prev;
+                                                                return {
+                                                                    ...prev,
+                                                                    participants: prev.participants?.map(p =>
+                                                                        p.id === participant.id ? { ...p, payAsYouWish: newVal } : p
+                                                                    )
+                                                                };
+                                                            });
+                                                        }}
+                                                        style={{ width: '70px', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-color)' }}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
                                     ))}
                                 </tbody>
                             </table>
@@ -454,130 +481,130 @@ export default function ActivityManagementPage() {
                             <Users size={48} className="empty-icon" />
                             <p className="empty-text">No participants found</p>
                         </div>
-                     )}
-                       {activity.state !== 'Completed' && (
-                         <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                             <button
-                                 onClick={async () => {
-                                     if (!activity?.participants) return;
-                                     try {
-                                         for (const p of activity.participants) {
-                                             if (['Leader', 'Guide', 'Observer'].includes(p.type || '')) {
-                                                 await secureFetch(`/api/activities/${activityId}`, {
-                                                     method: 'PATCH',
-                                                     headers: { 'Content-Type': 'application/json' },
-                                                     body: JSON.stringify({ participantId: p.id, attendance: p.attendance ?? 0 })
-                                                 });
-                                             }
-                                         }
-                                         alert('Attendance saved');
-                                     } catch {
-                                         console.error('Failed to save attendance');
-                                     }
-                                 }}
-                                 className="btn-primary"
-                             >
-                                 Save Attendance
-                             </button>
- 
-                             {new Date(activity.endDateTime) < new Date() &&
-                               isLeader && (
-                                 <button
-                                   onClick={() => setShowCloseConfirm(true)}
-                                   disabled={closingActivity}
-                                   className="btn-primary"
-                                   style={{
-                                     background: 'var(--primary-color)',
-                                     fontSize: '13px',
-                                     padding: '8px 16px',
-                                   }}
-                                   title="Close this activity"
-                                 >
-                                   <CheckCircle size={16} />
-                                   Close this activity
-                                 </button>
-                               )}
-                         </div>
-                       )}
-                 </div>
- 
-                 {/* Staff Related List Section */}
-                 <div className="participants-card" style={{ marginTop: '32px' }}>
-                     <div
-                         className="participants-header"
-                         onClick={() => setIsStaffOpen(!isStaffOpen)}
-                         style={{ cursor: 'pointer' }}
-                     >
-                         <h2 className="participants-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                             Staff Management
-                             {isStaffOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                         </h2>
-                     </div>
- 
-                     {isStaffOpen && (
-                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                        <div className="staff-management-row">
-                            <StaffMiniList
-                                label="Leaders"
-                                names={activity.leaders || []}
-                                onUpdate={(names) => handleUpdateStaff('leader', names)}
-                            />
-                        </div>
-                        <div className="staff-management-row">
-                            <StaffMiniList
-                                label="Guides"
-                                names={activity.guides || []}
-                                onUpdate={(names) => handleUpdateStaff('guide', names)}
-                            />
-                        </div>
-                        <div className="staff-management-row">
-                            <StaffMiniList
-                                label="Observers"
-                                names={activity.observers || []}
-                                onUpdate={(names) => handleUpdateStaff('observer', names)}
-                            />
-                        </div>
-                     </div>
-                      )}
-                   </div>
-               </main>
+                    )}
+                    {activity.state !== 'Completed' && (
+                        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <button
+                                onClick={async () => {
+                                    if (!activity?.participants) return;
+                                    try {
+                                        for (const p of activity.participants) {
+                                            if (['Leader', 'Guide', 'Observer'].includes(p.type || '')) {
+                                                await secureFetch(`/api/activities/${activityId}`, {
+                                                    method: 'PATCH',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ participantId: p.id, attendance: p.attendance ?? 0, payAsYouWish: p.payAsYouWish ?? 0 })
+                                                });
+                                            }
+                                        }
+                                        alert('Saved successfully');
+                                    } catch {
+                                        console.error('Failed to save');
+                                    }
+                                }}
+                                className="btn-secondary"
+                            >
+                                Save
+                            </button>
 
-              {showCloseConfirm && (
-                <div
-                  className="modal-overlay"
-                  onClick={() => setShowCloseConfirm(false)}
-                >
-                  <div
-                    className="modal-content"
-                    style={{ maxWidth: '420px', padding: '24px', textAlign: 'center' }}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <p style={{ marginBottom: '24px', fontWeight: 500, lineHeight: 1.5 }}>
-                      Make sure you mark the attendance for participants correctly. It is
-                      important for credit calculations.
-                    </p>
-                    <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                      <button
-                        className="btn-secondary"
-                        onClick={() => setShowCloseConfirm(false)}
-                        disabled={closingActivity}
-                      >
-                        Back
-                      </button>
-                      <button
-                        className="btn-primary"
-                        onClick={() => {
-                          setShowCloseConfirm(false);
-                          performCloseActivity();
-                        }}
-                        disabled={closingActivity}
-                      >
-                        {closingActivity ? 'Closing...' : 'I marked attendance'}
-                      </button>
-                    </div>
-                  </div>
+                            {new Date(activity.endDateTime) < new Date() &&
+                                isLeader && (
+                                    <button
+                                        onClick={() => setShowCloseConfirm(true)}
+                                        disabled={closingActivity}
+                                        className="btn-primary"
+                                        style={{
+                                            background: 'var(--primary-color)',
+                                            fontSize: '13px',
+                                            padding: '8px 16px',
+                                        }}
+                                        title="Close this activity"
+                                    >
+                                        <CheckCircle size={16} />
+                                        Close this activity
+                                    </button>
+                                )}
+                        </div>
+                    )}
                 </div>
-              )}
-         </div>
-     );
- }
+
+                {/* Staff Related List Section */}
+                <div className="participants-card" style={{ marginTop: '32px' }}>
+                    <div
+                        className="participants-header"
+                        onClick={() => setIsStaffOpen(!isStaffOpen)}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        <h2 className="participants-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            Staff Management
+                            {isStaffOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                        </h2>
+                    </div>
+
+                    {isStaffOpen && (
+                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                            <div className="staff-management-row">
+                                <StaffMiniList
+                                    label="Leaders"
+                                    names={activity.leaders || []}
+                                    onUpdate={(names) => handleUpdateStaff('leader', names)}
+                                />
+                            </div>
+                            <div className="staff-management-row">
+                                <StaffMiniList
+                                    label="Guides"
+                                    names={activity.guides || []}
+                                    onUpdate={(names) => handleUpdateStaff('guide', names)}
+                                />
+                            </div>
+                            <div className="staff-management-row">
+                                <StaffMiniList
+                                    label="Observers"
+                                    names={activity.observers || []}
+                                    onUpdate={(names) => handleUpdateStaff('observer', names)}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </main>
+
+            {showCloseConfirm && (
+                <div
+                    className="modal-overlay"
+                    onClick={() => setShowCloseConfirm(false)}
+                >
+                    <div
+                        className="modal-content"
+                        style={{ maxWidth: '420px', padding: '24px', textAlign: 'center' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <p style={{ marginBottom: '24px', fontWeight: 500, lineHeight: 1.5 }}>
+                            Make sure you mark the attendance for participants correctly. It is
+                            important for credit calculations.
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                            <button
+                                className="btn-secondary"
+                                onClick={() => setShowCloseConfirm(false)}
+                                disabled={closingActivity}
+                            >
+                                Back
+                            </button>
+                            <button
+                                className="btn-primary"
+                                onClick={() => {
+                                    setShowCloseConfirm(false);
+                                    performCloseActivity();
+                                }}
+                                disabled={closingActivity}
+                            >
+                                {closingActivity ? 'Closing...' : 'I marked attendance'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

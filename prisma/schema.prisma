@@ -116,6 +116,8 @@ model User {
   roles    UserRole[]
   activities Participant[]
 
+  skills   String[] @default([])
+
   // System Columns
   sys_created_by String?
   sys_updated_by String?

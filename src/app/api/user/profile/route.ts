@@ -7,7 +7,7 @@ import { z } from 'zod';
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone } = userProfileSchema.parse(body);
+    const { name, email, phone, skills } = userProfileSchema.parse(body);
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
@@ -19,7 +19,7 @@ export async function PUT(request: Request) {
       operation: 'update',
       args: {
         where: { id: securityContext.id },
-        data: { name, email, phone }
+        data: { name, email, phone, skills }
       }
     })) as any) as any;
 
@@ -29,6 +29,7 @@ export async function PUT(request: Request) {
       email: user.email,
       phone: user.phone,
       type: user.type,
+      skills: user.skills,
     });
   } catch (error: any) {
     console.error('Error updating profile:', error);

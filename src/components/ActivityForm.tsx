@@ -841,7 +841,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-primary"
+            className="btn-secondary"
           >
             {isSubmitting
               ? 'Saving...'

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { X, User, Mail, Phone, Save, Loader } from '@/components/Icons';
+import { X, User, Mail, Phone, Save, Loader, Tag } from '@/components/Icons';
+import { SKILLS, type Skill } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -14,6 +15,7 @@ interface UserData {
   email: string;
   phone?: string | null;
   groups?: { group: { name: string } }[];
+  skills: Skill[];
 }
 
 /** Props for the profile edit modal */
@@ -52,7 +54,7 @@ export default function ProfileModal({
   currentUser,
   onProfileUpdate,
 }: ProfileModalProps) {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', skills: [] as Skill[] });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -72,9 +74,23 @@ export default function ProfileModal({
   // Reset form data when the modal opens or when currentUser changes
   useEffect(() => {
     if (isOpen && currentUser) {
-      setFormData({ name: currentUser.name ?? '', email: currentUser.email ?? '', phone: currentUser.phone ?? '' });
+      setFormData({ name: currentUser.name ?? '', email: currentUser.email ?? '', phone: currentUser.phone ?? '', skills: currentUser.skills ?? [] });
     }
   }, [isOpen, currentUser]);
+
+  /** Toggles a skill in the skills array */
+  const toggleSkill = (skill: string) => {
+    setFormData((prev) => {
+      const skills = [...prev.skills];
+      const index = skills.indexOf(skill);
+      if (index === -1) {
+        skills.push(skill);
+      } else {
+        skills.splice(index, 1);
+      }
+      return { ...prev, skills };
+    });
+  };
 
   /** Submits the updated profile via PUT to /api/user/profile */
   const handleSubmit = useCallback(
@@ -123,9 +139,6 @@ export default function ProfileModal({
 
         <div className="form-header">
           <h2>Edit Profile</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginTop: '4px' }}>
-            Update your personal information.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
@@ -168,9 +181,48 @@ export default function ProfileModal({
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="e.g. +91 98765 43210"
             />
-          </div>
+           </div>
 
-          {currentUser?.groups && currentUser.groups.length > 0 && (
+           <div className="form-group">
+             <label htmlFor="skills">
+               <Tag size={14} /> Skills
+             </label>
+             <input
+               id="skills"
+               list="profile-skills-options"
+               placeholder="Search and select a skill..."
+               onChange={(e) => {
+                 const skill = e.target.value;
+                 if (SKILLS.includes(skill as Skill) && !formData.skills.includes(skill as Skill)) {
+                   toggleSkill(skill);
+                   e.target.value = ''; // Reset selection
+                 }
+               }}
+               onKeyDown={(e) => {
+                 if (e.key === 'Enter') {
+                   e.preventDefault(); // Prevent form submission
+                 }
+               }}
+               style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color, #e0e0e0)', marginTop: '4px', background: 'var(--bg-color, #fff)', color: 'var(--text-color, #333)' }}
+             />
+             <datalist id="profile-skills-options">
+               {SKILLS.filter(s => !formData.skills.includes(s)).map((skill, index) => (
+                 <option key={index} value={skill} />
+               ))}
+             </datalist>
+             <div className="selected-skills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+               {formData.skills.map((skill, index) => (
+                 <span key={index} className="skill-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-color, #f0f0f0)', padding: '4px 8px', borderRadius: '16px', fontSize: '13px', border: '1px solid var(--border-color, #ccc)' }}>
+                   {skill}
+                   <button type="button" onClick={() => toggleSkill(skill)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', color: 'inherit' }} aria-label={`Remove ${skill}`}>
+                     <X size={14} />
+                   </button>
+                 </span>
+               ))}
+             </div>
+           </div>
+
+           {currentUser?.groups && currentUser.groups.length > 0 && (
             <div className="form-group">
               <label style={{ marginBottom: '12px' }}>Member of Groups</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>

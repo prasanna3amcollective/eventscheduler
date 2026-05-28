@@ -185,7 +185,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const activityId = id; // real UUID post-PHASE 6 flag flip
-    const { participantId, attendance } = await request.json();
+    const { participantId, attendance, payAsYouWish } = await request.json();
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
@@ -197,7 +197,10 @@ export async function PATCH(
       operation: 'update',
       args: {
         where: { id: participantId, activityId: activityId },
-        data: { attendance: Number(attendance) }
+        data: { 
+          attendance: Number(attendance),
+          ...(payAsYouWish !== undefined ? { payAsYouWish: Number(payAsYouWish) } : {})
+        }
       }
     }));
 

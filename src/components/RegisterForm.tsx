@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback, type FormEvent } from 'react';
-import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle } from '@/components/Icons';
+import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle, X } from '@/components/Icons';
+import { SKILLS, type Skill } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -12,6 +13,7 @@ interface UserData {
   id: string;
   name: string;
   email?: string;
+  skills: Skill[];
 }
 
 /** Props for the registration form */
@@ -58,7 +60,7 @@ const COUNTRY_CODES = [
   { code: 'AE', name: 'UAE', dialCode: '+971', flag: '🇦🇪' },
 ] as const;
 
-const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '' } as const;
+const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '', skills: [] };
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -191,12 +193,26 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
     return <RegistrationSuccessView onReset={handleReset} />;
   }
 
-  /** Updates a single form field by key */
+   /** Updates a single form field by key (for text inputs) */
   const updateField =
-    (field: keyof typeof formData) =>
-      (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-      };
+    (field: 'name' | 'username' | 'email' | 'phone' | 'password') =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  /** Toggles a skill in the skills array */
+  const toggleSkill = (skill: string) => {
+    setFormData((prev) => {
+      const skills = [...prev.skills];
+      const index = skills.indexOf(skill);
+      if (index === -1) {
+        skills.push(skill);
+      } else {
+        skills.splice(index, 1);
+      }
+      return { ...prev, skills };
+    });
+  };
 
   return (
     <form className="activity-form" onSubmit={handleSubmit}>
@@ -289,9 +305,47 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           onChange={updateField('password')}
           placeholder="••••••••"
         />
-      </div>
+       </div>
 
-      <button
+       <div className="form-group">
+         <label>
+           <Tag size={16} /> Skills
+         </label>
+         <input
+           list="register-skills-options"
+           placeholder="Search and select a skill..."
+           onChange={(e) => {
+             const skill = e.target.value;
+             if (SKILLS.includes(skill as Skill) && !formData.skills.includes(skill as Skill)) {
+               toggleSkill(skill);
+               e.target.value = ''; // Reset selection
+             }
+           }}
+           onKeyDown={(e) => {
+             if (e.key === 'Enter') {
+               e.preventDefault(); // Prevent form submission
+             }
+           }}
+           style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color, #e0e0e0)', marginTop: '4px', background: 'var(--bg-color, #fff)', color: 'var(--text-color, #333)' }}
+         />
+         <datalist id="register-skills-options">
+           {SKILLS.filter(s => !formData.skills.includes(s)).map((skill, index) => (
+             <option key={index} value={skill} />
+           ))}
+         </datalist>
+         <div className="selected-skills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+           {formData.skills.map((skill, index) => (
+             <span key={index} className="skill-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-color, #f0f0f0)', padding: '4px 8px', borderRadius: '16px', fontSize: '13px', border: '1px solid var(--border-color, #ccc)' }}>
+               {skill}
+               <button type="button" onClick={() => toggleSkill(skill)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', color: 'inherit' }} aria-label={`Remove ${skill}`}>
+                 <X size={14} />
+               </button>
+             </span>
+           ))}
+         </div>
+       </div>
+
+       <button
         type="submit"
         disabled={isSubmitting}
         className="btn-primary"

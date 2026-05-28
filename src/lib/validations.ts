@@ -12,13 +12,15 @@ export const userRegistrationSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
-    .refine((p) => /[A-Z]/.test(p) && /[0-9]/.test(p), 'Password must contain at least one uppercase letter and one number')
+    .refine((p) => /[A-Z]/.test(p) && /[0-9]/.test(p), 'Password must contain at least one uppercase letter and one number'),
+  skills: z.array(z.string()).optional()
 });
 
 export const userProfileSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal(''))
+  phone: z.string().min(10, 'Phone number must be at least 10 digits').optional().or(z.literal('')),
+  skills: z.array(z.string()).optional()
 });
 
 export const activitySchema = z.object({
