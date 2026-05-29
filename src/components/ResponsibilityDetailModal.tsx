@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader } from '@/components/Icons';
+import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader, Edit, XCircle } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 import { buildGoogleCalendarUrl } from '@/lib/calendar';
 
@@ -34,6 +35,31 @@ export default function ResponsibilityDetailModal({
     () => (responsibility ? buildGoogleCalendarUrl(responsibility) : ''),
     [responsibility],
   );
+
+  const router = useRouter();
+
+  const handleCancel = async () => {
+    if (!responsibility) return;
+    const confirm = window.confirm('Are you sure you want to cancel this responsibility?');
+    if (!confirm) return;
+    try {
+      const res = await secureFetch(`/api/responsibilities/${responsibility.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ detachReason: 'cancelled', state: 'Cancelled' })
+      });
+      if (res.ok) {
+        onStateChange?.(responsibility.id, 'Cancelled');
+        onClose();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to cancel responsibility');
+      }
+    } catch (err) {
+      console.error('Cancel error', err);
+      alert('Error cancelling responsibility');
+    }
+  };
 
   const startDate = useMemo(
     () => (responsibility ? new Date(responsibility.startDateTime) : new Date()),
@@ -78,7 +104,13 @@ export default function ResponsibilityDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header-actions">
-          <button className="modal-close" onClick={onClose}>
+          <button onClick={() => router.push(`/responsibilities/${responsibility.id}/edit`)} className="edit-btn-flat" title="Edit responsibility">
+            <Edit size={20} />
+          </button>
+          {/* <button onClick={handleCancel} className="cancel-button" title="Cancel responsibility">
+            <XCircle size={20} />
+          </button> */}
+          <button onClick={onClose} className="modal-close" title="Close">
             <X size={20} />
           </button>
         </div>
@@ -140,7 +172,7 @@ export default function ResponsibilityDetailModal({
           {responsibility.state !== 'Completed' && (
             <button
               onClick={handleComplete}
-              className="btn-primary"
+              className="btn-secondary"
               disabled={completing}
             >
               {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
@@ -149,7 +181,7 @@ export default function ResponsibilityDetailModal({
           )}
           <button
             onClick={handleSyncCalendar}
-            className="btn-outline"
+            className="btn-secondary"
             disabled={!googleCalendarUrl}
           >
             <Calendar size={16} /> Sync

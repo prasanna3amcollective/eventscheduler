@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import HeaderPanel from '@/components/HeaderPanel';
+import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
 import ResponsibilityForm from '@/components/ResponsibilityForm';
@@ -52,6 +53,21 @@ function HomeContent() {
   useEffect(() => {
     document.documentElement.dataset.theme = 'dark';
   }, []);
+
+  // Scroll reveal effect
+  useEffect(() => {
+    const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger');
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+        }
+      });
+    };
+    const io = new IntersectionObserver(handleIntersection, { threshold: 0.12 });
+    reveals.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, [activeSection]);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResponsibility, setSelectedResponsibility] = useState<any>(null);
@@ -291,9 +307,8 @@ function HomeContent() {
         />
 
 
-        <section id="about-us" style={{ display: activeSection === 'about-us' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
-          <h2>About Us</h2>
-          <p>Welcome to the 3AM Collective Movement. Learn more about our mission and values.</p>
+        <section id="about-us" style={{ display: activeSection === 'about-us' ? 'block' : 'none' }}>
+          <AboutUs />
         </section>
         <section id="participate" style={{ display: activeSection === 'participate' ? 'block' : 'none', textAlign: 'left', padding: '40px 0' }}>
           <p>Join our events, volunteer, or become a member of the community.</p>

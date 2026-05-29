@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle, ChevronRight, ChevronDown } from '@/components/Icons';
+import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle, ChevronRight, ChevronDown, Share2, Edit } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
 interface Participant {
@@ -180,6 +180,36 @@ export default function ActivityManagementPage() {
         }
     };
 
+    const handleExport = async () => {
+        if (!activity) return;
+        const rows = activity.participants.map(p => ({
+            "Activity name": activity.name,
+            "Leader": (activity.leaders || []).join(', '),
+            "Guide": (activity.guides || []).join(', '),
+            "Observer": (activity.observers || []).join(', '),
+            "Participant name": p.user.name,
+            "Pay as you wish": p.payAsYouWish ?? 0,
+            "Attendance": p.attendance ?? 0,
+            "Activity start date time": activity.startDateTime,
+            "Activity end date time": activity.endDateTime,
+            "Participant email": p.user.email,
+            "Participant mobile": p.user.phone,
+        }));
+        const XLSX = await import('xlsx');
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = { SheetNames: ['Activity'], Sheets: { Activity: ws } };
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const endDate = format(new Date(activity.endDateTime), 'dd_MM_yy');
+        const safeName = activity.name.replace(/[^a-z0-9]/gi, '_');
+        const fileName = `${endDate}_${safeName}_${activity.id}.xlsx`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
     const staffNames = new Set([
         ...(activity?.leaders || []),
         ...(activity?.guides || []),
@@ -351,6 +381,35 @@ export default function ActivityManagementPage() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button onClick={handleRefresh} className="refresh-button" title="Refresh participants">
                                 <Refresh size={20} className={loading ? 'spinning' : ''} />
+                            </button>
+                            <button onClick={handleExport} className="export-button" title="Export activity details">
+                                <Share2 size={20} />
+                            </button>
+                            <button onClick={() => router.push(`/activities/${activityId}/edit`)} className="edit-button" title="Edit activity">
+                                <Edit size={20} />
+                            </button>
+                            <button onClick={async () => {
+                                if (!activity) return;
+                                const confirm = window.confirm('Are you sure you want to cancel this activity?');
+                                if (!confirm) return;
+                                try {
+                                    const res = await secureFetch(`/api/activities/${activityId}`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ detachReason: 'cancelled', state: 'Cancelled' })
+                                    });
+                                    if (res.ok) {
+                                        handleRefresh();
+                                    } else {
+                                        const data = await res.json();
+                                        alert(data.error || 'Failed to cancel activity');
+                                    }
+                                } catch (err) {
+                                    console.error('Cancel error', err);
+                                    alert('Error cancelling activity');
+                                }
+                            }} className="cancel-button" title="Cancel activity">
+                                <XCircle size={20} />
                             </button>
                         </div>
                     </div>

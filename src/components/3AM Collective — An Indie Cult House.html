@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3AM Collective — An Indie Cult House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Courier+Prime:wght@400;700&family=Bebas+Neue&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --dark: #0f0f0f;
+    --charcoal: #1a1a1a;
+    --grey: #2a2a2a;
+    --mid: #555;
+    --light: #aaa;
+    --cream: #e8e0d0;
+    --white: #f5f2ec;
+    --accent: #c8a96e;
+    --accent2: #8b6b3d;
+    --red: #8b1a1a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Courier Prime', monospace;
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(200,169,110,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.15s ease, width 0.3s, height 0.3s;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.5;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    mix-blend-mode: normal;
+  }
+  nav::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(8,8,8,0.9) 0%, transparent 100%);
+    pointer-events: none;
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-decoration: none;
+    position: relative;
+  }
+  .nav-menu {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    position: relative;
+  }
+  .nav-menu a {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--light);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+  .nav-menu a:hover { color: var(--accent); }
+
+  /* SECTIONS */
+  section {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ===== HERO ===== */
+  #hero {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    perspective: 1000px;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #1a1510 0%, #080808 70%);
+  }
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    transform: perspective(600px) rotateX(30deg) scaleY(1.4);
+    transform-origin: bottom;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove {
+    from { background-position: 0 0; }
+    to { background-position: 0 -60px; }
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    transform-style: preserve-3d;
+    animation: heroFloat 6s ease-in-out infinite;
+  }
+  @keyframes heroFloat {
+    0%, 100% { transform: translateY(0) rotateX(0deg); }
+    50% { transform: translateY(-12px) rotateX(1deg); }
+  }
+  .hero-eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s forwards;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(100px, 18vw, 240px);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    text-shadow: 0 0 80px rgba(200,169,110,0.15);
+    opacity: 0;
+    animation: fadeUp 1s 0.7s forwards;
+  }
+  .hero-title span {
+    display: block;
+    color: var(--accent);
+    font-family: 'IM Fell English', serif;
+    font-size: 0.45em;
+    letter-spacing: 0.08em;
+    font-style: italic;
+  }
+  .hero-tagline {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: clamp(14px, 1.5vw, 18px);
+    color: var(--light);
+    max-width: 560px;
+    line-height: 1.8;
+    margin: 32px auto 0;
+    opacity: 0;
+    animation: fadeUp 1s 1s forwards;
+  }
+  .hero-year {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.4em;
+    color: var(--mid);
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s 1.5s forwards;
+  }
+  .scroll-hint span {
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    color: var(--mid);
+    text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* ===== ORIGIN STORY ===== */
+  #origin {
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    padding: 120px 80px;
+    gap: 80px;
+  }
+  .origin-3d-block {
+    flex: 0 0 420px;
+    height: 520px;
+    perspective: 800px;
+    position: relative;
+  }
+  .origin-card {
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba(200,169,110,0.2);
+    background: linear-gradient(135deg, rgba(200,169,110,0.05) 0%, transparent 60%);
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateY(-8deg) rotateX(3deg);
+    transition: transform 0.6s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 40px;
+  }
+  .origin-card:hover {
+    transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+  }
+  .origin-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 1px solid rgba(200,169,110,0.1);
+    transform: translateZ(-20px) scale(1.04);
+  }
+  .big-quote {
+    font-family: 'IM Fell English', serif;
+    font-size: 80px;
+    color: var(--accent);
+    line-height: 0;
+    margin-bottom: 20px;
+    opacity: 0.3;
+  }
+  .origin-card p {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.85rem;
+    line-height: 2;
+    color: var(--light);
+    text-align: center;
+  }
+  .origin-card .origin-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-top: 30px;
+  }
+  .origin-text { flex: 1; }
+  .section-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.5em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: 1.1;
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+  .section-body {
+    font-size: 0.9rem;
+    line-height: 2;
+    color: var(--light);
+    max-width: 480px;
+  }
+  .big-statement {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 5vw, 56px);
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-top: 32px;
+    line-height: 1.1;
+  }
+  .big-statement em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* ===== THREE DECISIONS ===== */
+  #decisions {
+    padding: 120px 80px;
+    background: var(--black);
+  }
+  .section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  .decisions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    perspective: 1000px;
+  }
+  .decision-card {
+    background: var(--charcoal);
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease, background 0.4s;
+    cursor: default;
+  }
+  .decision-card:hover {
+    transform: translateY(-8px) rotateX(3deg);
+    background: var(--grey);
+  }
+  .decision-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+    transform-origin: left;
+  }
+  .decision-card:hover::after { transform: scaleX(1); }
+  .decision-icon {
+    font-size: 3rem;
+    margin-bottom: 24px;
+    display: block;
+    opacity: 0.6;
+  }
+  .decision-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .decision-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .decision-items li {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--light);
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* ===== THREE ACTIONS ===== */
+  #actions {
+    padding: 120px 80px;
+    background: var(--dark);
+  }
+  .actions-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .circles-visual {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto;
+  }
+  .circle-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(200,169,110,0.25);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation: rotateSlow 30s linear infinite;
+  }
+  .circle-ring:nth-child(1) { width: 100%; height: 100%; animation-duration: 40s; }
+  .circle-ring:nth-child(2) { width: 72%; height: 72%; animation-direction: reverse; animation-duration: 28s; }
+  .circle-ring:nth-child(3) { width: 44%; height: 44%; animation-duration: 20s; }
+  @keyframes rotateSlow {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+  .circle-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    top: -3px; left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .circle-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .circle-center-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+  }
+  .actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+  .action-item {
+    display: flex;
+    gap: 32px;
+    align-items: flex-start;
+  }
+  .action-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4rem;
+    line-height: 1;
+    color: rgba(200,169,110,0.15);
+    flex: 0 0 60px;
+  }
+  .action-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+  .action-content p {
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--light);
+  }
+
+  /* ===== STRUCTURES ===== */
+  #structures {
+    padding: 120px 80px;
+    background: var(--black);
+  }
+  .structures-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    margin-top: 80px;
+  }
+  .venn-container {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    margin: 0 auto;
+    perspective: 600px;
+  }
+  .venn-circle {
+    position: absolute;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(42,42,42,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(200,169,110,0.2);
+    backdrop-filter: blur(4px);
+    transition: transform 0.4s, background 0.4s;
+    cursor: default;
+  }
+  .venn-circle:hover {
+    background: rgba(60,50,35,0.7);
+    transform: scale(1.05);
+    z-index: 10;
+  }
+  .venn-circle span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
+    color: var(--cream);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .venn-circle.top { top: 0; left: 50%; transform: translateX(-50%); }
+  .venn-circle.bl { top: 50%; left: 0; }
+  .venn-circle.br { top: 50%; right: 0; }
+  .venn-center-circle {
+    position: absolute;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(8,8,8,0.9);
+    border: 1px solid rgba(200,169,110,0.4);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -30%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+  .venn-center-circle span {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-align: center;
+  }
+  .structure-defs {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    justify-content: center;
+  }
+  .structure-def { border-left: 2px solid var(--accent2); padding-left: 24px; }
+  .structure-def h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .structure-def p {
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--light);
+  }
+
+  /* ===== ENGAGEMENTS ===== */
+  #engagements {
+    padding: 120px 80px;
+    background: var(--dark);
+  }
+  .engage-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 80px;
+  }
+  .engage-card {
+    border: 1px solid rgba(200,169,110,0.15);
+    padding: 48px 32px;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease, border-color 0.4s;
+  }
+  .engage-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: -20px; right: 20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    color: rgba(200,169,110,0.04);
+    pointer-events: none;
+    line-height: 1;
+  }
+  .engage-card:hover {
+    border-color: rgba(200,169,110,0.4);
+    transform: translateZ(20px) rotateX(-2deg);
+  }
+  .engage-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.1em;
+    color: var(--white);
+    margin-bottom: 16px;
+  }
+  .engage-card .sub {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .engage-card p {
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--light);
+  }
+
+  /* ===== FORCES ===== */
+  #forces {
+    padding: 120px 80px;
+    background: var(--black);
+  }
+  .forces-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 80px;
+  }
+  .force-card {
+    background: var(--charcoal);
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s;
+  }
+  .force-card:hover { background: #1e1a14; }
+  .force-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transform: scaleX(0);
+    transition: transform 0.6s ease;
+  }
+  .force-card:hover::before { transform: scaleX(1); }
+  .force-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .force-card p {
+    font-size: 0.8rem;
+    line-height: 1.9;
+    color: var(--light);
+  }
+
+  /* ===== ECOSYSTEM ===== */
+  #ecosystem {
+    padding: 120px 80px;
+    background: var(--dark);
+    text-align: center;
+  }
+  .orbit-system {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 80px auto 0;
+  }
+  .orbit-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(200,169,110,0.12);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .orbit-label {
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--light);
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+  .orbit-core {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+  }
+  .orbit-core .logo-3am {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+  .orbit-core .logo-sub {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--light);
+  }
+
+  /* ===== OATHS ===== */
+  #oaths {
+    padding: 120px 80px;
+    background: var(--black);
+  }
+  .oaths-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 48px;
+    margin-top: 80px;
+  }
+  .oath-card {
+    padding: 48px 32px;
+    position: relative;
+    border: 1px solid rgba(200,169,110,0.1);
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease, border-color 0.4s;
+  }
+  .oath-card:hover {
+    transform: rotateY(-5deg) rotateX(3deg) translateZ(10px);
+    border-color: rgba(200,169,110,0.35);
+  }
+  .oath-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+  .oath-card p {
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--light);
+  }
+  .oath-footer {
+    text-align: center;
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid rgba(200,169,110,0.1);
+  }
+  .oath-footer p {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--mid);
+    text-transform: uppercase;
+    line-height: 2.5;
+  }
+
+  /* ===== NON-NEGOTIABLES ===== */
+  #nonneg {
+    padding: 120px 80px;
+    background: var(--dark);
+  }
+  .nonneg-items {
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+  .nonneg-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+    padding-bottom: 60px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .nonneg-item:last-child { border-bottom: none; }
+  .nonneg-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: rgba(200,169,110,0.12);
+  }
+  .nonneg-head h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .nonneg-head .tag {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(200,169,110,0.08);
+    padding: 4px 12px;
+    display: inline-block;
+  }
+  .nonneg-body {
+    font-size: 0.85rem;
+    line-height: 1.9;
+    color: var(--light);
+    padding-top: 4px;
+  }
+
+  /* ===== GOALS ===== */
+  #goals {
+    padding: 120px 80px;
+    background: var(--black);
+  }
+  .goals-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 80px;
+  }
+  .goal-card {
+    background: var(--charcoal);
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s, transform 0.4s;
+    transform-style: preserve-3d;
+  }
+  .goal-card:hover {
+    background: #161208;
+    transform: translateY(-4px);
+  }
+  .goal-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 24px;
+    line-height: 1.2;
+  }
+  .goal-card p {
+    font-size: 0.8rem;
+    line-height: 2;
+    color: var(--light);
+  }
+  .goals-footer {
+    margin-top: 80px;
+    padding: 48px;
+    border: 1px solid rgba(200,169,110,0.15);
+    text-align: center;
+  }
+  .goals-footer p {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--mid);
+    text-transform: uppercase;
+    line-height: 2.5;
+    font-style: italic;
+  }
+
+  /* ===== FIGHTS ===== */
+  #fights {
+    padding: 120px 80px;
+    background: var(--dark);
+  }
+  .fights-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    margin-top: 80px;
+  }
+  .fight-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 60px;
+    align-items: center;
+    position: relative;
+  }
+  .fight-item::before {
+    content: '';
+    position: absolute;
+    left: 200px; top: 50%;
+    width: 40px; height: 1px;
+    background: var(--accent2);
+    transform: translateY(-50%);
+  }
+  .fight-label {
+    text-align: right;
+  }
+  .fight-label .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    color: rgba(200,169,110,0.1);
+    line-height: 1;
+  }
+  .fight-label .type {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--accent2);
+  }
+  .fight-content { padding-left: 60px; }
+  .fight-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--white);
+    margin-bottom: 16px;
+  }
+  .fight-content p {
+    font-size: 0.85rem;
+    line-height: 2;
+    color: var(--light);
+    max-width: 600px;
+  }
+
+  /* ===== MANIFESTO ===== */
+  #manifesto {
+    padding: 120px 80px;
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+  }
+  .manifesto-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(200,169,110,0.04) 0%, transparent 60%);
+  }
+  .manifesto-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    position: relative;
+    z-index: 2;
+    margin-top: 80px;
+  }
+  .manifesto-block {
+    padding: 48px;
+    border: 1px solid rgba(200,169,110,0.12);
+    transition: border-color 0.4s, transform 0.4s;
+    transform-style: preserve-3d;
+  }
+  .manifesto-block:hover {
+    border-color: rgba(200,169,110,0.3);
+    transform: rotateY(2deg);
+  }
+  .manifesto-block h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .manifesto-block p {
+    font-size: 0.85rem;
+    line-height: 2;
+    color: var(--light);
+  }
+
+  /* ===== CTA ===== */
+  #cta {
+    padding: 160px 80px;
+    background: var(--dark);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(120px, 22vw, 280px);
+    color: rgba(200,169,110,0.03);
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+    user-select: none;
+    pointer-events: none;
+    animation: bgDrift 15s ease-in-out infinite alternate;
+  }
+  @keyframes bgDrift {
+    from { transform: translate(-50%, -50%) scale(1); }
+    to { transform: translate(-50%, -50%) scale(1.05); }
+  }
+  .cta-content { position: relative; z-index: 2; }
+  .cta-content .cta-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.5em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cta-content h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 100px);
+    line-height: 0.9;
+    margin-bottom: 40px;
+  }
+  .cta-content h2 .line1 { color: var(--white); }
+  .cta-content h2 .line2 { color: var(--accent); }
+  .cta-desc {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--light);
+    margin-bottom: 60px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.9;
+  }
+  .cta-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 16px 48px;
+    background: var(--accent);
+    color: var(--black);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(200,169,110,0.3);
+  }
+  .btn-secondary {
+    display: inline-block;
+    padding: 15px 48px;
+    border: 1px solid rgba(200,169,110,0.4);
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color 0.3s, background 0.3s;
+    cursor: none;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    background: rgba(200,169,110,0.05);
+  }
+  .cta-assoc {
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    opacity: 0.5;
+  }
+  .cta-assoc span {
+    font-size: 0.6rem;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+  .assoc-logos {
+    display: flex;
+    gap: 48px;
+    align-items: center;
+  }
+  .assoc-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    color: var(--mid);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--black);
+    padding: 48px 80px;
+    border-top: 1px solid rgba(200,169,110,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer .f-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+  }
+  footer .f-copy {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--mid);
+    text-transform: uppercase;
+  }
+  footer .f-tagline {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--mid);
+  }
+
+  /* ===== SCROLL ANIMATIONS ===== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+  /* stagger children */
+  .stagger > * { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .stagger.visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.1s; }
+  .stagger.visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.2s; }
+  .stagger.visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.3s; }
+
+  /* ===== MISC ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .divider {
+    width: 60px; height: 1px;
+    background: var(--accent2);
+    margin: 24px 0;
+  }
+  .divider.center { margin: 24px auto; }
+
+  /* parallax layer */
+  .parallax-text {
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 14vw, 180px);
+    color: rgba(200,169,110,0.025);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    will-change: transform;
+  }
+
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-menu { display: none; }
+    #origin, .structures-layout, .actions-layout, .manifesto-layout { grid-template-columns: 1fr; gap: 48px; padding: 60px 24px; }
+    #decisions, #forces, #goals, .decisions-grid, .forces-layout, .goals-grid { padding: 60px 24px; }
+    .decisions-grid, .forces-layout, .goals-grid, .oaths-layout, .engage-grid { grid-template-columns: 1fr; gap: 2px; }
+    section { padding: 80px 24px !important; }
+    .origin-3d-block { flex: none; width: 100%; }
+    .venn-container, .circles-visual, .orbit-system { width: 280px; height: 280px; }
+    .nonneg-item { grid-template-columns: 60px 1fr; }
+    .nonneg-head, .nonneg-body { grid-column: span 1; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    .fight-item { grid-template-columns: 1fr; gap: 16px; }
+    .fight-item::before { display: none; }
+    .fight-content { padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo">3AM ✦ COLLECTIVE</a>
+  <ul class="nav-menu">
+    <li><a href="#origin">Origin</a></li>
+    <li><a href="#structures">Structure</a></li>
+    <li><a href="#forces">Forces</a></li>
+    <li><a href="#manifesto">Manifesto</a></li>
+    <li><a href="#cta">Join</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">An Indie Cult House · 2026</p>
+    <h1 class="hero-title">
+      3AM
+      <span>tea cigaz.</span>
+    </h1>
+    <p class="hero-tagline">"The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission."</p>
+  </div>
+  <div class="hero-year">2026</div>
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+  <div class="parallax-text" style="bottom: 10%; left: -5%;" id="pt1">3AM</div>
+</section>
+
+<!-- ORIGIN / THE THREE NAMES -->
+<section id="origin">
+  <div class="parallax-text" style="top: 10%; right: -5%;" id="pt2">ORIGIN</div>
+  <div class="origin-3d-block reveal-left">
+    <div class="origin-card">
+      <div class="big-quote">"</div>
+      <p>One fine day, we decided to meet to discuss our cinematic dreams. The conversation lasted until 3 a.m. as we drank tea to stay refreshed and smoked cigarettes while sharing stories we had written.</p>
+      <div class="origin-name">3AM TEA CIGAZ</div>
+    </div>
+  </div>
+  <div class="origin-text reveal-right">
+    <p class="section-label">The Three Names</p>
+    <h2 class="section-title">This Inspired<br>Our Name.</h2>
+    <div class="divider"></div>
+    <p class="section-body">Three names met at the intersection of dreams, dark hours, and defiance. Tea to stay awake. Cigarettes to stay honest. Stories to stay alive.<br><br>We do not wait for permission. We do not wait for funding. We build while the world sleeps.</p>
+    <div class="big-statement">WE DO THINGS<br>FOR <em>WHAT WE LOVE.</em></div>
+  </div>
+</section>
+
+<!-- THREE DECISIONS -->
+<section id="decisions">
+  <div class="section-header reveal">
+    <p class="section-label">The Three Decisions</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">How We Choose<br>to Exist.</h2>
+    <div class="divider center"></div>
+    <p style="font-size:0.8rem;color:var(--light);max-width:540px;margin:0 auto;line-height:1.9;">"If we expect equality, we should practice equity through an affirmative action, so everyone gets the support they need."</p>
+  </div>
+  <div class="decisions-grid stagger">
+    <div class="decision-card">
+      <span class="decision-icon">◎</span>
+      <div class="decision-title">Community Space</div>
+      <ul class="decision-items">
+        <li>Ideas Discussion</li>
+        <li>Creation Showcase</li>
+        <li>Time Contribution</li>
+        <li>Utility Access to Resources</li>
+      </ul>
+    </div>
+    <div class="decision-card">
+      <span class="decision-icon">⟡</span>
+      <div class="decision-title">Creative Collaboration</div>
+      <ul class="decision-items">
+        <li>Sweat Equity</li>
+        <li>Pay As You Wish</li>
+        <li>Field Experience</li>
+        <li>Skill Upgrade</li>
+      </ul>
+    </div>
+    <div class="decision-card">
+      <span class="decision-icon">◈</span>
+      <div class="decision-title">Experiential Learning</div>
+      <ul class="decision-items">
+        <li>Skill Upgrade</li>
+        <li>Field Experience</li>
+        <li>Sweat Equity</li>
+        <li>Pay As You Wish</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- THREE ACTIONS -->
+<section id="actions">
+  <div class="parallax-text" style="top: 20%; left: -8%;" id="pt3">ACTIONS</div>
+  <div class="actions-layout">
+    <div class="circles-visual reveal-left">
+      <div class="circle-ring"><div class="circle-dot"></div></div>
+      <div class="circle-ring"><div class="circle-dot"></div></div>
+      <div class="circle-ring"><div class="circle-dot"></div></div>
+      <div class="circle-center">
+        <div class="circle-center-text">3 YEARS<br>3 CIRCLES</div>
+      </div>
+    </div>
+    <div class="actions-list reveal-right">
+      <div class="section-label">The Three Actions</div>
+      <h2 class="section-title">Cultivate.<br>Embody.<br>Forge.</h2>
+      <div class="action-item">
+        <div class="action-num">1</div>
+        <div class="action-content">
+          <h3>Cultivating Community Living.</h3>
+          <p>Establishing a physical and virtual hub, launching creative residencies, integrating sustainable well-being, and fostering trust through regular rituals of critique and celebration.</p>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">2</div>
+        <div class="action-content">
+          <h3>Embodying a Collective Philosophy.</h3>
+          <p>Ratifying a shared manifesto, empowering each member through an advice-process decision-making model, and committing to radical transparency in all operations and finances.</p>
+        </div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">3</div>
+        <div class="action-content">
+          <h3>Forging an Alternative System.</h3>
+          <p>Implementing a DAO framework for governance and project funding, creating a co-owned resource pool of equipment and assets, and developing an internal circular economy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:80px;padding-top:60px;border-top:1px solid rgba(200,169,110,0.08);" class="reveal">
+    <p style="font-family:'Courier Prime',monospace;font-size:0.7rem;letter-spacing:0.2em;color:var(--mid);text-transform:uppercase;">3 years of 3am completing 3 circles · Let's Collaborate &amp; Make more Circles.</p>
+  </div>
+</section>
+
+<!-- THREE FUNCTIONS -->
+<section id="functions" style="padding:120px 80px;background:var(--black);">
+  <div class="section-header reveal">
+    <p class="section-label">The Three Functions</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">What We Do.<br>Every Day.</h2>
+  </div>
+  <div class="oaths-layout stagger" style="margin-top:80px;">
+    <div class="oath-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:20px;opacity:0.5;">↻</div>
+      <h3>Sustain Our Daily Operations</h3>
+      <p>We collectively manage the foundation of our shared space and time. Coordinating member availability, maintaining our physical environment, and hosting workshops and screenings based on our shared energy and willingness.</p>
+    </div>
+    <div class="oath-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:20px;opacity:0.5;">⊙</div>
+      <h3>Shape Our Collaborative Projects</h3>
+      <p>We jointly steward the creative and logistical pipeline. Curating ideas, planning event programming, and managing collective finances to ensure the health and viability of our collaborative endeavors.</p>
+    </div>
+    <div class="oath-card" style="text-align:center;">
+      <div style="font-size:2.5rem;margin-bottom:20px;opacity:0.5;">◎</div>
+      <h3>Direct Our Collective Vision</h3>
+      <p>We actively work on our unifying mission. Defining our goals, aligning on our philosophy, and mobilizing coordinated actions to bring our shared vision into reality.</p>
+    </div>
+  </div>
+</section>
+
+<!-- THREE STRUCTURES -->
+<section id="structures">
+  <div class="parallax-text" style="top: 15%; right: -8%;" id="pt4">STRUCTURE</div>
+  <div class="section-header reveal">
+    <p class="section-label">The Three Structures</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">The Structural Pillars.</h2>
+    <p style="font-size:0.8rem;color:var(--light);max-width:440px;margin:16px auto 0;line-height:1.9;font-family:'Courier Prime',monospace;">Together, they represent the different forms our foundational structure takes.</p>
+  </div>
+  <div class="structures-layout">
+    <div class="venn-container reveal-left">
+      <div class="venn-circle top"><span>3AM<br>CORE</span></div>
+      <div class="venn-circle bl"><span>3AM<br>IN-HOUSE</span></div>
+      <div class="venn-circle br"><span>3AM<br>TEAM</span></div>
+      <div class="venn-center-circle"><span>COLLECTIVE</span></div>
+    </div>
+    <div class="structure-defs reveal-right">
+      <div class="structure-def">
+        <h3>3AM Core</h3>
+        <p>The Core Team carries the vision and mission forward. Working full-time, they establish the workflow and facilitate the In-House team to ensure execution.</p>
+      </div>
+      <div class="structure-def">
+        <h3>3AM In-House</h3>
+        <p>The In-House members execute the vision and mission to achieve our goals. They take on specific roles and are responsible for implementing projects and operations.</p>
+      </div>
+      <div class="structure-def">
+        <h3>3AM Team</h3>
+        <p>Team members provide support to the Core and In-House teams. They volunteer for part-time responsibilities as assigned by the In-House team.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE ENGAGEMENTS -->
+<section id="engagements">
+  <div class="section-header reveal">
+    <p class="section-label">The Three Engagements</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">The Engagement<br>Spectrum of Belonging.</h2>
+    <p style="font-size:0.8rem;color:var(--light);max-width:440px;margin:16px auto 0;line-height:1.9;">They map the lifecycle of engagement, from active contribution to lasting legacy.</p>
+  </div>
+  <div class="engage-grid stagger">
+    <div class="engage-card" data-num="1">
+      <div class="sub">Active</div>
+      <h3>3AM Member</h3>
+      <p>Members are registered who support our activities and the drive toward indie filmmaking. They contribute financially as they wish to help us march toward our goals.</p>
+    </div>
+    <div class="engage-card" data-num="2">
+      <div class="sub">Participating</div>
+      <h3>3AM Participant</h3>
+      <p>Members who participate in the activities conducted by 3AM. They are the energy in the room — turning ideas into actions, turning space into community.</p>
+    </div>
+    <div class="engage-card" data-num="3">
+      <div class="sub">Legacy</div>
+      <h3>3AM Alumni</h3>
+      <p>The people who visited us at 3AM, while juggling their commitments in the cinema industry. They will be invited to every function, celebration, or release.</p>
+    </div>
+  </div>
+</section>
+
+<!-- THREE FORCES -->
+<section id="forces">
+  <div class="parallax-text" style="bottom: 10%; left: -5%;" id="pt5">FORCES</div>
+  <div class="section-header reveal">
+    <p class="section-label">The Three Forces</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">The Creative Forces.</h2>
+    <p style="font-size:0.8rem;color:var(--light);max-width:440px;margin:16px auto 0;line-height:1.9;">The intertwined roles every maker moves between — from providing support to leading vision.</p>
+  </div>
+  <div class="forces-layout stagger" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:80px;">
+    <div class="force-card">
+      <h3>3AM Collaborators</h3>
+      <p>Fellow travelers — other collectives, organizations, or aligned groups who share our core vision. Our strategic partners, invited to join community meetings and co-create events. We engage through a barter system of mutual support, sharing resources, skills, and platforms. This is a conscious act of solidarity.</p>
+    </div>
+    <div class="force-card">
+      <h3>3AM Contributors</h3>
+      <p>The essential lifeblood of our collective. They engage on their own terms, participating in activities, using our space for discussion or personal creation, and supporting our work as an audience. Their contribution of energy and presence is a primary force that allows us to practice radical equality and keep our ecosystem accessible and alive.</p>
+    </div>
+    <div class="force-card">
+      <h3>3AM Creators</h3>
+      <p>Individual filmmakers, artists, and thinkers who fully align with our vision and integrate into the movement. They operate not as outsiders-for-hire but as committed freelancers within the collective, undertaking projects that advance our mission. The systematic challengers, using their craft and voice to dismantle and rebuild the status quo from within.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ECOSYSTEM -->
+<section id="ecosystem">
+  <div class="section-header reveal">
+    <p class="section-label">3AM Ecosystem</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">The Complete Orbit.</h2>
+  </div>
+  <div class="orbit-system reveal">
+    <!-- rings -->
+    <div class="orbit-ring" style="width:580px;height:580px;"></div>
+    <div class="orbit-ring" style="width:510px;height:510px;"></div>
+    <div class="orbit-ring" style="width:440px;height:440px;"></div>
+    <div class="orbit-ring" style="width:370px;height:370px;"></div>
+    <div class="orbit-ring" style="width:300px;height:300px;"></div>
+    <div class="orbit-ring" style="width:240px;height:240px;"></div>
+    <div class="orbit-ring" style="width:180px;height:180px;"></div>
+    <div class="orbit-ring" style="width:120px;height:120px;"></div>
+    <!-- labels -->
+    <div class="orbit-label" style="top:calc(50% - 295px);left:50%;">CREATORS</div>
+    <div class="orbit-label" style="top:calc(50% - 258px);left:50%;">CONTRIBUTORS</div>
+    <div class="orbit-label" style="top:calc(50% - 223px);left:50%;">COLLABORATORS</div>
+    <div class="orbit-label" style="top:calc(50% - 188px);left:50%;">PARTICIPANT</div>
+    <div class="orbit-label" style="top:calc(50% - 153px);left:50%;">ALUMNI</div>
+    <div class="orbit-label" style="top:calc(50% - 118px);left:50%;">MEMBER</div>
+    <div class="orbit-label" style="top:calc(50% - 83px);left:50%;">TEAM</div>
+    <div class="orbit-label" style="top:calc(50% - 48px);left:50%;">IN-HOUSE</div>
+    <div class="orbit-core">
+      <div class="logo-3am">3AM</div>
+      <div class="logo-sub">collective.</div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE OATHS -->
+<section id="oaths">
+  <div class="parallax-text" style="top: 10%; right: -8%;" id="pt6">OATHS</div>
+  <div class="section-header reveal">
+    <p class="section-label">The Three Oaths</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">These Oaths<br>Are Our Bond.</h2>
+  </div>
+  <div class="oaths-layout stagger">
+    <div class="oath-card">
+      <h3>Oath of Collective Action.</h3>
+      <p>We vow that our operations and vision are sustained not by leaders, but by the shared, rotating responsibility of every member. We are the crew, the curators, and the custodians of our own community. Our autonomy is built through mutual aid and trust.</p>
+    </div>
+    <div class="oath-card">
+      <h3>Oath of Shared Purpose.</h3>
+      <p>We vow to advance a unified mission above all. Our goals — the autonomy to act, the structure to decide, the mission that unites — form our foundation. Every action must serve our common aim. We build together, not in parallel.</p>
+    </div>
+    <div class="oath-card">
+      <h3>Oath of Sovereign Space.</h3>
+      <p>We vow that our operations and vision are sustained not by leaders, but by the shared, rotating responsibility of every member. We are the crew, the curators, and the custodians of our own community. Our autonomy is built through mutual aid and trust.</p>
+    </div>
+  </div>
+  <div class="oath-footer reveal">
+    <p>THESE OATHS ARE OUR BOND.</p>
+    <p>THIS IS THE STRUCTURE OF OUR AUTONOMY.</p>
+    <p>THIS IS HOW WE WILL SUPPORT THE WORK THAT MATTERS.</p>
+  </div>
+</section>
+
+<!-- THREE NON-NEGOTIABLES -->
+<section id="nonneg">
+  <div class="section-header reveal">
+    <p class="section-label">The Three Non-Negotiables</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">What We Will<br>Never Tolerate.</h2>
+    <div class="divider center"></div>
+  </div>
+  <div class="nonneg-items">
+    <div class="nonneg-item reveal">
+      <div class="nonneg-num">01</div>
+      <div class="nonneg-head">
+        <h3>We Avoid Transactional Networking.</h3>
+        <span class="tag">Boundary</span>
+      </div>
+      <div class="nonneg-body">We are not a platform for opportunists seeking high-value connections or a stepping stone for personal career advancement. Our community is built on mutual aid, not mutual exploitation.</div>
+    </div>
+    <div class="nonneg-item reveal">
+      <div class="nonneg-num">02</div>
+      <div class="nonneg-head">
+        <h3>We Reject Purely Commercial Interests.</h3>
+        <span class="tag">Boundary</span>
+      </div>
+      <div class="nonneg-body">We vow to advance a unified mission above all. Our goals — the autonomy to act, the structure to decide, the mission that unites — form our foundation. Every action must serve our common aim. We build together, not in parallel.</div>
+    </div>
+    <div class="nonneg-item reveal">
+      <div class="nonneg-num">03</div>
+      <div class="nonneg-head">
+        <h3>We Enforce Energetic &amp; Philosophical Synergy.</h3>
+        <span class="tag">Boundary</span>
+      </div>
+      <div class="nonneg-body">Alignment with our core values and mission is mandatory. If you cannot contribute to the collective spirit, collaborate in good faith, or respect our decentralized ethos, you will not find a home here. We protect our culture decisively.</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:80px;padding:40px;border:1px solid rgba(200,169,110,0.1);" class="reveal">
+    <p style="font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,2.5vw,28px);letter-spacing:0.15em;color:var(--cream);line-height:1.6;">WE ARE A CIRCLE OF TRUST, NOT A NETWORK OF CONVENIENCE.<br><span style="color:var(--accent);">WE BUILD TOGETHER, NOT IN PARALLEL.</span></p>
+  </div>
+</section>
+
+<!-- THREE GOALS -->
+<section id="goals">
+  <div class="parallax-text" style="bottom: 15%; left: -8%;" id="pt7">GOALS</div>
+  <div class="section-header reveal">
+    <p class="section-label">The Three Goals</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">What We Are<br>Building Toward.</h2>
+  </div>
+  <div class="goals-grid stagger">
+    <div class="goal-card">
+      <h3>Forge an Autonomous Structure.</h3>
+      <p>To build a self-governing and self-sustaining ecosystem. Creating our own systems for funding, resources, and operations free from external control — enabling true creative and operational independence.</p>
+    </div>
+    <div class="goal-card">
+      <h3>Practice De-centralized Governance.</h3>
+      <p>To distribute power, responsibility, and decision-making to every member. Through tools like DAOs and principles like the advice-process, we ensure that leadership and direction emerge from the collective, not from a central hierarchy.</p>
+    </div>
+    <div class="goal-card">
+      <h3>Advance a Unified Mission.</h3>
+      <p>To align our diverse voices and projects under a single, powerful purpose. By codifying our shared vision in a living manifesto, we ensure that every action contributes to our common aim, giving our collective its direction and impact.</p>
+    </div>
+  </div>
+  <div class="goals-footer reveal">
+    <p>TOGETHER, THESE ROLES FORM A SYMBIOTIC ECOSYSTEM. CONTRIBUTORS SUSTAIN OUR FOUNDATION, COLLABORATORS EXPAND OUR REACH AND SOLIDARITY, AND CREATORS CHANNEL OUR COLLECTIVE POWER INTO TRANSFORMATIVE ACTION. ALL ARE UNITED BY A SHARED REJECTION OF THE OLD MODEL AND A COMMITMENT TO BUILDING THE NEW.</p>
+    <p style="margin-top:16px;color:var(--accent);">THIS IS HOW WE STRUCTURE OUR AUTONOMY. THIS IS HOW WE FIGHT.</p>
+  </div>
+</section>
+
+<!-- THREE FIGHTS -->
+<section id="fights">
+  <div class="section-header reveal">
+    <p class="section-label">The Three Fights</p>
+    <h2 class="section-title" style="font-family:'Playfair Display',serif;font-style:italic;">What We Are<br>Fighting Against.</h2>
+  </div>
+  <div class="fights-layout">
+    <div class="fight-item reveal">
+      <div class="fight-label">
+        <div class="num">01</div>
+        <div class="type">The System</div>
+      </div>
+      <div class="fight-content">
+        <h3>Artistic Integrity vs. Commercial System.</h3>
+        <p>The artist's fundamental right is to unfiltered expression. The primary commercial system systematically violates this right, forcing compromises that prioritize market safety over artistic integrity, resulting in homogenized work.</p>
+      </div>
+    </div>
+    <div class="fight-item reveal">
+      <div class="fight-label">
+        <div class="num">02</div>
+        <div class="type">The Grind</div>
+      </div>
+      <div class="fight-content">
+        <h3>Creator's Unseen War.</h3>
+        <p>The creator's vision is besieged by a vicious cycle of financial constraints, costly collaboration, gatekeeping, and the grind of survival, which steals the very resources needed to develop ideas and practice the craft.</p>
+      </div>
+    </div>
+    <div class="fight-item reveal">
+      <div class="fight-label">
+        <div class="num">03</div>
+        <div class="type">The Act</div>
+      </div>
+      <div class="fight-content">
+        <h3>Art as an Act of Endurance.</h3>
+        <p>The filmmaker's true vision is an act of conscious, humane rebellion — to use storytelling to evolve humanity by questioning norms and upholding universal values. The ultimate act is to persist, transforming every constraint into the story's fabric, proving a humane idea can endure an inhumane process.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto">
+  <div class="manifesto-bg"></div>
+  <div class="parallax-text" style="top: 50%; right: -5%;transform:translateY(-50%);" id="pt8">MANIFESTO</div>
+  <div class="section-header reveal" style="position:relative;z-index:2;">
+    <p class="section-label">3AM Manifesto</p>
+    <h2 class="section-title" style="font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,10vw,120px);font-style:normal;letter-spacing:0.05em;">3am manifesto.</h2>
+  </div>
+  <div class="manifesto-layout">
+    <div class="manifesto-block reveal-left">
+      <h3>The 3am Collective: A Declaration</h3>
+      <p>We are the 3am Collective. We are filmmakers, artists, and thinkers who no longer wait for permission, funding, or a system that wasn't built for us. While the world sleeps, we are awake — building a new one.<br><br>Our project is the creation of a sovereign creative ecosystem: a decentralized, autonomous collective united by a single mission. This is not a group. It is a movement, a retaliation, and a blueprint for the future of creation.</p>
+    </div>
+    <div class="manifesto-block reveal-right">
+      <h3>The 3am Collective: The Invitation</h3>
+      <p>This is more than filmmaking. It is an exercise in consciousness and time. We break the constraints that limit our potential. We operate from a timeless state that fuels limitless creation.<br><br>Our ultimate goal is to solve the endless human problems that chain us — isolation, exploitation, creative suppression — by embodying a radical new principle: true reciprocity. The profound "give and take."<br><br>The structure is built. The synergies are alive. The oaths are sworn. This is how we fight. This is how we build.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA / JOIN -->
+<section id="cta">
+  <div class="cta-bg-text">JOIN</div>
+  <div class="cta-content">
+    <p class="cta-label">The next phase begins now</p>
+    <h2>
+      <div class="line1">JOIN OUR</div>
+      <div class="line2">COLLECTIVE.</div>
+    </h2>
+    <p class="cta-desc">For collective creation &amp; creator's responsibility.<br>For decentralised system &amp; collective autonomy.</p>
+    <div class="cta-buttons">
+      <a href="#" class="btn-primary">Join the Movement</a>
+      <a href="#manifesto" class="btn-secondary">Read the Manifesto</a>
+    </div>
+    <div class="cta-assoc">
+      <span>In Association With</span>
+      <div class="assoc-logos">
+        <div class="assoc-logo">3AM COLLECTIVE</div>
+        <div style="width:1px;height:20px;background:var(--mid);"></div>
+        <div class="assoc-logo">3AM TEA CIGAZ</div>
+        <div style="width:1px;height:20px;background:var(--mid);"></div>
+        <div class="assoc-logo">AN INDIE CULT HOUSE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="f-logo">3AM COLLECTIVE</div>
+  <div class="f-tagline">While the world sleeps, we build.</div>
+  <div class="f-copy">© 2026 · An Indie Cult House</div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animateCursor() {
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+document.querySelectorAll('a, button, .decision-card, .engage-card, .force-card, .goal-card, .oath-card, .manifesto-block').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.transform = 'translate(-50%,-50%) scale(2.5)'; ring.style.transform = 'translate(-50%,-50%) scale(1.5)'; });
+  el.addEventListener('mouseleave', () => { cursor.style.transform = 'translate(-50%,-50%) scale(1)'; ring.style.transform = 'translate(-50%,-50%) scale(1)'; });
+});
+
+// SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .stagger');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+reveals.forEach(el => io.observe(el));
+
+// PARALLAX
+const pts = document.querySelectorAll('.parallax-text');
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  pts.forEach((pt, i) => {
+    const speed = 0.03 + i * 0.01;
+    const dir = i % 2 === 0 ? 1 : -1;
+    pt.style.transform = `translateY(${sy * speed * dir}px)`;
+  });
+});
+
+// 3D MOUSE TILT on sections
+document.querySelectorAll('.decision-card, .engage-card, .oath-card, .manifesto-block, .goal-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const cx = (e.clientX - r.left) / r.width - 0.5;
+    const cy = (e.clientY - r.top) / r.height - 0.5;
+    card.style.transform = `rotateY(${cx * 10}deg) rotateX(${cy * -10}deg) translateZ(10px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+  });
+});
+
+// ORBIT label animation
+const labels = document.querySelectorAll('.orbit-label');
+labels.forEach((l, i) => {
+  l.style.transition = `opacity 0.6s ${i * 0.1}s, transform 0.6s ${i * 0.1}s`;
+});
+const orbitObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      labels.forEach(l => { l.style.opacity = '1'; });
+    }
+  });
+}, { threshold: 0.3 });
+const ecosystemSec = document.getElementById('ecosystem');
+if (ecosystemSec) orbitObs.observe(ecosystemSec);
+</script>
+</body>
+</html>

@@ -397,11 +397,11 @@ export default function ActivityDetailModal({
             )}
 
             {isStaffForActivity ? null : isRegistered ? (
-              <button className="btn-danger" onClick={handleUnregister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+              <button className="btn-secondary" onClick={handleUnregister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
                 {isSubmitting ? 'Unregistering...' : 'Unregister'}
               </button>
             ) : (
-              <button className="btn-primary" onClick={handleRegister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+              <button className="btn-secondary" onClick={handleRegister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
                 {isSubmitting ? 'Registering...' : 'Register'}
                 <CheckCircle size={16} />
               </button>

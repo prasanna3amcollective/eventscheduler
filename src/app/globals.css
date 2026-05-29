@@ -2463,10 +2463,28 @@ input:not([type="checkbox"]):focus {
   transition: all 0.2s;
 }
 
-.refresh-button:hover {
+
+.export-button {
+  width: 48px;
+  height: 48px;
+  background: var(--hover-color);
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.export-button:hover {
   background: var(--primary-glow);
   color: var(--primary-color);
 }
+
+
+
 
 .spinning {
   animation: spin 1s linear infinite;
