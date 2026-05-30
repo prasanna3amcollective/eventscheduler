@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { X, User, Mail, Phone, Save, Loader, Tag } from '@/components/Icons';
+import { X, User, Mail, Phone, Save, Loader, Tag, Lock } from '@/components/Icons';
 import { SKILLS, type Skill } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
@@ -37,6 +37,13 @@ interface ProfileModalProps {
 const ERROR_MESSAGES = {
   UPDATE_FAILED: 'Failed to update profile',
   NETWORK_ERROR: 'Network error',
+  PASSWORD_CURRENT_REQUIRED: 'Current password is required',
+  PASSWORD_NEW_REQUIRED: 'New password is required',
+  PASSWORD_LENGTH: 'Password must be at least 8 characters',
+  PASSWORD_FORMAT: 'Password must contain at least one uppercase letter and one number',
+  PASSWORD_CURRENT_INCORRECT: 'Current password is incorrect',
+  PASSWORD_RESET_FAILED: 'Failed to reset password',
+  PASSWORD_RESET_SUCCESS: 'Password reset successfully',
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -57,6 +64,10 @@ export default function ProfileModal({
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', skills: [] as Skill[] });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Escape key handler + body scroll lock — always active while open
   useEffect(() => {
@@ -92,7 +103,7 @@ export default function ProfileModal({
     });
   };
 
-  /** Submits the updated profile via PUT to /api/user/profile */
+/** Submits the updated profile via PUT to /api/user/profile */
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -120,6 +131,61 @@ export default function ProfileModal({
       }
     },
     [formData, onProfileUpdate, onClose],
+  );
+
+  /** Handles password reset form submission */
+  const handlePasswordReset = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setPasswordError('');
+
+      if (!passwordData.currentPassword) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_CURRENT_REQUIRED);
+        return;
+      }
+      if (!passwordData.newPassword) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_NEW_REQUIRED);
+        return;
+      }
+      if (passwordData.newPassword.length < 8) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_LENGTH);
+        return;
+      }
+      if (!/[A-Z]/.test(passwordData.newPassword) || !/[0-9]/.test(passwordData.newPassword)) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_FORMAT);
+        return;
+      }
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        setPasswordError('New passwords do not match');
+        return;
+      }
+
+      setIsResettingPassword(true);
+
+      try {
+        const response = await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+          }),
+        });
+
+        if (response.ok) {
+          setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setShowPasswordReset(false);
+        } else {
+          const err = await response.json();
+          setPasswordError(err.error ?? ERROR_MESSAGES.PASSWORD_RESET_FAILED);
+        }
+      } catch (_err) {
+        setPasswordError(ERROR_MESSAGES.NETWORK_ERROR);
+      } finally {
+        setIsResettingPassword(false);
+      }
+    },
+    [passwordData],
   );
 
   if (!isOpen) return null;
@@ -222,27 +288,92 @@ export default function ProfileModal({
              </div>
            </div>
 
-           {currentUser?.groups && currentUser.groups.length > 0 && (
-            <div className="form-group">
-              <label style={{ marginBottom: '12px' }}>Member of Groups</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {currentUser.groups.map((g, idx) => (
-                  <span key={idx} className="category-badge">
-                    {g.group.name}
-                  </span>
-                ))}
-              </div>
-            </div>
+{currentUser?.groups && currentUser.groups.length > 0 && (
+             <div className="form-group">
+               <label style={{ marginBottom: '12px' }}>Member of Groups</label>
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                 {currentUser.groups.map((g, idx) => (
+                   <span key={idx} className="category-badge">
+                     {g.group.name}
+                   </span>
+                 ))}
+               </div>
+             </div>
+           )}
+
+           <div className="form-group">
+             <button
+               type="button"
+               onClick={() => setShowPasswordReset(!showPasswordReset)}
+               className="btn-secondary"
+               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+             >
+               <Lock size={16} />
+               {showPasswordReset ? 'Cancel Password Reset' : 'Change Password'}
+             </button>
+           </div>
+
+<button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px', width: '100%' }}>
+              {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </form>
+
+         {showPasswordReset && (
+           <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '24px' }}>
+             <div className="form-group">
+               <label htmlFor="currentPassword">
+                 <Lock size={14} /> Current Password
+               </label>
+               <input
+                 id="currentPassword"
+                 type="password"
+                 value={passwordData.currentPassword}
+                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                 placeholder="Enter current password"
+                 required
+               />
+             </div>
+
+             <div className="form-group">
+               <label htmlFor="newPassword">
+                 <Lock size={14} /> New Password
+               </label>
+               <input
+                 id="newPassword"
+                 type="password"
+                 value={passwordData.newPassword}
+                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                 placeholder="New password (min 8 chars, 1 uppercase, 1 number)"
+                 required
+               />
+             </div>
+
+             <div className="form-group">
+               <label htmlFor="confirmPassword">
+                 <Lock size={14} /> Confirm New Password
+               </label>
+               <input
+                 id="confirmPassword"
+                 type="password"
+                 value={passwordData.confirmPassword}
+                 onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                 placeholder="Confirm new password"
+                 required
+               />
+             </div>
+
+{passwordError && <div className="error-banner" style={{ margin: 0 }}>{passwordError}</div>}
+
+              <button type="submit" className="btn-primary" disabled={isResettingPassword} style={{ width: '100%' }}>
+                {isResettingPassword ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+                {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+              </button>
+            </form>
           )}
 
-          {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
-
-          <button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px' }}>
-            {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
+         {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
+       </div>
+     </div>
+   );
+ }

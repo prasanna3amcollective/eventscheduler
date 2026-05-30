@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 401 });
-    }
+       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+     }
 
     const isValid = await bcrypt.compare(password, user.password);
 
