@@ -171,6 +171,17 @@ export function Eye({ size, ...props }: IconProps) {
   );
 }
 
+/** Eye with slash / hidden icon */
+export function EyeSlash({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M1 12c2-5 6-8 11-8s9 3 11 8c-2 5-6 8-11 8s-9-3-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+      <path d="M4 4l16 16" />
+    </svg>
+  );
+}
+
 /** Info / help icon */
 export function Info({ size, ...props }: IconProps) {
   return (

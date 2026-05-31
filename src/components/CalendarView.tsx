@@ -5,7 +5,7 @@ import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsPro
 import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { type Holiday, getHolidays } from '@/lib/holidays';
-import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle } from '@/components/Icons';
+import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -84,8 +84,8 @@ interface CalendarActivity {
  * Custom toolbar with navigation arrows, "Today" button, view switcher,
  * and an optional "Create Activity" button for authorized users.
  */
-function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; canCreate?: boolean }): JSX.Element {
-  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, canCreate } = props;
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; onToggleResponsibilities?: () => void; showResponsibilities?: boolean; canCreate?: boolean }): JSX.Element {
+  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, onToggleResponsibilities, showResponsibilities = true, canCreate } = props;
 
   return (
     <div className="calendar-toolbar">
@@ -109,16 +109,37 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
         </button>
       </div>
 
-      <div className="toolbar-label">{label}</div>
+<div className="toolbar-label">{label}</div>
 
-      <div className="toolbar-views">
-         {canCreate && onCreate && (
-           <>
+       <div className="toolbar-views">
+          {canCreate && onCreate && (
+            <>
+               <button
+                 onClick={onOwnResponsibility}
+                 style={{
+                   marginRight: '12px',
+                   background: 'var(--responsibility-color)',
+                   color: 'white',
+                   border: 'none',
+                   padding: '0 12px',
+                   height: '34px',
+                   borderRadius: '6px',
+                   fontSize: '13px',
+                   fontWeight: 600,
+                   cursor: 'pointer',
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: '6px'
+                 }}
+               >
+                 <PlusCircle size={16} /> Own Responsibility
+               </button>
               <button
-                onClick={onOwnResponsibility}
+                className="rbc-create-btn"
+                onClick={onCreate}
                 style={{
                   marginRight: '12px',
-                  background: 'var(--responsibility-color)',
+                  background: 'var(--primary-color)',
                   color: 'white',
                   border: 'none',
                   padding: '0 12px',
@@ -132,32 +153,21 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
                   gap: '6px'
                 }}
               >
-                <PlusCircle size={16} /> Own Responsibility
+                <PlusCircle size={16} /> Create Activity
               </button>
-             <button
-               className="rbc-create-btn"
-               onClick={onCreate}
-               style={{
-                 marginRight: '12px',
-                 background: 'var(--primary-color)',
-                 color: 'white',
-                 border: 'none',
-                 padding: '0 12px',
-                 height: '34px',
-                 borderRadius: '6px',
-                 fontSize: '13px',
-                 fontWeight: 600,
-                 cursor: 'pointer',
-                 display: 'flex',
-                 alignItems: 'center',
-                 gap: '6px'
-               }}
-             >
-               <PlusCircle size={16} /> Create Activity
-             </button>
-           </>
-         )}
-        {(['month', 'week', 'day'] as View[]).map((v) => (
+            </>
+          )}
+          <button
+            type="button"
+            className={`responsibility-toggle ${showResponsibilities ? 'active' : ''}`}
+            onClick={onToggleResponsibilities}
+            aria-pressed={showResponsibilities}
+            aria-label={showResponsibilities ? 'Hide responsibilities' : 'Show responsibilities'}
+            title={showResponsibilities ? 'Hide responsibilities' : 'Show responsibilities'}
+          >
+            {showResponsibilities ? <Eye size={16} /> : <EyeSlash size={16} />}
+          </button>
+          {(['month', 'week', 'day'] as View[]).map((v) => (
           <button
             key={v}
             className={view === v ? 'rbc-active' : ''}
@@ -382,6 +392,7 @@ export default function CalendarView({
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [showResponsibilities, setShowResponsibilities] = useState<boolean>(true);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
 
@@ -441,33 +452,35 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, []);
 
-  // Combine regular activities with holiday events
-  const calendarActivities = useMemo<CalendarActivity[]>(
-    () => [
-      ...activities,
-      ...responsibilities.map((r) => ({
-        id: r.id,
-        title: r.name,
-        start: new Date(r.startDateTime),
-        end: new Date(r.endDateTime),
-        isHoliday: false,
-        isResponsibility: true,
-        owner: r.owner,
-        category: r.category,
-        state: r.state,
-      })),
-      ...holidays.map((h) => ({
-        id: h.id,
-        title: h.name,
-        start: new Date(h.date),
-        end: new Date(h.date),
-        allDay: true,
-        isHoliday: true,
-        category: 'Holiday'
-      })),
-    ],
-    [activities, responsibilities, holidays],
-  );
+// Combine regular activities with holiday events
+   const calendarActivities = useMemo<CalendarActivity[]>(
+     () => [
+       ...activities,
+       ...(showResponsibilities
+         ? responsibilities.map((r) => ({
+           id: r.id,
+           title: r.name,
+           start: new Date(r.startDateTime),
+           end: new Date(r.endDateTime),
+           isHoliday: false,
+           isResponsibility: true,
+           owner: r.owner,
+           category: r.category,
+           state: r.state,
+         }))
+         : []),
+       ...holidays.map((h) => ({
+         id: h.id,
+         title: h.name,
+         start: new Date(h.date),
+         end: new Date(h.date),
+         allDay: true,
+         isHoliday: true,
+         category: 'Holiday',
+       })),
+     ],
+     [activities, responsibilities, holidays, showResponsibilities],
+   );
 
   const onView = useCallback((newView: View) => setView(newView), []);
   const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
@@ -555,14 +568,23 @@ export default function CalendarView({
     return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
   }, []);
 
-  // Custom components override for toolbar and event rendering
-  const components = useMemo(
-    () => ({
-      toolbar: (props: any) => <CustomToolbar {...props} onCreate={onCreateActivity} onOwnResponsibility={onOwnResponsibility} canCreate={canCreate} />,
-      event: CalendarEventRenderer,
-    }),
-    [onCreateActivity, canCreate, CalendarEventRenderer, onOwnResponsibility],
-  );
+// Custom components override for toolbar and event rendering
+   const components = useMemo(
+     () => ({
+       toolbar: (props: any) => (
+         <CustomToolbar
+           {...props}
+           onCreate={onCreateActivity}
+           onOwnResponsibility={onOwnResponsibility}
+           onToggleResponsibilities={() => setShowResponsibilities((prev) => !prev)}
+           showResponsibilities={showResponsibilities}
+           canCreate={canCreate}
+         />
+       ),
+       event: CalendarEventRenderer,
+     }),
+     [onCreateActivity, canCreate, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
+   );
 
   // ---- Render ----
   return (
@@ -582,7 +604,6 @@ export default function CalendarView({
             date={date}
             onNavigate={onNavigate}
             onDrillDown={handleDrillDown}
-            style={{ height: 600 }}
             views={views}
             components={components}
             dayPropGetter={dayPropGetter}
@@ -593,7 +614,7 @@ export default function CalendarView({
 
       <div className="calendar-side-column">
         <CustomAgenda
-          activities={calendarActivities.filter((e) => !e.isHoliday)}
+          activities={calendarActivities.filter((e) => !e.isHoliday && (showResponsibilities || !e.isResponsibility))}
           onSelectActivity={onSelectActivity}
         />
       </div>

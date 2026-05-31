@@ -271,13 +271,16 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   };
 
   return (
-    <form onSubmit={handleSubmit} className="responsibility-form">
-      <div className="form-header">
-        <h2>{isEditing ? 'Edit Responsibility' : 'New Responsibility'}</h2>
+    <form onSubmit={handleSubmit} className="responsibility-form bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-xl mx-auto space-y-6">
+      <div className="form-header mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">{isEditing ? 'Edit Responsibility' : 'New Responsibility'}</h2>
       </div>
-      <div className="form-row">
-        <div className="form-group">
-          <label><Tag size={16} aria-hidden="true" /> Responsibility Name</label>
+      
+      <div className="form-row grid grid-cols-[2fr_1fr] gap-6">
+        <div className="form-group space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Tag size={16} className="text-primary" aria-hidden="true" /> Responsibility Name
+          </label>
           <input
             type="text"
             value={formData.name}
@@ -285,23 +288,29 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             placeholder="e.g. Morning Meditation"
             required
             autoFocus
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
 
-        <div className="form-group">
+        <div className="form-group space-y-2">
           <UserTypeahead
             label="Owner"
             value={formData.owner}
             onChange={(val) => setFormData(prev => ({ ...prev, owner: val }))}
             onSelect={(user) => setFormData(prev => ({ ...prev, ownerId: user.id }))}
-            icon={<UserIcon size={16} />}
+            icon={<UserIcon size={16} className="text-primary" />}
             users={users}
             placeholder="Type 3+ chars to search users..."
+            className="w-full"
           />
         </div>
+      </div>
 
-        <div className="form-group">
-           <label><Calendar size={16} aria-hidden="true" /> Responsibility start</label>
+      <div className="form-row grid grid-cols-[1fr_1fr] gap-6">
+        <div className="form-group space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Calendar size={16} className="text-primary" aria-hidden="true" /> Responsibility start
+          </label>
           <DatePicker
             selected={formData.startDateTime}
             onChange={(date: Date | null) => {
@@ -314,36 +323,45 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             }}
             showTimeSelect
             dateFormat="MMM d, yyyy h:mm aa"
-            className="date-picker-input"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
 
-<div className="form-group">
-          <label><Clock size={16} aria-hidden="true" /> Duration (minutes)</label>
+        <div className="form-group space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Clock size={16} className="text-primary" aria-hidden="true" /> Duration (minutes)
+          </label>
           <input
             type="number"
             min="15"
             step="15"
             value={formData.duration}
             onChange={(e) => updateEndFromDuration(parseInt(e.target.value) || 15)}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
+      </div>
 
-        <div className="form-group">
-          <label><Tag size={16} aria-hidden="true" /> Category</label>
+      <div className="form-row grid grid-cols-[1fr_1fr] gap-6">
+        <div className="form-group space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Tag size={16} className="text-primary" aria-hidden="true" /> Category
+          </label>
           <select
             value={formData.category}
             onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E')] bg-right-[12px] bg-center no-repeat"
           >
             {ACTIVITY_CATEGORIES.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
         </div>
-      </div>
 
-        <div className="form-group">
-           <label><Calendar size={16} aria-hidden="true" /> Responsibility end</label>
+        <div className="form-group space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+            <Calendar size={16} className="text-primary" aria-hidden="true" /> Responsibility end
+          </label>
           <DatePicker
             selected={formData.endDateTime}
             onChange={(date: Date | null) => {
@@ -356,169 +374,179 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             }}
             showTimeSelect
             dateFormat="MMM d, yyyy h:mm aa"
-            className="date-picker-input"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
+      </div>
 
-        <div className="form-group">
-          <label className="recurring-toggle">
-            <input
-              id="recurring-toggle"
-              type="checkbox"
-              checked={formData.isRecurring}
-              onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
-            />
-            <Repeat size={16} aria-hidden="true" /> Recurring Event
-          </label>
-          {formData.isRecurring && (
-            <div className="recurrence-options">
+      <div className="form-group space-y-2">
+        <label className="recurring-toggle flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+          <input
+            id="recurring-toggle"
+            type="checkbox"
+            checked={formData.isRecurring}
+            onChange={(e) => setFormData(prev => ({ ...prev, isRecurring: e.target.checked }))}
+            className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
+          />
+          <Repeat size={16} className="text-primary" aria-hidden="true" /> Recurring Event
+        </label>
+        {formData.isRecurring && (
+          <div className="recurrence-options space-y-4 mt-4">
+            <div className="flex items-center gap-3 mb-2">
+              <label className="text-xs font-medium text-gray-500">Repeat every</label>
               <select
                 value={formData.recurrenceFreq}
                 onChange={(e) => setFormData(prev => ({ ...prev, recurrenceFreq: e.target.value as 'WEEKLY' | 'MONTHLY' }))}
+                className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all w-[100px]"
               >
                 <option value="WEEKLY">Weekly</option>
                 <option value="MONTHLY">Monthly</option>
               </select>
-              <div className="days-selector">
-                {DAYS_OF_WEEK.map(day => (
-                  <button
-                    type="button"
-                    key={day.value}
-                    className={`day-btn ${formData.recurrenceDays.includes(day.value) ? 'active' : ''}`}
-                    onClick={() => toggleRecurrenceDay(day.value)}
-                  >
-                    {day.label}
-                  </button>
-                 ))}
-               </div>
+              <span className="text-xs font-medium text-gray-500">on</span>
+            </div>
+            
+            <div className="days-selector flex flex-wrap gap-2 mb-4">
+              {DAYS_OF_WEEK.map(day => (
+                <button
+                  type="button"
+                  key={day.value}
+                  className={`day-btn w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 font-medium hover:bg-gray-100 hover:border-primary hover:text-primary transition-all ${formData.recurrenceDays.includes(day.value) ? 'bg-primary text-white' : ''}`}
+                  onClick={() => toggleRecurrenceDay(day.value)}
+                >
+                  {day.label}
+                </button>
+              ))}
+            </div>
 
-              {/* Recurrence range controls (auto-sync weeks <-> until) */}
-              <div style={{ marginTop: '10px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>how many weeks recurrence?</label>
-                    <input
-                      type="number"
-                      min="1"
-                      step="1"
-                      value={formData.recurrenceWeeks}
-                      onChange={(e) => {
-                        const w = Math.max(1, parseInt(e.target.value) || 1);
-                        const newUntil = addWeeks(formData.recurrenceStart, w);
-                        setFormData(prev => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
-                      }}
-                      style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)', fontSize: '13px' }}
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>Recurrence Start</label>
-                    <DatePicker
-                      selected={formData.recurrenceStart}
-                      onChange={(date: Date | null) => {
-                        if (!date) return;
-                        const today = new Date(); today.setHours(0, 0, 0, 0);
-                        const d0 = new Date(date); d0.setHours(0, 0, 0, 0);
-                        if (d0.getTime() < today.getTime()) {
-                          setRecurrenceWarning('Recurrence start is in the past');
-                        } else {
-                          setRecurrenceWarning(null);
-                        }
-                        const w = formData.recurrenceWeeks || 1;
-                        const newU = addWeeks(date, w);
-                        setFormData(prev => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
-                      }}
-                      showTimeSelect
-                      dateFormat="MMM d, yyyy h:mm aa"
-                      className="date-picker-input"
-                    />
-                  </div>
+            {/* Recurrence range controls (auto-sync weeks <-> until) */}
+            <div className="space-y-3">
+              <div className="flex items-start gap-4">
+                <div className="flex-1 space-y-1">
+                  <label className="block text-xs font-medium text-gray-500">how many weeks recurrence?</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.recurrenceWeeks}
+                    onChange={(e) => {
+                      const w = Math.max(1, parseInt(e.target.value) || 1);
+                      const newUntil = addWeeks(formData.recurrenceStart, w);
+                      setFormData(prev => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
+                    }}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  />
                 </div>
-                <div style={{ marginTop: '6px' }}>
-                  <label style={{ fontSize: '12px', display: 'block', marginBottom: '2px' }}>Recur until</label>
+                <div className="flex-1 space-y-1">
+                  <label className="block text-xs font-medium text-gray-500">Recurrence Start</label>
                   <DatePicker
-                    selected={formData.recurrenceUntil}
+                    selected={formData.recurrenceStart}
                     onChange={(date: Date | null) => {
                       if (!date) return;
-                      const start = formData.recurrenceStart;
-                      const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
-                      const w = Math.max(1, Math.round(diffDays / 7));
-                      setFormData(prev => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
+                      const today = new Date(); today.setHours(0, 0, 0, 0);
+                      const d0 = new Date(date); d0.setHours(0, 0, 0, 0);
+                      if (d0.getTime() < today.getTime()) {
+                        setRecurrenceWarning('Recurrence start is in the past');
+                      } else {
+                        setRecurrenceWarning(null);
+                      }
+                      const w = formData.recurrenceWeeks || 1;
+                      const newU = addWeeks(date, w);
+                      setFormData(prev => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
                     }}
                     showTimeSelect
                     dateFormat="MMM d, yyyy h:mm aa"
-                    className="date-picker-input"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
-                {recurrenceWarning && (
-                  <div style={{ color: '#d97706', fontSize: '11px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <AlertTriangle size={11} /> {recurrenceWarning}
-                  </div>
-                )}
               </div>
-             </div>
-            )}
-           </div>
-
-        {(isEditing && isSeriesOccurrence) && (
-          <div className="edit-choice-container" style={{ margin: '12px 0' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              This is part of a recurring series.
-            </p>
-            <div className="edit-choice-buttons" style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                className={`nav-tab ${saveMode === 'this' ? 'active' : ''}`}
-                onClick={() => setSaveMode('this')}
-                style={{ flex: 1 }}
-              >
-                This occurrence only
-              </button>
-              <button
-                type="button"
-                className={`nav-tab ${saveMode === 'all' ? 'active' : ''}`}
-                onClick={() => setSaveMode('all')}
-                style={{ flex: 1 }}
-              >
-                All in series
-              </button>
+              
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-500">Recur until</label>
+                <DatePicker
+                  selected={formData.recurrenceUntil}
+                  onChange={(date: Date | null) => {
+                    if (!date) return;
+                    const start = formData.recurrenceStart;
+                    const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
+                    const w = Math.max(1, Math.round(diffDays / 7));
+                    setFormData(prev => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
+                  }}
+                  showTimeSelect
+                  dateFormat="MMM d, yyyy h:mm aa"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                />
+              </div>
+              {recurrenceWarning && (
+                <div className="flex items-center gap-2 text-xs font-medium bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+                  <AlertTriangle size={12} className="text-yellow-500" />
+                  {recurrenceWarning}
+                </div>
+              )}
             </div>
           </div>
         )}
+      </div>
 
-        {/* Detach Reason dropdown (Responsibility) - IDs never shown in UI */}
-        {(formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
-         <div className="form-group" style={{ marginTop: '8px' }}>
-           <label htmlFor="detach-reason-resp">Detach Reason</label>
-           <select
-             id="detach-reason-resp"
-             value={formData.detachReason || 'none'}
-             onChange={(e) =>
-               setFormData({
-                 ...formData,
-                 detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
-               })
-             }
-             style={{ width: '100%', padding: '6px', borderRadius: '4px' }}
-           >
-             <option value="none">none (part of series)</option>
-             <option value="edited">edited</option>
-             <option value="cancelled">cancelled</option>
-             <option value="rescheduled">rescheduled</option>
-             <option value="manually_created">manually_created</option>
-           </select>
-         </div>
-       )}
+      {(isEditing && isSeriesOccurrence) && (
+        <div className="edit-choice-container bg-gray-50 rounded-lg p-4 border border-dashed border-gray-300">
+          <p className="text-sm font-medium text-gray-600 mb-3">
+            This is part of a recurring series.
+          </p>
+          <div className="edit-choice-buttons flex gap-3">
+            <button
+              type="button"
+              className={`nav-tab flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'this' ? 'bg-primary text-white' : ''}`}
+              onClick={() => setSaveMode('this')}
+            >
+              This occurrence only
+            </button>
+            <button
+              type="button"
+              className={`nav-tab flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'all' ? 'bg-primary text-white' : ''}`}
+              onClick={() => setSaveMode('all')}
+            >
+              All in series
+            </button>
+          </div>
+        </div>
+      )}
 
-       {error && <div role="alert" aria-live="assertive" className="error-banner"><AlertTriangle size={16} aria-hidden="true" /> {error}</div>}
-      {success && <div role="status" aria-live="polite" className="success-banner"><Check size={16} aria-hidden="true" /> Responsibility created successfully!</div>}
+      {/* Detach Reason dropdown (Responsibility) - IDs never shown in UI */}
+      {(formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+        <div className="form-group space-y-2">
+          <label className="block text-sm font-medium text-gray-600">Detach Reason</label>
+          <select
+            value={formData.detachReason || 'none'}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
+              })
+            }
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+          >
+            <option value="none">none (part of series)</option>
+            <option value="edited">edited</option>
+            <option value="cancelled">cancelled</option>
+            <option value="rescheduled">rescheduled</option>
+            <option value="manually_created">manually_created</option>
+          </select>
+          <small className="block text-xs font-medium text-gray-500 mt-1">
+            System-tracked reason this occurrence was detached from its recurrence template.
+          </small>
+        </div>
+      )}
 
-      <div className="form-actions">
-        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary"><X size={16} aria-hidden="true" /> Cancel</button>}
+      {error && <div role="alert" aria-live="assertive" className="error-banner flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg"><AlertTriangle size={16} className="text-red-500" aria-hidden="true" /> {error}</div>}
+      {success && <div role="status" aria-live="polite" className="success-banner flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg"><Check size={16} className="text-green-500" aria-hidden="true" /> Responsibility created successfully!</div>}
+
+      <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all"><X size={16} className="text-gray-600" aria-hidden="true" /> Cancel</button>}
         <button
           type="submit"
           disabled={isSubmitting || !formData.name.trim()}
           aria-busy={isSubmitting}
-          className="btn-primary"
+          className="btn-primary flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all disabled:opacity-60"
         >
           {isSubmitting ? 'Saving...' : initialData ? 'Update Responsibility' : 'Create Responsibility'}
         </button>

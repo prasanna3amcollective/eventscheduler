@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import HeaderPanel from '@/components/HeaderPanel';
 import AboutUs from '@/components/AboutUs';
@@ -248,6 +248,42 @@ function HomeContent() {
     setDetailActivity(activity);
     setIsDetailOpen(true);
   };
+
+  useEffect(() => {
+    if (!isDetailOpen || !isLoggedIn || !detailActivity?.id) return;
+
+    let cancelled = false;
+    const fetchDetail = async () => {
+      try {
+        const res = await fetch(`/api/activities/${detailActivity.id}`);
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          const mapped = {
+            id: data.id,
+            name: data.name,
+            startDateTime: data.startDateTime,
+            endDateTime: data.endDateTime,
+            duration: data.duration,
+            leader: data.leaders || (data as any).leader || [],
+            guide: data.guides || (data as any).guide || [],
+            observer: data.observers || (data as any).observer || [],
+            participants: data.participants,
+            participantCount: data.participantCount,
+            category: data.category,
+            state: data.state,
+            recurrenceTemplateId: data.recurrenceTemplateId,
+            generatedFromTemplateId: data.generatedFromTemplateId,
+            detachReason: data.detachReason,
+          };
+          setDetailActivity(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch activity detail for modal:', err);
+      }
+    };
+    fetchDetail();
+    return () => { cancelled = true; };
+  }, [isDetailOpen, isLoggedIn, detailActivity?.id]);
 
   const onCreateActivity = () => {
     const newActivity = {

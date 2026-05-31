@@ -185,6 +185,20 @@ h4 {
   min-height: calc(100vh - 100px);
 }
 
+/* Reduce padding on small screens */
+@media (max-width: 640px) {
+  .app-container {
+    padding: 20px 16px;
+  }
+}
+
+/* Further reduce padding on very small screens */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 16px;
+  }
+}
+
 .content-section {
   animation: fadeIn 0.4s ease-out;
   width: 100%;
@@ -315,6 +329,13 @@ input:not([type="checkbox"]):focus {
   gap: 20px;
 }
 
+/* Adjust form row gap on small screens */
+@media (max-width: 480px) {
+  .form-row {
+    gap: 16px;
+  }
+}
+
 /* ── Calendar: off-center, asymmetrical ──────────────────────────────── */
 .calendar-page-layout {
   display: flex;
@@ -347,6 +368,19 @@ input:not([type="checkbox"]):focus {
   height: 700px;
   width: 100%;
   position: relative;
+}
+
+/* Make calendar height responsive */
+@media (max-width: 768px) {
+  .calendar-wrapper {
+    height: 500px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-wrapper {
+    height: 400px;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -735,6 +769,29 @@ input:not([type="checkbox"]):focus {
   background: var(--surface-color);
   color: var(--primary-color);
   box-shadow: var(--shadow-sm);
+}
+
+.responsibility-toggle {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.responsibility-toggle:hover {
+  background: var(--border-color);
+  color: var(--responsibility-color);
+}
+
+.responsibility-toggle.active {
+  color: var(--responsibility-color);
+  background: var(--surface-color);
 }
 
 /* Premium DatePicker Styling */
@@ -1463,11 +1520,20 @@ input:not([type="checkbox"]):focus {
 
 /* ── Activity Detail Modal: flat, intimate, no colored block ────────────── */
 .activity-detail-card {
-  max-width: 460px !important;
+  max-width: 90vw !important;
+  width: 100%;
+  max-width: 460px;
   padding: 0 !important;
   overflow: hidden;
   box-shadow: none !important;
   border: 1px solid var(--border-color);
+}
+
+/* Make detail cards full width on very small screens */
+@media (max-width: 480px) {
+  .activity-detail-card {
+    max-width: 100% !important;
+  }
 }
 
 .detail-header-flat {
@@ -1628,6 +1694,22 @@ input:not([type="checkbox"]):focus {
   gap: 24px;
 }
 
+/* Reduce padding on small screens */
+@media (max-width: 640px) {
+  .activity-form,
+  .responsibility-form {
+    padding: 20px;
+  }
+}
+
+/* Further reduce padding on very small screens */
+@media (max-width: 480px) {
+  .activity-form,
+  .responsibility-form {
+    padding: 16px;
+  }
+}
+
 /* Register modal specific overrides */
 .register-modal .activity-form {
   max-width: 100%;
@@ -1724,6 +1806,13 @@ input:not([type="checkbox"]):focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
+}
+
+/* Make admin content grid responsive */
+@media (max-width: 768px) {
+  .admin-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-panel {
@@ -2507,6 +2596,19 @@ input:not([type="checkbox"]):focus {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+}
+
+/* Make staff grid responsive */
+@media (max-width: 768px) {
+  .staff-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .staff-item {

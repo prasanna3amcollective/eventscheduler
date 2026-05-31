@@ -92,9 +92,9 @@ const ERROR_DELETING_EVENT = 'An error occurred';
 function OverlapWarningBanner({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div className="warning-banner">
-      <AlertTriangle size={20} />
-      <span>{message}</span>
+    <div className="warning-banner p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
+      <AlertTriangle size={20} className="text-yellow-500 mr-2" />
+      <span className="text-yellow-800 text-sm">{message}</span>
     </div>
   );
 }
@@ -122,12 +122,12 @@ function DaySelector({
   );
 
   return (
-    <div className="days-selector">
+    <div className="days-selector flex flex-wrap gap-2 mt-2">
       {DAYS_OF_WEEK.map((day) => (
         <button
           type="button"
           key={day.value}
-          className={`day-btn ${selectedDays.includes(day.value) ? 'active' : ''}`}
+          className={`day-btn w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 font-medium hover:bg-gray-100 hover:border-primary hover:text-primary transition-all ${selectedDays.includes(day.value) ? 'bg-primary text-white' : ''}`}
           onClick={() => toggleDay(day.value)}
         >
           {day.label}
@@ -175,24 +175,27 @@ function MultiUserSelect({
   }, [selectedNames, onChange]);
 
   return (
-    <div className="multi-user-select-container">
-      <div className="multi-user-header">
-        <label>{icon} {label}</label>
-        <span className="user-count-badge">{selectedNames.length}</span>
+    <div className="multi-user-select-container space-y-4">
+      <div className="multi-user-header flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {icon}
+          <label className="font-medium text-gray-700">{label}</label>
+        </div>
+        <span className="user-count-badge bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">{selectedNames.length}</span>
       </div>
 
-      <div className="selected-users-list">
+      <div className="selected-users-list flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 border border-dashed border-gray-300 rounded-md">
         {selectedNames.length > 0 ? (
           selectedNames.map(name => (
-            <div key={name} className="user-chip fade-in">
+            <div key={name} className="user-chip bg-primary/10 text-primary font-medium px-3 py-1 rounded-full flex items-center gap-2">
               <span className="chip-text">{name}</span>
-              <button type="button" className="chip-remove" onClick={() => removeUser(name)}>
+              <button type="button" className="chip-remove text-primary hover:text-primary/80" onClick={() => removeUser(name)}>
                 <X size={14} />
               </button>
             </div>
           ))
         ) : (
-          <div className="no-users-placeholder">No {label.toLowerCase()} assigned</div>
+          <div className="no-users-placeholder text-gray-500 italic text-sm">No {label.toLowerCase()} assigned</div>
         )}
       </div>
 
@@ -554,47 +557,39 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     });
   }, [isSeriesOccurrence, saveMode, formData.startDateTime, initialData, onActivityCreated]);
 
-  // ── Render ─────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────
 
   return (
     <>
-      <form className="activity-form" onSubmit={handleSubmit}>
-        <div className="form-header">
-          <h2>{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
+      <form className="activity-form bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-xl mx-auto" onSubmit={handleSubmit}>
+        <div className="form-header mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
         </div>
 
         <OverlapWarningBanner message={overlapWarning} />
 
-        <div className="form-row" style={{ gridTemplateColumns: '3fr 1fr' }}>
-          <div className="form-group">
-            <label>
-              <Tag size={16} /> Activity Name
+        <div className="form-row grid grid-cols-[3fr_1fr] gap-4 mb-6">
+          <div className="form-group space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Tag size={16} className="text-primary" /> Activity Name
             </label>
             <input
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Project Sync-up"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
 
-          <div className="form-group">
-            <label>
-              <Tag size={16} /> Category
+          <div className="form-group space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Tag size={16} className="text-primary" /> Category
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="premium-select"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                background: 'var(--surface-color)',
-                color: 'var(--text-primary)',
-                fontSize: '14px'
-              }}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E')] bg-right-[12px] bg-center no-repeat"
             >
               {ACTIVITY_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -605,38 +600,39 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           </div>
         </div>
 
-        <div className="form-section-divider">
-          <span>Participants & Staff</span>
+        <div className="form-section-divider flex items-center my-6">
+          <span className="px-3 bg-gray-50 text-xs font-semibold text-gray-600 uppercase">Participants & Staff</span>
+          <div className="flex-1 border-t border-gray-300"></div>
         </div>
 
-        <div className="staff-related-list">
+        <div className="staff-related-list space-y-4">
           <MultiUserSelect
             label="Leaders"
             selectedNames={formData.leader}
             onChange={(names) => setFormData({ ...formData, leader: names })}
-            icon={<UserIcon size={16} />}
+            icon={<UserIcon size={16} className="text-primary" />}
             users={users}
           />
           <MultiUserSelect
             label="Guides"
             selectedNames={formData.guide}
             onChange={(names) => setFormData({ ...formData, guide: names })}
-            icon={<Users size={16} />}
+            icon={<Users size={16} className="text-primary" />}
             users={users}
           />
           <MultiUserSelect
             label="Observers"
             selectedNames={formData.observer}
             onChange={(names) => setFormData({ ...formData, observer: names })}
-            icon={<Eye size={16} />}
+            icon={<Eye size={16} className="text-primary" />}
             users={users}
           />
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label>
-              <Calendar size={16} /> Activity start
+        <div className="form-row grid grid-cols-[1fr_1fr] gap-4 mb-4">
+          <div className="form-group space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Calendar size={16} className="text-primary" /> Activity start
             </label>
             <DatePicker
               selected={formData.startDateTime}
@@ -645,13 +641,13 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               }
               showTimeSelect
               dateFormat="MMMM d, yyyy h:mm aa"
-              className="premium-datepicker"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
               placeholderText="Select start date and time"
             />
           </div>
-          <div className="form-group">
-            <label>
-              <Repeat size={16} /> Duration (mins)
+          <div className="form-group space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+              <Repeat size={16} className="text-primary" /> Duration (mins)
             </label>
             <input
               type="number"
@@ -664,41 +660,43 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                   duration: parseInt(e.target.value) || 0,
                 })
               }
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             />
           </div>
         </div>
 
-        <div className="form-group">
-          <label>Activity end (Calculated)</label>
-          <div className="read-only-field">
+        <div className="form-group space-y-2 mb-4">
+          <label className="block text-sm font-medium text-gray-600">Activity end (Calculated)</label>
+          <div className="read-only-field w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium text-gray-600">
             {format(formData.endDateTime, 'MMMM d, yyyy h:mm aa')}
           </div>
         </div>
 
-        <div className="form-group recurring-section">
-          <label className="checkbox-label">
+        <div className="form-group recurring-section space-y-3">
+          <label className="checkbox-label flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
             <input
               type="checkbox"
               checked={formData.isRecurring}
               onChange={(e) =>
                 setFormData({ ...formData, isRecurring: e.target.checked })
               }
+              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
             />
             Enable Recurrence
           </label>
 
           {formData.isRecurring && (!isSeriesOccurrence || saveMode === 'all') && (
-            <div className="recurring-options fade-in" style={{ marginTop: '16px' }}>
-              <label style={{ marginBottom: '8px' }}>Repeat on specific days:</label>
+            <div className="recurring-options fade-in space-y-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Repeat on specific days:</label>
               <DaySelector
                 selectedDays={formData.recurrenceDays}
                 onChange={(days) => setFormData({ ...formData, recurrenceDays: days })}
               />
 
               {/* New recurrence range fields (visible only for non-series recurrence) */}
-              <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '13px' }}>how many weeks recurrence?</label>
+              <div className="grid grid-cols-[1fr_1fr] gap-4">
+                <div className="form-group space-y-1">
+                  <label className="block text-xs font-medium text-gray-500">how many weeks recurrence?</label>
                   <input
                     type="number"
                     min="1"
@@ -709,11 +707,11 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                       const newUntil = addWeeks(formData.recurrenceStart, w);
                       setFormData((prev) => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
                     }}
-                    style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label style={{ fontSize: '13px' }}>Recurrence Start</label>
+                <div className="form-group space-y-1">
+                  <label className="block text-xs font-medium text-gray-500">Recurrence Start</label>
                   <DatePicker
                     selected={formData.recurrenceStart}
                     onChange={(date: Date | null) => {
@@ -733,13 +731,13 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                     }}
                     showTimeSelect
                     dateFormat="MMM d, yyyy h:mm aa"
-                    className="premium-datepicker"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                     placeholderText="Recurrence start"
                   />
                 </div>
               </div>
-              <div className="form-group" style={{ marginTop: '8px' }}>
-                <label style={{ fontSize: '13px' }}>Recur until</label>
+              <div className="form-group space-y-1">
+                <label className="block text-xs font-medium text-gray-500">Recur until</label>
                 <DatePicker
                   selected={formData.recurrenceUntil}
                   onChange={(date: Date | null) => {
@@ -751,13 +749,14 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                   }}
                   showTimeSelect
                   dateFormat="MMM d, yyyy h:mm aa"
-                  className="premium-datepicker"
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                   placeholderText="Recur until"
                 />
               </div>
               {recurrenceWarning && (
-                <div style={{ color: '#d97706', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <AlertTriangle size={12} /> {recurrenceWarning}
+                <div className="flex items-center gap-2 text-xs font-medium bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
+                  <AlertTriangle size={12} className="text-yellow-500" />
+                  {recurrenceWarning}
                 </div>
               )}
             </div>
@@ -765,24 +764,22 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </div>
 
         {isSeriesOccurrence && (
-          <div className="edit-choice-container">
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          <div className="edit-choice-container bg-gray-50 rounded-lg p-4 border border-dashed border-gray-300 mb-6">
+            <p className="text-sm font-medium text-gray-600 mb-3">
               This is part of a recurring series.
             </p>
-            <div className="edit-choice-buttons">
+            <div className="edit-choice-buttons flex gap-3">
               <button
                 type="button"
-                className={`nav-tab ${saveMode === 'this' ? 'active' : ''}`}
+                className={`nav-tab flex-1 items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'this' ? 'bg-primary text-white' : ''}`}
                 onClick={() => setSaveMode('this')}
-                style={{ flex: 1, justifyContent: 'center' }}
               >
                 This occurrence only
               </button>
               <button
                 type="button"
-                className={`nav-tab ${saveMode === 'all' ? 'active' : ''}`}
+                className={`nav-tab flex-1 items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'all' ? 'bg-primary text-white' : ''}`}
                 onClick={() => setSaveMode('all')}
-                style={{ flex: 1, justifyContent: 'center' }}
               >
                 All activities in series
               </button>
@@ -792,10 +789,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
         {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
         {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
-          <div className="form-group" style={{ marginTop: '12px' }}>
-            <label htmlFor="detach-reason">Detach Reason</label>
+          <div className="form-group space-y-1 mb-4">
+            <label className="block text-sm font-medium text-gray-600">Detach Reason</label>
             <select
-              id="detach-reason"
               value={formData.detachReason || 'none'}
               onChange={(e) =>
                 setFormData({
@@ -803,7 +799,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                   detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
                 })
               }
-              style={{ width: '100%', padding: '8px', borderRadius: '4px' }}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
             >
               <option value="none">none (part of series)</option>
               <option value="edited">edited</option>
@@ -811,20 +807,20 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               <option value="rescheduled">rescheduled</option>
               <option value="manually_created">manually_created</option>
             </select>
-            <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+            <small className="block text-xs font-medium text-gray-500 mt-1">
               System-tracked reason this occurrence was detached from its recurrence template.
             </small>
           </div>
         )}
 
-        <div className="form-actions" style={{ marginTop: '32px' }}>
+        <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              className="btn-secondary"
+              className="btn-secondary flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all"
             >
-              <X size={18} />
+              <X size={18} className="text-gray-600" />
               Cancel
             </button>
           )}
@@ -832,34 +828,38 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             <button
               type="button"
               onClick={handleDelete}
-              className="btn-danger"
+              className="btn-danger flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"
             >
-              <Trash size={18} />
+              <Trash size={18} className="text-red-600" />
               Delete
             </button>
           )}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-secondary"
+            className="btn-primary flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all disabled:opacity-60"
           >
             {isSubmitting
               ? 'Saving...'
               : isEditing
                 ? 'Save Changes'
                 : 'Confirm Schedule'}
-            {!isSubmitting && <Check size={18} />}
+            {!isSubmitting && <Check size={18} className="ml-2" />}
           </button>
         </div>
       </form>
 
       {confirmAction && (
-        <div className="modal-overlay" onClick={() => setConfirmAction(null)}>
-          <div className="modal-content" style={{ maxWidth: '400px', padding: '24px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-            <p style={{ marginBottom: '20px', fontWeight: 500 }}>{confirmMessage}</p>
+        <div className="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setConfirmAction(null)}>
+          <div className="modal-content bg-white rounded-xl shadow-xl w-full max-w-md p-6 md:p-8 relative" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-4 text-center text-gray-700">{confirmMessage}</p>
             <div className="flex justify-center gap-3">
-              <button className="btn-secondary" onClick={() => setConfirmAction(null)}>Cancel</button>
-              <button className="btn-primary" onClick={() => { confirmAction(); setConfirmAction(null); }}>Confirm</button>
+              <button className="btn-secondary px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all" onClick={() => setConfirmAction(null)}>
+                Cancel
+              </button>
+              <button className="btn-primary px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all" onClick={() => { confirmAction(); setConfirmAction(null); }}>
+                Confirm
+              </button>
             </div>
           </div>
         </div>
