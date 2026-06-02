@@ -3,34 +3,34 @@
 @import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;600;700;800&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @theme {
-  --color-bg: #f2ece4;
-  --color-surface: #faf6f0;
-  --color-text-primary: #2a1f18;
-  --color-text-secondary: #7d6b5c;
-  --color-primary: #b4533d;
-  --color-responsibility: #a8d5e6;
-  --color-border: #d6cbbc;
-  --color-hover: #e8dfd2;
-  --color-activity: #b4533d;
-  --color-holiday: #b88a3d;
-  --color-error: #a13a2a;
-  --color-success: #5a7a4a;
+  --color-bg: #0200F9;
+  --color-surface: #0200F9;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #CCCCCC;
+  --color-primary: #EBFF00;
+  --color-responsibility: #CCCCCC;
+  --color-border: #FFFFFF;
+  --color-hover: #1a1aFF;
+  --color-activity: #EBFF00;
+  --color-holiday: #CCCCCC;
+  --color-error: #FF4444;
+  --color-success: #EBFF00;
 }
 
 :root {
-  --bg-color:              #f5ede0;
-  --surface-color:         #fdf7ee;
-  --text-primary:          #1a120a;
-  --text-secondary:        #5a3e2a;
-  --primary-color:         #c8391a;  /* kumkum */
-  --responsibility-color:  #1e2e8c;  /* indigo */
-  --border-color:          #c8a882;
-  --hover-color:           #ede0cc;
-  --activity-color:        #c8391a;
-  --holiday-color:         #e8920a;  /* marigold */
-  --error-color:           #b02818;
-  --success-color:         #2a7a3c;  /* leaf */
-  --primary-glow:          rgba(200, 57, 26, 0.15);
+  --bg-color:              #0200F9;
+  --surface-color:         #0200F9;
+  --text-primary:          #FFFFFF;
+  --text-secondary:        #CCCCCC;
+  --primary-color:         #EBFF00;
+  --responsibility-color:  #CCCCCC;
+  --border-color:          #FFFFFF;
+  --hover-color:           #1a1aFF;
+  --activity-color:        #EBFF00;
+  --holiday-color:         #CCCCCC;
+  --error-color:           #FF4444;
+  --success-color:         #EBFF00;
+  --primary-glow:          rgba(235, 255, 0, 0.2);
 
   /* Extended — 9 pigments for 9 activities */
   --color-kumkum:          #c8391a;
@@ -50,35 +50,62 @@
 
 /* Light theme */
 [data-theme="light"] {
-  --bg-color: #f2ece4;
-  --surface-color: #faf6f0;
-  --text-primary: #2a1f18;
-  --text-secondary: #7d6b5c;
-  --primary-color: #b4533d;
-  --responsibility-color: #a8d5e6;
-  --border-color: #d6cbbc;
-  --hover-color: #e8dfd2;
-  --activity-color: #b4533d;
-  --holiday-color: #b88a3d;
-  --error-color: #a13a2a;
-  --success-color: #5a7a4a;
-  --primary-glow: rgba(180, 83, 61, 0.15);
+  --bg-color: #0200F9;
+  --surface-color: #0200F9;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --primary-color: #EBFF00;
+  --responsibility-color: #CCCCCC;
+  --border-color: #FFFFFF;
+  --hover-color: #1a1aFF;
+  --activity-color: #EBFF00;
+  --holiday-color: #CCCCCC;
+  --error-color: #FF4444;
+  --success-color: #EBFF00;
+  --primary-glow: rgba(235, 255, 0, 0.2);
 }
 
 .btn-primary {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#b4533d] px-[28px] py-[15px] text-[16px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#a13a2a] hover:shadow-[0_6px_16px_rgba(180,83,61,0.25)] disabled:opacity-60;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#EBFF00] px-[28px] py-[15px] text-[16px] font-semibold text-black border border-black transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-[0_6px_16px_rgba(235,255,0,0.3)] disabled:opacity-60;
 }
 
 .btn-secondary {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] border border-[#d6cbbc] bg-[#f2ece4] px-[28px] py-[14px] text-[16px] font-semibold text-[#2a1f18] transition-all hover:bg-[#e8dfd2] disabled:opacity-60;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] border border-black bg-[#EBFF00] px-[28px] py-[14px] text-[16px] font-semibold text-black transition-all hover:opacity-90 disabled:opacity-60;
 }
 
 .btn-outline {
-  @apply flex items-center justify-center gap-[6px] rounded-[8px] border border-[#d6cbbc] bg-transparent px-4 py-[10px] text-[13px] font-medium text-[#7d6b5c] font-mono transition-all hover:bg-[#e8dfd2] hover:text-[#2a1f18] hover:border-[#2a1f18] disabled:opacity-40;
+  @apply flex items-center justify-center gap-[6px] rounded-[8px] border border-black bg-transparent px-4 py-[10px] text-[13px] font-medium text-white font-mono transition-all hover:bg-[#EBFF00] hover:text-black disabled:opacity-40;
 }
 
 .btn-danger {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#f5dfda] px-[28px] py-[14px] text-[16px] font-semibold text-[#a13a2a] transition-all hover:bg-[#ebcec7] disabled:opacity-60;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#EBFF00] px-[28px] py-[14px] text-[16px] font-semibold text-black border border-black transition-all hover:opacity-90 disabled:opacity-60;
+}
+
+.btn-brutalist {
+  background-color: #EBFF00;
+  color: #000000;
+  border: 3px solid #000000;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 5px 5px 0px 0px #000000;
+  transition: all 0.1s ease-in-out;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 0;
+}
+
+.btn-brutalist:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 3px 3px 0px 0px #000000;
+  opacity: 1;
+}
+
+.btn-brutalist:active {
+  transform: translate(5px, 5px);
+  box-shadow: none;
 }
 
 body {
@@ -1165,8 +1192,17 @@ input:not([type="checkbox"]):focus {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: -2.5px;
-  color: var(--primary-color);
+  color: #FFFFFF;
   line-height: 0.9;
+}
+
+.auth-center-wrapper {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  align-items: center;
 }
 
 .center-fist {

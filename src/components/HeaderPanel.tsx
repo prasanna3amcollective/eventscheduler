@@ -87,9 +87,9 @@ export default function HeaderPanel({
         </Link>
       </div>
 
-      {/* Auth Buttons */}
+      {/* Auth Buttons - Centered horizontally in the header */}
       {!isLoggedIn && (
-        <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0">
+        <div className="auth-center-wrapper">
           <button
             onClick={() => {
               const next = !showSignInPanel;
@@ -97,7 +97,7 @@ export default function HeaderPanel({
               if (next) setShowRegisterModal(false);
               setSigninError(null);
             }}
-            className="bg-transparent border border-[var(--border-color)] px-3 py-1 text-sm font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-color)] w-full sm:w-auto"
+            className="btn-brutalist w-full sm:w-auto"
           >
             Sign In
           </button>
@@ -106,7 +106,7 @@ export default function HeaderPanel({
               setShowRegisterModal(true);
               setShowSignInPanel(false);
             }}
-            className="bg-transparent border border-[var(--border-color)] px-3 py-1 text-sm font-medium text-[var(--text-primary)] rounded-lg hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-color)] w-full sm:w-auto"
+            className="btn-brutalist w-full sm:w-auto"
           >
             Sign Up
           </button>
@@ -130,7 +130,7 @@ export default function HeaderPanel({
                 <button
                   onClick={handlePanelSignIn}
                   disabled={signinSubmitting}
-                  className="bg-[var(--primary-color)] text-white px-4 py-2 font-medium rounded-lg hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-color)/50] disabled:opacity-50 w-full sm:w-auto"
+                  className="btn-brutalist w-full sm:w-auto"
                 >
                   {signinSubmitting ? '...' : 'Sign In'}
                 </button>

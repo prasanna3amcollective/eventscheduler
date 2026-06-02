@@ -1,0 +1,103 @@
+.mobile-banner-wrapper {
+  background-color: var(--surface-color, #fff);
+  padding: 14px 20px; 
+  width: 100%;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color);
+  position: relative; /* Anchor for the dropdown menu */
+}
+
+.mobile-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Creates the 3-column perfect center effect */
+}
+
+.mobile-banner-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 44px; /* Fixed width to balance right side exactly */
+}
+
+.mobile-banner-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 44px; /* Fixed width to balance left side exactly */
+}
+
+.mobile-banner-center {
+  flex: 1;
+  text-align: center;
+}
+
+.mobile-banner-text {
+  font-family: var(--heading-font, 'League Spartan', sans-serif);
+  font-size: 16px; 
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.mobile-center-fist {
+  height: 28px; 
+  width: auto;
+  opacity: 0.95;
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.9);
+}
+
+.mobile-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  background: var(--surface-color, #fff);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 100;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-dropdown-item {
+  background: none;
+  border: none;
+  padding: 16px 20px;
+  text-align: left;
+  font-family: var(--body-font, serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-secondary);
+  width: 100%;
+  cursor: pointer;
+}
+
+.mobile-dropdown-item:active {
+  background: var(--hover-color);
+}
+
+.mobile-dropdown-item.active {
+  color: var(--primary-color);
+  background: var(--hover-color);
+  border-left: 3px solid var(--primary-color);
+}

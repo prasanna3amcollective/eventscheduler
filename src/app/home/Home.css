@@ -1,0 +1,10 @@
+/* 
+  Desktop Home Styles
+  -------------------
+  This file is strictly for new, desktop-specific styling for the Home page.
+  Global layouts, fonts, and foundational variables are handled in src/app/globals.css.
+*/
+
+.home-desktop-wrapper {
+  /* Add new desktop-specific classes here going forward */
+}
