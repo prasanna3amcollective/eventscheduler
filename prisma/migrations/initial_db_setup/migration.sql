@@ -1,3 +1,15 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
+-- CreateEnum
+CREATE TYPE "DetachReason" AS ENUM ('none', 'edited', 'cancelled', 'rescheduled', 'manually_created');
+
+-- CreateEnum
+CREATE TYPE "RecurrenceTemplateType" AS ENUM ('activity', 'responsibility');
+
+-- CreateEnum
+CREATE TYPE "RecurrenceStatus" AS ENUM ('active', 'archived', 'draft');
+
 -- CreateTable
 CREATE TABLE "Activity" (
     "id" TEXT NOT NULL,
@@ -7,6 +19,9 @@ CREATE TABLE "Activity" (
     "duration" INTEGER NOT NULL,
     "isRecurring" BOOLEAN NOT NULL DEFAULT false,
     "recurrenceRule" TEXT,
+    "recurrenceTemplateId" TEXT,
+    "generatedFromTemplateId" TEXT,
+    "detachReason" "DetachReason" NOT NULL DEFAULT 'none',
     "category" TEXT NOT NULL DEFAULT 'General',
     "state" TEXT NOT NULL DEFAULT 'Scheduled',
     "sys_created_by" TEXT,
@@ -26,6 +41,13 @@ CREATE TABLE "Responsibility" (
     "duration" INTEGER NOT NULL,
     "isRecurring" BOOLEAN NOT NULL DEFAULT false,
     "recurrenceRule" TEXT,
+    "recurrenceTemplateId" TEXT,
+    "generatedFromTemplateId" TEXT,
+    "detachReason" "DetachReason" NOT NULL DEFAULT 'none',
+    "category" TEXT NOT NULL DEFAULT 'General',
+    "state" TEXT NOT NULL DEFAULT 'Scheduled',
+    "owner" TEXT,
+    "ownerId" TEXT,
     "sys_created_by" TEXT,
     "sys_updated_by" TEXT,
     "sys_created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -40,6 +62,8 @@ CREATE TABLE "participants" (
     "activityId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL DEFAULT 'Participant',
+    "attendance" INTEGER NOT NULL DEFAULT 0,
+    "payAsYouWish" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "sys_created_by" TEXT,
     "sys_updated_by" TEXT,
     "sys_created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +80,7 @@ CREATE TABLE "User" (
     "phone" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
+    "skills" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "sys_created_by" TEXT,
     "sys_updated_by" TEXT,
     "sys_created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -145,6 +170,35 @@ CREATE TABLE "sys_acl" (
     CONSTRAINT "sys_acl_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "RecurrenceTemplate" (
+    "id" TEXT NOT NULL,
+    "templateType" "RecurrenceTemplateType" NOT NULL DEFAULT 'activity',
+    "name" TEXT,
+    "duration" INTEGER NOT NULL DEFAULT 60,
+    "category" TEXT NOT NULL DEFAULT 'General',
+    "recurrenceRule" TEXT NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3),
+    "lastGeneratedAt" TIMESTAMP(3),
+    "generatedUntil" TIMESTAMP(3),
+    "versionSeriesId" TEXT NOT NULL,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "status" "RecurrenceStatus" NOT NULL DEFAULT 'active',
+    "sys_created_by" TEXT,
+    "sys_updated_by" TEXT,
+    "sys_created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "sys_updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "RecurrenceTemplate_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Activity_recurrenceTemplateId_startDateTime_key" ON "Activity"("recurrenceTemplateId", "startDateTime");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Responsibility_recurrenceTemplateId_startDateTime_key" ON "Responsibility"("recurrenceTemplateId", "startDateTime");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "participants_activityId_userId_key" ON "participants"("activityId", "userId");
 
@@ -155,6 +209,9 @@ CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE INDEX "User_name_idx" ON "User"("name");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "user_group_m2m_userId_groupId_key" ON "user_group_m2m"("userId", "groupId");
 
 -- CreateIndex
@@ -162,6 +219,33 @@ CREATE UNIQUE INDEX "user_role_userId_roleId_key" ON "user_role"("userId", "role
 
 -- CreateIndex
 CREATE UNIQUE INDEX "role_group_m2m_roleId_groupId_key" ON "role_group_m2m"("roleId", "groupId");
+
+-- CreateIndex
+CREATE INDEX "RecurrenceTemplate_templateType_versionSeriesId_status_idx" ON "RecurrenceTemplate"("templateType", "versionSeriesId", "status");
+
+-- CreateIndex
+CREATE INDEX "RecurrenceTemplate_templateType_generatedUntil_status_idx" ON "RecurrenceTemplate"("templateType", "generatedUntil", "status");
+
+-- CreateIndex
+CREATE INDEX "RecurrenceTemplate_templateType_startDate_endDate_idx" ON "RecurrenceTemplate"("templateType", "startDate", "endDate");
+
+-- CreateIndex
+CREATE INDEX "RecurrenceTemplate_sys_created_at_idx" ON "RecurrenceTemplate"("sys_created_at" DESC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RecurrenceTemplate_versionSeriesId_version_key" ON "RecurrenceTemplate"("versionSeriesId", "version");
+
+-- AddForeignKey
+ALTER TABLE "Activity" ADD CONSTRAINT "Activity_recurrenceTemplateId_fkey" FOREIGN KEY ("recurrenceTemplateId") REFERENCES "RecurrenceTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Activity" ADD CONSTRAINT "Activity_generatedFromTemplateId_fkey" FOREIGN KEY ("generatedFromTemplateId") REFERENCES "RecurrenceTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Responsibility" ADD CONSTRAINT "Responsibility_recurrenceTemplateId_fkey" FOREIGN KEY ("recurrenceTemplateId") REFERENCES "RecurrenceTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Responsibility" ADD CONSTRAINT "Responsibility_generatedFromTemplateId_fkey" FOREIGN KEY ("generatedFromTemplateId") REFERENCES "RecurrenceTemplate"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "participants" ADD CONSTRAINT "participants_activityId_fkey" FOREIGN KEY ("activityId") REFERENCES "Activity"("id") ON DELETE CASCADE ON UPDATE CASCADE;
