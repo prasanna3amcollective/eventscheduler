@@ -1,10 +1,25 @@
+/**
+ * seed-all.js
+ *
+ * Seeds the database with:
+ *  1. Roles: core, inhouse, developer
+ *  2. User: 3amdev
+ *  3. Assigns the "developer" role to 3amdev
+ *
+ * Run with:
+ *   node prisma/seed-all.js
+ * or via npm:
+ *   npm run seed:all
+ */
+
 const { PrismaClient } = require('@prisma/client');
 const { PrismaPg } = require('@prisma/adapter-pg');
+const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error('DATABASE_URL not found in .env');
+  console.error('❌ DATABASE_URL not found in .env');
   process.exit(1);
 }
 
@@ -12,91 +27,74 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Ensure "everyone" role exists
-  let everyoneRole = await prisma.role.findFirst({ where: { name: 'everyone' } });
-  if (!everyoneRole) {
-    everyoneRole = await prisma.role.create({ data: { name: 'everyone' } });
-    console.log('Created role: everyone');
-  }
+  console.log('🌱 Running seed...\n');
 
-  // Ensure "everyone" group exists
-  let everyoneGroup = await prisma.group.findFirst({ where: { name: 'everyone' } });
-  if (!everyoneGroup) {
-    everyoneGroup = await prisma.group.create({
-      data: {
-        name: 'everyone',
-        description: 'Default group for all users',
-        category: 'System',
-      },
-    });
-    console.log('Created group: everyone');
-  }
+  // 1. Create roles: core, inhouse, developer
+  const roles = [
+    { name: 'core', description: 'System Administrator - Full access to all tables' },
+    { name: 'inhouse', description: 'Inhouse users - Can create and manage events' },
+    { name: 'developer', description: 'Developer - Access to Developer Panel' },
+  ];
 
-  // Ensure developer role exists
-  const developerRole = await prisma.role.findFirst({ where: { name: 'developer' } });
-  if (!developerRole) {
-    await prisma.role.create({ data: { name: 'developer' } });
-    console.log('Created role: developer');
-  }
-
-  // Link all existing users to "everyone" group
-  const allUsers = await prisma.user.findMany();
-  for (const user of allUsers) {
-    const alreadyInGroup = await prisma.userGroupM2M.findFirst({
-      where: {
-        userId: user.id,
-        groupId: everyoneGroup.id,
-      },
-    });
-
-    if (!alreadyInGroup) {
-      await prisma.userGroupM2M.create({
-        data: {
-          userId: user.id,
-          groupId: everyoneGroup.id,
-        },
-      });
-      console.log(`Added user ${user.username} to everyone group`);
+  for (const role of roles) {
+    const existing = await prisma.role.findFirst({ where: { name: role.name } });
+    if (!existing) {
+      await prisma.role.create({ data: role });
+      console.log(`✅ Created role: ${role.name}`);
+    } else {
+      console.log(`ℹ️  Role already exists: ${role.name}`);
     }
   }
 
-  // Assign core, inhouse, developer roles directly to user "core"
-  const coreUser = await prisma.user.findUnique({ where: { username: 'core' } });
-  if (coreUser) {
-    const rolesToAssign = ['core', 'inhouse', 'developer'];
+  // 2. Create user "3amdev"
+  const hashedPassword = await bcrypt.hash('Vr1@3amc', 10);
+  let user;
 
-    for (const roleName of rolesToAssign) {
-      const role = await prisma.role.findFirst({ where: { name: roleName } });
-      if (role) {
-        const exists = await prisma.userRole.findFirst({
-          where: { userId: coreUser.id, roleId: role.id }
-        });
-        if (!exists) {
-          await prisma.userRole.create({
-            data: { userId: coreUser.id, roleId: role.id }
-          });
-          console.log(`Assigned role "${roleName}" to user "core"`);
-        }
+  try {
+    user = await prisma.user.create({
+      data: {
+        name: '3amdev',
+        username: '3amdev',
+        phone: '0000000000',
+        email: '3amdev@system.local',
+        password: hashedPassword,
+      },
+    });
+    console.log(`✅ Created user: ${user.username} (password: 3amdev123)`);
+  } catch (e) {
+    if (e.code === 'P2002') {
+      user = await prisma.user.findUnique({ where: { username: '3amdev' } });
+      console.log('ℹ️  User "3amdev" already exists');
+    } else {
+      throw e;
+    }
+  }
+
+  // 3. Assign "developer" role to "3amdev"
+  const developerRole = await prisma.role.findFirst({ where: { name: 'developer' } });
+
+  if (user && developerRole) {
+    try {
+      await prisma.userRole.create({
+        data: { userId: user.id, roleId: developerRole.id },
+      });
+      console.log('✅ Assigned "developer" role to "3amdev"');
+    } catch (e) {
+      if (e.code === 'P2002') {
+        console.log('ℹ️  "developer" role already assigned to "3amdev"');
+      } else {
+        throw e;
       }
     }
   }
 
-  // Bootstrap the dedicated system automation account used by nightly jobs
-  // (materialization window advancement + gap reconciliation)
-  console.log('\n→ Running system-cron seed...');
-  const { execSync } = require('child_process');
-  try {
-    execSync('node prisma/seed/seed-system-cron.js', { stdio: 'inherit' });
-  } catch (e) {
-    console.error('⚠️  system-cron seed encountered an error (continuing):', e.message || e);
-  }
-
-  console.log('\nSeed completed successfully');
+  console.log('\n🎉 Seed completed!');
+  console.log('   Login with: username=3amdev, password=3amdev123');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('\n❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {
