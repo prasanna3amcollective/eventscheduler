@@ -20,6 +20,9 @@ When writing code for the mobile UI, the AI must adhere to the following strict 
 6. **Fluid Layouts:** Utilize Flexbox (`flex`) and CSS Grid (`grid`) to create layouts that adapt smoothly to varying mobile screen sizes.
 7. **Avoid Horizontal Scrolling:** Ensure the page content fits within the device width (`100vw`) by utilizing proper overflow handling (`overflow-x-hidden`) and responsive padding.
 8. **Legible Typography:** Keep font sizes readable on small screens (minimum 16px for body text) and maintain sufficient color contrast.
+9. **Separate UI Layout Control (No Inline Styles):** All layout, positioning, and visual styling MUST be controlled via separate CSS classes in the `*_mobile.css` file rather than using inline `style={{...}}` attributes in the React component. This ensures clean separation of concerns and allows developers to easily tweak element positions and layouts directly from the CSS.
+10. **Re-use Existing Data and Functions:** We are just creating the UI. The underlying functions and logic are already created. You can and should get the necessary data and function bindings from the existing files (like the desktop UI) instead of recreating them.
+11. **Fully Responsive:** Make all elements responsive to all types of mobile screens. Ensure layouts adapt cleanly across small and large mobile viewports.
 
 ## Code Structure & Organization
 

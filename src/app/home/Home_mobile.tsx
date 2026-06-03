@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import HeaderPanel from '@/components/HeaderPanel';
+
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
@@ -44,7 +44,7 @@ export default function Home_mobile() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   // Local state for compact sign-in panel
-  const [signinUsername, setSigninUsername] = useState('');
+  const [signinPhone, setSigninPhone] = useState('');
   const [signinPassword, setSigninPassword] = useState('');
   const [signinError, setSigninError] = useState<string | null>(null);
   const [signinSubmitting, setSigninSubmitting] = useState(false);
@@ -68,7 +68,7 @@ export default function Home_mobile() {
     reveals.forEach(el => io.observe(el));
     return () => io.disconnect();
   }, [activeSection]);
-  
+
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResponsibility, setSelectedResponsibility] = useState<any>(null);
@@ -81,6 +81,19 @@ export default function Home_mobile() {
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // Freeze background scrolling when any modal is open
+  const isAnyModalOpen = showRegisterModal || isModalOpen || isResponsibilityModalOpen || isDetailOpen || isResponsibilityDetailOpen || isProfileOpen || showSignInPanel;
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAnyModalOpen]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -146,8 +159,8 @@ export default function Home_mobile() {
   };
 
   const handlePanelSignIn = async () => {
-    if (!signinUsername.trim() || !signinPassword) {
-      setSigninError('Please enter username and password');
+    if (!signinPhone.trim() || !signinPassword) {
+      setSigninError('Please enter phone number and password');
       return;
     }
     setSigninSubmitting(true);
@@ -156,13 +169,13 @@ export default function Home_mobile() {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: signinUsername.trim(), password: signinPassword }),
+        body: JSON.stringify({ phone: signinPhone.trim(), password: signinPassword }),
       });
       const data = await res.json();
       if (res.ok) {
         handleLoginSuccess(data.user);
         setShowSignInPanel(false);
-        setSigninUsername('');
+        setSigninPhone('');
         setSigninPassword('');
         setSigninError(null);
       } else {
@@ -319,71 +332,76 @@ export default function Home_mobile() {
   if (!isLoggedIn) {
     return (
       <div className="mobile-app-container landing-page fade-in">
-        <MarqueeBanner_mobile activeSection={activeSection} setActiveSection={setActiveSection} />
-        <HeaderPanel
-          isLoggedIn={isLoggedIn}
-          showSignInPanel={showSignInPanel}
-          setShowSignInPanel={setShowSignInPanel}
-          setShowRegisterModal={setShowRegisterModal}
-          signinUsername={signinUsername}
-          setSigninUsername={setSigninUsername}
-          signinPassword={signinPassword}
-          setSigninPassword={setSigninPassword}
-          signinSubmitting={signinSubmitting}
-          setSigninSubmitting={setSigninSubmitting}
-          signinError={signinError}
-          setSigninError={setSigninError}
-          handlePanelSignIn={handlePanelSignIn}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
+        <MarqueeBanner_mobile 
+          activeSection={activeSection} 
+          setActiveSection={setActiveSection} 
+          onLoginClick={() => setShowSignInPanel(true)}
         />
 
-        <section id="about-us" style={{ display: activeSection === 'about-us' ? 'block' : 'none' }}>
-          <AboutUs />
-        </section>
-        <section id="participate" style={{ display: activeSection === 'participate' ? 'block' : 'none', textAlign: 'left', padding: '40px 0' }}>
-          <p>Join our events, volunteer, or become a member of the community.</p>
-          <ActivityCarousel
-            refreshTrigger={refreshTrigger}
-            onActivityClick={handleCarouselClick}
-            isLoggedIn={isLoggedIn}
-            headerRight={null}
-          />
-        </section>
-        <section id="gallery" style={{ display: activeSection === 'gallery' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
-          <h2>Gallery</h2>
-          <p>Explore photos and videos from past activities.</p>
-        </section>
-        <section id="explore" style={{ display: activeSection === 'explore' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
-          <h2>Explore</h2>
-          <p>Discover new projects and community initiatives.</p>
-          <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-            <h2 className="section-title">Explore our Communities</h2>
-            <p className="section-description">
-              Stay updated with the newest activities and community highlights.
-            </p>
-            <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-              <div className="post-card">Writer's Community</div>
-              <div className="post-card">Cinemat Community</div>
-              <div className="post-card">Music Community</div>
-              <div className="post-card">Tech Community</div>
+        {/* Mission Text */}
+        <div className="mobile-mission-text">
+          The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
+        </div>
+
+        {/* Auth Buttons */}
+        <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
+          <button
+            onClick={() => {
+              setShowRegisterModal(true);
+            }}
+            className="yellow-btn"
+          >
+            Join the circle
+          </button>
+        </div>
+
+        {/* Upcoming Activities */}
+        <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
+          <ActivityCarousel refreshTrigger={refreshTrigger} />
+        </div>
+
+        {/* Top Login Banner */}
+        {showSignInPanel && (
+          <div className="mobile-login-banner fade-in">
+            <div className="login-banner-header">
+              <button onClick={() => setShowSignInPanel(false)}>×</button>
             </div>
-          </section>
-        </section>
-
-        <ActivityDetailModal
-          activity={detailActivity}
-          isOpen={isDetailOpen}
-          onClose={() => setIsDetailOpen(false)}
-          isLoggedIn={false}
-          currentUser={null}
-          onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
-          onSwitchToRegister={() => {
-            setPendingEventId(detailActivity.id);
-            setIsDetailOpen(false);
-            setShowRegisterModal(true);
-          }}
-        />
+            <div className="login-banner-body">
+              <div className="login-field">
+                <label>Phone Number</label>
+                <input 
+                  type="tel" 
+                  value={signinPhone}
+                  onChange={e => setSigninPhone(e.target.value)}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div className="login-field">
+                <label>Password</label>
+                <input 
+                  type="password" 
+                  value={signinPassword}
+                  onChange={e => setSigninPassword(e.target.value)}
+                />
+              </div>
+              {signinError && <div className="login-error">{signinError}</div>}
+              <div className="login-banner-footer">
+                <div className="login-remember">
+                  <input type="checkbox" id="rememberMe" />
+                  <label htmlFor="rememberMe" style={{ margin: 0 }}>Remember</label>
+                  <span className="forgotten-link">Forgotten?</span>
+                </div>
+                <button 
+                  className="signin-submit"
+                  onClick={handlePanelSignIn}
+                  disabled={signinSubmitting}
+                >
+                  {signinSubmitting ? '...' : 'SIGN IN'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showRegisterModal && (
           <div

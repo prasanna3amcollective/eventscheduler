@@ -28,3 +28,332 @@
   color: var(--text-secondary, #666);
   line-height: 1.5;
 }
+
+.mobile-sign-in {
+  padding: 200px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile-join-the-circle {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+
+.mobile-auth-buttons {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.mobile-auth-btn {
+  flex: 1;
+  max-width: 140px;
+}
+
+.mobile-mission-text {
+  font-family: var(--body-font, serif);
+  font-size: 16px;
+  color: var(--text-primary);
+  text-align: center;
+  padding: 0 20px;
+  margin-top: 40px;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------- */
+/* Mobile Register Modal - Minimal UI (Reference Image) */
+/* ---------------------------------------------------- */
+
+.mobile-app-container .modal-overlay {
+  background: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: none !important;
+  /* Removes the blur effect */
+}
+
+.mobile-app-container .register-modal {
+  background-color: var(--surface-color) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0 !important;
+  /* Sharp corners */
+  padding: 16px !important;
+  width: 100vw !important;
+  /* Smaller width */
+  max-width: 800px !important;
+  /* <<< CHANGE THIS TO SCALE THE POPUP BIGGER/SMALLER */
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.mobile-app-container .register-modal .modal-header {
+  padding-bottom: 1px !important;
+  margin-bottom: 10px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.mobile-app-container .register-modal .modal-header::before {
+  content: 'JOIN THE CIRCLE';
+  font-family: var(--heading-font, sans-serif);
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.mobile-app-container .register-modal .modal-header button {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.mobile-app-container .register-modal .form-header {
+  display: none !important;
+}
+
+.mobile-app-container .register-modal .activity-form {
+  gap: 12px !important;
+}
+
+.mobile-app-container .register-modal .form-group label {
+  font-family: var(--body-font, serif) !important;
+  font-size: 13px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 500 !important;
+  margin-bottom: 4px !important;
+  text-transform: none !important;
+  display: block !important;
+}
+
+.mobile-app-container .register-modal .form-group label svg {
+  display: none !important;
+}
+
+.mobile-app-container .register-modal .form-group input,
+.mobile-app-container .register-modal .form-group select {
+  background-color: #d1d9e6 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  /* Sharp corners for inputs */
+  color: #000 !important;
+  padding: 8px 10px !important;
+  /* Smaller rectangles */
+  font-size: 14px !important;
+}
+
+/* Match the image: Email is full width, others are half width */
+.mobile-app-container .register-modal .form-group input[type="email"] {
+  width: 100% !important;
+}
+
+.mobile-app-container .register-modal .form-group input[type="text"],
+.mobile-app-container .register-modal .form-group input[type="password"],
+.mobile-app-container .register-modal .phone-input-group {
+  width: 55% !important;
+}
+
+.mobile-app-container .register-modal .form-group input::placeholder {
+  color: #666 !important;
+}
+
+.mobile-app-container .register-modal .form-group input:focus,
+.mobile-app-container .register-modal .form-group select:focus {
+  outline: 2px solid var(--primary-color) !important;
+}
+
+/* Make phone input look like a single joined field */
+.mobile-app-container .register-modal .phone-input-group {
+  gap: 0 !important;
+  background-color: #d1d9e6 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  /* Enforce straight horizontal line */
+}
+
+/* Country code select styling inside joined field */
+.mobile-app-container .register-modal .country-select {
+  width: auto !important;
+  min-width: 60px !important;
+  padding: 8px 4px !important;
+  background-color: transparent !important;
+  border-right: 1px solid #000 !important;
+  /* Small black line separator */
+  border-radius: 0 !important;
+  outline: none !important;
+}
+
+/* Input tel styling inside joined field */
+.mobile-app-container .register-modal .phone-input-group input[type="tel"] {
+  background-color: transparent !important;
+  padding: 8px 10px !important;
+  width: 100% !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.mobile-app-container .register-modal .btn-primary {
+  /* Exactly matches the yellow-btn CSS but smaller */
+  background-color: #EBFF00 !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  padding: 8px 24px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  box-shadow: 4px 4px 0px 0px #000000 !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  /* Squeezed width instead of 100% */
+  align-self: flex-start !important;
+  /* Align to the left */
+  text-transform: uppercase !important;
+  margin-top: 16px !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  transition: all 0.1s ease-in-out !important;
+  transform: none !important;
+}
+
+.mobile-app-container .register-modal .btn-primary:active {
+  transform: translate(4px, 4px) !important;
+  box-shadow: none !important;
+}
+
+.mobile-app-container .register-modal .btn-primary svg {
+  display: none !important;
+}
+
+/* ---------------------------------------------------- */
+/* Mobile Top Login Banner (Reference Image)            */
+/* ---------------------------------------------------- */
+
+.mobile-top-login-icon {
+  position: absolute;
+  top: 27px;
+  right: 52px;
+  /* Placed just to the left of the circle icon */
+  z-index: 1000;
+  color: var(--primary-color);
+  /* Yellow icon */
+  cursor: pointer;
+}
+
+.mobile-login-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--surface-color);
+  /* Match theme color */
+  z-index: 3000;
+  padding: 16px 20px 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+}
+
+.mobile-login-banner .login-banner-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.mobile-login-banner .login-banner-header button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 24px;
+  line-height: 1;
+  padding: 0;
+}
+
+.mobile-login-banner .login-field {
+  margin-bottom: 16px;
+}
+
+.mobile-login-banner .login-field label {
+  display: block;
+  font-family: var(--body-font, serif);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+
+.mobile-login-banner .login-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #000;
+}
+
+/* Phone and password inputs use the same styling as the register modal */
+.mobile-login-banner .login-field input[type="tel"],
+.mobile-login-banner .login-field input[type="password"] {
+  background-color: #d1d9e6;
+  color: #000;
+}
+
+.mobile-login-banner .login-banner-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.mobile-login-banner .login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-login-banner .login-remember input[type="checkbox"] {
+  accent-color: #2c323b;
+}
+
+.mobile-login-banner .forgotten-link {
+  color: #1a9c1e;
+  /* Green color from image */
+  margin-left: 12px;
+  cursor: pointer;
+}
+
+.mobile-login-banner .signin-submit {
+  /* Match the yellow-btn strictly */
+  background-color: #EBFF00 !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  font-weight: 800 !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  border-radius: 0 !important;
+  text-transform: uppercase !important;
+}
+
+.mobile-login-banner .login-error {
+  color: #ff4444;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.mobile-auth-wrapper {
+  padding: 200px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}

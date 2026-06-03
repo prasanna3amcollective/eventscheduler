@@ -45,7 +45,7 @@ function HomeContent() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   // Local state for compact sign-in panel
-  const [signinUsername, setSigninUsername] = useState('');
+  const [signinPhone, setSigninPhone] = useState('');
   const [signinPassword, setSigninPassword] = useState('');
   const [signinError, setSigninError] = useState<string | null>(null);
   const [signinSubmitting, setSigninSubmitting] = useState(false);
@@ -146,8 +146,8 @@ function HomeContent() {
   };
 
   const handlePanelSignIn = async () => {
-    if (!signinUsername.trim() || !signinPassword) {
-      setSigninError('Please enter username and password');
+    if (!signinPhone.trim() || !signinPassword) {
+      setSigninError('Please enter phone number and password');
       return;
     }
     setSigninSubmitting(true);
@@ -156,13 +156,13 @@ function HomeContent() {
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: signinUsername.trim(), password: signinPassword }),
+        body: JSON.stringify({ phone: signinPhone.trim(), password: signinPassword }),
       });
       const data = await res.json();
       if (res.ok) {
         handleLoginSuccess(data.user);
         setShowSignInPanel(false);
-        setSigninUsername('');
+        setSigninPhone('');
         setSigninPassword('');
         setSigninError(null);
       } else {
@@ -330,8 +330,8 @@ function HomeContent() {
           showSignInPanel={showSignInPanel}
           setShowSignInPanel={setShowSignInPanel}
           setShowRegisterModal={setShowRegisterModal}
-          signinUsername={signinUsername}
-          setSigninUsername={setSigninUsername}
+          signinUsername={signinPhone}
+          setSigninUsername={setSigninPhone}
           signinPassword={signinPassword}
           setSigninPassword={setSigninPassword}
           signinSubmitting={signinSubmitting}

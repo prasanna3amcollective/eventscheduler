@@ -109,7 +109,7 @@ model User {
   id       String @id @default(uuid())
   name     String
   username String @unique
-  phone    String
+  phone    String @unique
   email    String @unique
   password String
   groups   UserGroupM2M[]

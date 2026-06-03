@@ -17,75 +17,62 @@ export default function HeaderPanel({
   activeSection,
   setActiveSection,
   handlePanelSignIn,
+  hideNav,
 }: any) {
 
   return (
     <nav className="header-panel bg-[rgba(255,255,255,0.15)] backdrop-blur-[12px] backdrop-saturate-[180%] border-b border-[var(--border-color)] px-4 py-2 sticky top-0 z-40 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
       {/* Navigation */}
-      <div className="w-full flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8">
-        <Link
-          href="#participate"
-          className={`
-          text-[var(--text-primary)] font-medium hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] 
-          transition-transform duration-200 px-3 py-2 rounded-lg 
-          ${activeSection === 'participate' ? 'bg-[var(--primary-color)] text-white' : ''}
-        `}
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = '#participate';
-            setActiveSection('participate');
-          }}
-        >
-          Participate
-        </Link>
-        <Link
-          href="#about-us"
-          className={`
-    text-[var(--text-primary)] font-medium hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] 
-    transition-transform duration-200 px-3 py-2 rounded-lg 
-    ${activeSection === 'about-us' ? 'bg-[var(--primary-color)] text-white' : ''}
-  `}
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = '#about-us';
-            setActiveSection('about-us');
-          }}
-        >
-          About Us
-        </Link>
-
-        <Link
-          href="#gallery"
-          className={`
-    text-[var(--text-primary)] font-medium hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] 
-    transition-transform duration-200 px-3 py-2 rounded-lg 
-    ${activeSection === 'gallery' ? 'bg-[var(--primary-color)] text-white' : ''}
-  `}
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = '#gallery';
-            setActiveSection('gallery');
-          }}
-        >
-          Gallery
-        </Link>
-
-        <Link
-          href="#explore"
-          className={`
-    text-[var(--text-primary)] font-medium hover:bg-[var(--hover-color)] hover:text-[var(--primary-color)] 
-    transition-transform duration-200 px-3 py-2 rounded-lg 
-    ${activeSection === 'explore' ? 'bg-[var(--primary-color)] text-white' : ''}
-  `}
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = '#explore';
-            setActiveSection('explore');
-          }}
-        >
-          Explore
-        </Link>
-      </div>
+      {!hideNav && (
+        <div className="hidden md:flex w-full flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8">
+          <Link
+            href="/home"
+            className={`nav-link-btn ${activeSection === 'participate' ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.pushState(null, '', window.location.pathname);
+              setActiveSection('participate');
+            }}
+          >
+            Participate
+          </Link>
+          <Link
+            href="#about-us"
+            className={`nav-link-btn ${activeSection === 'about-us' ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.hash = '#about-us';
+              setActiveSection('about-us');
+            }}
+          >
+            About Us
+          </Link>
+  
+          <Link
+            href="#gallery"
+            className={`nav-link-btn ${activeSection === 'gallery' ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.hash = '#gallery';
+              setActiveSection('gallery');
+            }}
+          >
+            Gallery
+          </Link>
+  
+          <Link
+            href="#explore"
+            className={`nav-link-btn ${activeSection === 'explore' ? 'active' : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.hash = '#explore';
+              setActiveSection('explore');
+            }}
+          >
+            Explore
+          </Link>
+        </div>
+      )}
 
       {/* Auth Buttons - Centered horizontally in the header */}
       {!isLoggedIn && (
@@ -97,7 +84,7 @@ export default function HeaderPanel({
               if (next) setShowRegisterModal(false);
               setSigninError(null);
             }}
-            className="btn-brutalist w-full sm:w-auto"
+            className="yellow-btn w-full sm:w-auto"
           >
             Sign In
           </button>
@@ -106,7 +93,7 @@ export default function HeaderPanel({
               setShowRegisterModal(true);
               setShowSignInPanel(false);
             }}
-            className="btn-brutalist w-full sm:w-auto"
+            className="yellow-btn w-full sm:w-auto"
           >
             Sign Up
           </button>
@@ -115,7 +102,7 @@ export default function HeaderPanel({
               <div className="bg-[var(--surface-color)] border border-[var(--border-color)] rounded-lg p-4 w-full sm:w-[200px] shadow-lg z-50 flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                 <input
                   type="text"
-                  placeholder="Username"
+                  placeholder="Phone Number"
                   value={signinUsername}
                   onChange={(e) => setSigninUsername(e.target.value)}
                   className="border border-[var(--border-color)] rounded-lg px-3 py-1 text-sm w-full sm:w-[110px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-color)]"
@@ -130,7 +117,7 @@ export default function HeaderPanel({
                 <button
                   onClick={handlePanelSignIn}
                   disabled={signinSubmitting}
-                  className="btn-brutalist w-full sm:w-auto"
+                  className="yellow-btn w-full sm:w-auto"
                 >
                   {signinSubmitting ? '...' : 'Sign In'}
                 </button>

@@ -1,14 +1,15 @@
 'use client';
 import React, { useState } from 'react';
-import { PlusCircle } from '@/components/Icons';
+import { PlusCircle, User } from '@/components/Icons';
 import './MarqueeBanner_mobile.css';
 
 interface MarqueeBannerMobileProps {
   activeSection?: string;
   setActiveSection?: (section: string) => void;
+  onLoginClick?: () => void;
 }
 
-export default function MarqueeBanner_mobile({ activeSection, setActiveSection }: MarqueeBannerMobileProps) {
+export default function MarqueeBanner_mobile({ activeSection, setActiveSection, onLoginClick }: MarqueeBannerMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -21,7 +22,11 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection }
   const handleNav = (id: string) => {
     if (setActiveSection) {
       setActiveSection(id);
-      window.location.hash = id;
+      if (id === 'participate') {
+        window.history.pushState(null, '', window.location.pathname);
+      } else {
+        window.location.hash = id;
+      }
     }
     setIsMenuOpen(false);
   };
@@ -30,20 +35,29 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection }
     <div className="mobile-banner-wrapper">
       <div className="mobile-banner-content">
         <div className="mobile-banner-left">
-          <img 
-            src="/fist.png" 
-            alt="Logo" 
-            className="mobile-center-fist" 
+          <img
+            src="/fist.png"
+            alt="Logo"
+            className="mobile-center-fist"
           />
         </div>
-        
+
         <div className="mobile-banner-center">
-          <span className="mobile-banner-text">3AM COLLECTIVE MOVEMENT</span>
+          <div className="mobile-banner-text">
+            <span>3AM</span>
+            <span>COLLECTIVE</span>
+            <span>MOVEMENT</span>
+          </div>
         </div>
 
         <div className="mobile-banner-right">
+          {onLoginClick && (
+            <button className="mobile-top-login-icon-inline" onClick={onLoginClick}>
+              <User size={22} />
+            </button>
+          )}
           <button className="mobile-menu-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <PlusCircle size={32} color="var(--primary-color)" />
+            <div className="mobile-menu-dot"></div>
           </button>
         </div>
       </div>
@@ -51,7 +65,7 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection }
       {isMenuOpen && (
         <div className="mobile-dropdown-menu fade-in">
           {navItems.map(item => (
-            <button 
+            <button
               key={item.id}
               className={`mobile-dropdown-item ${activeSection === item.id ? 'active' : ''}`}
               onClick={() => handleNav(item.id)}

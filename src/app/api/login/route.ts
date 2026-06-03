@@ -9,20 +9,20 @@ import { z } from 'zod';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, password } = loginSchema.parse(body);
+    const { phone, password } = loginSchema.parse(body);
 
     const user = await prisma.user.findUnique({
-      where: { username }
+      where: { phone }
     });
 
     if (!user) {
-       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+       return NextResponse.json({ error: 'Invalid phone number or password' }, { status: 401 });
      }
 
     const isValid = await bcrypt.compare(password, user.password);
 
     if (!isValid) {
-      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid phone number or password' }, { status: 401 });
     }
 
     // Set JWT Session Cookie
