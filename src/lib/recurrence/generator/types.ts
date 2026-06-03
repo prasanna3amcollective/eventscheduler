@@ -1,4 +1,4 @@
-import type { RecurrenceTemplateType, RecurrenceStatus } from '@prisma/client';
+import type { RecurrenceTemplateType, RecurrenceStatus } from '@/generated/prisma/client';
 
 /**
  * Options for the low-level date generator.

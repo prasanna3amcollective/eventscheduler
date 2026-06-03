@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import {
-  CompareResult,
+import { PrismaClient } from '@/generated/prisma/client';
+CompareResult,
   GenerateOccurrencesOptions,
   GeneratorContext,
   MaterializeOptions,
@@ -13,7 +12,7 @@ import {
 // Stable recurrence library (read-only reuse — never modify during PHASE 4)
 import { generateOccurrenceDates } from '../expander';
 import { computeEndDateTime } from '../utils';
-import type { RecurrenceTemplateType } from '@prisma/client';
+import type { RecurrenceTemplateType } from '@/generated/prisma/client';;
 
 /**
  * PHASE 4 — Isolated Recurrence Generator Service
