@@ -77,7 +77,7 @@ describe('generateOccurrences (pure, asOf-aware)', () => {
 /*                     MOCKED DB TESTS (no real database)                     */
 /* -------------------------------------------------------------------------- */
 
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@/generated/prisma/client';
 
 // A minimal mock Prisma client sufficient for generator tests
 function createMockPrisma(overrides: any = {}): any {

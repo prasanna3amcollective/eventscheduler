@@ -15,7 +15,7 @@
  */
 
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { getSecurityContext } from '@/lib/auth';
 import { runDailyMaterializationMaintenance } from '@/lib/recurrence/maintenance/advanceWindows';

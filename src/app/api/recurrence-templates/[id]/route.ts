@@ -34,7 +34,7 @@ export async function GET(
     }
 
     return NextResponse.json(tpl);
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error fetching recurrence template:', error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
@@ -83,7 +83,7 @@ export async function PUT(
     });
 
     return NextResponse.json(updated);
-  } catch (error: unknown) {
+  } catch (error: any) {
     console.error('Error updating recurrence template:', error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message, details: error.issues }, { status: 400 });

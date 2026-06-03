@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto';
 import { materializeTemplateWindow, compareVirtualToMaterialized } from './generator';
-import type { RecurrenceTemplateType } from '@prisma/client';
-
+import type { RecurrenceTemplateType } from '@/generated/prisma/client';
 /**
  * Returns true for rows that were generated as shadow materializations (PHASE 5).
  *
