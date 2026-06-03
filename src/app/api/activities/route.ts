@@ -6,7 +6,7 @@ import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
 import { materializeTemplateWindow } from '@/lib/recurrence/generator';
 import { randomUUID } from 'crypto';
-
+import type { Activity } from '@/generated/prisma/client';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const startParam = searchParams.get('start') || startOfDayFn(new Date()).toISOString();
@@ -159,23 +159,24 @@ export async function POST(request: Request) {
 
     // Non-recurring or explicit child of existing template
     const activity = await withAuth(securityContext, () => ({
-      model: 'activity',
-      operation: 'create',
-      args: {
-        data: {
-          name,
-          startDateTime: new Date(startDateTime),
-          endDateTime: new Date(endDateTime),
-          duration: Number(duration),
-          isRecurring: Boolean(isRecurring),
-          recurrenceRule: isRecurring ? recurrenceRule : null,
-          recurrenceTemplateId: recurrenceTemplateId || null,
-          generatedFromTemplateId: generatedFromTemplateId || null,
-          detachReason: detachReason || 'none',
-          category: category || 'General',
-        }
-      }
-    }));
+  model: 'activity',
+  operation: 'create',
+  args: {
+    data: {
+      name,
+      startDateTime: new Date(startDateTime),
+      endDateTime: new Date(endDateTime),
+      duration: Number(duration),
+      isRecurring: Boolean(isRecurring),
+      recurrenceRule: isRecurring ? recurrenceRule : null,
+      recurrenceTemplateId: recurrenceTemplateId || null,
+      generatedFromTemplateId: generatedFromTemplateId || null,
+      detachReason: detachReason || 'none',
+      category: category || 'General',
+    },
+  },
+})) as unknown as Activity;
+
 
     // Create staff participants
     const staffRoles = [
@@ -187,15 +188,15 @@ export async function POST(request: Request) {
     for (const role of staffRoles) {
       for (const name of role.names) {
         const user = await prisma.user.findFirst({
-          where: { name: name }
+          where: { name }
         });
         if (user) {
           await prisma.participant.create({
             data: {
               activityId: activity.id,
               userId: user.id,
-              type: role.type
-            }
+              type: role.type,
+            },
           }).catch((err: any) => {
             if (err.code === 'P2002') {
               return;
@@ -205,6 +206,7 @@ export async function POST(request: Request) {
         }
       }
     }
+
 
     return NextResponse.json(activity, { status: 201 });
   } catch (error: any) {
