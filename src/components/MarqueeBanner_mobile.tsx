@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusCircle, User } from '@/components/Icons';
 import './MarqueeBanner_mobile.css';
+import { logoFiles } from '../lib/logos';
 
 interface MarqueeBannerMobileProps {
   activeSection?: string;
@@ -11,6 +12,11 @@ interface MarqueeBannerMobileProps {
 
 export default function MarqueeBanner_mobile({ activeSection, setActiveSection, onLoginClick }: MarqueeBannerMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [logoSrc, setLogoSrc] = useState<string>('');
+  useEffect(() => {
+    const randomLogo = logoFiles[Math.floor(Math.random() * logoFiles.length)];
+    setLogoSrc(randomLogo);
+  }, []);
 
   const navItems = [
     { id: 'participate', label: 'Participate' },
@@ -35,11 +41,11 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
     <div className="mobile-banner-wrapper">
       <div className="mobile-banner-content">
         <div className="mobile-banner-left">
-          <img
-            src="/fist.png"
-            alt="Logo"
-            className="mobile-center-fist"
-          />
+           {logoSrc && <img
+             src={logoSrc}
+             alt="Logo"
+             className="mobile-center-fist"
+             style={{ width: "82px", height: "82px" }} />}
         </div>
 
         <div className="mobile-banner-center">
