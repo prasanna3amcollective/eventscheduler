@@ -1,6 +1,7 @@
-@import "tailwindcss";
-@import "react-big-calendar/lib/css/react-big-calendar.css";
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "react-big-calendar/lib/css/react-big-calendar.css";
+@import "tailwindcss";
+@source "../";
 
 @theme {
   --color-bg: #0200F9;
@@ -66,7 +67,7 @@
 }
 
 .btn-primary {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#EBFF00] px-[28px] py-[15px] text-[16px] font-semibold text-black border border-black transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-[0_6px_16px_rgba(235, 255, 0, 0.3)] disabled:opacity-60;
+  @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#EBFF00] px-[28px] py-[15px] text-[16px] font-semibold text-black border border-black transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-[0_6px_16px_#EBFF004D] disabled:opacity-60;
 }
 
 .btn-secondary {
@@ -110,9 +111,16 @@
 
 .nav-link-btn {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.0625rem;
+  line-height: 1.25;
+  text-decoration: none !important;
   transition: all 0.2s ease-in-out;
-  padding: 0.5rem 0.75rem;
+  padding: 0 1.25rem;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 0.5rem;
 }
 
@@ -123,7 +131,11 @@
 
 .nav-link-btn.active {
   background-color: var(--primary-color);
-  color: white;
+  color: #000000 !important;
+}
+
+.nav-link-btn.active:hover {
+  color: #000000 !important;
 }
 
 body {
@@ -460,7 +472,7 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Month row borders */
-.rbc-month-row + .rbc-month-row {
+.rbc-month-row+.rbc-month-row {
   border-top: 1px solid var(--border-color) !important;
 }
 
@@ -470,12 +482,12 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Day cell vertical dividers */
-.rbc-day-bg + .rbc-day-bg {
+.rbc-day-bg+.rbc-day-bg {
   border-left: 1px solid var(--border-color) !important;
 }
 
 /* Header cell dividers */
-.rbc-header + .rbc-header {
+.rbc-header+.rbc-header {
   border-left: 1px solid var(--border-color) !important;
 }
 
@@ -491,11 +503,11 @@ input:not([type="checkbox"]):focus {
   border: 1px solid var(--border-color) !important;
 }
 
-.rbc-time-header > .rbc-row:first-child {
+.rbc-time-header>.rbc-row:first-child {
   border-bottom: 1px solid var(--border-color) !important;
 }
 
-.rbc-time-header > .rbc-row.rbc-row-resource {
+.rbc-time-header>.rbc-row.rbc-row-resource {
   border-bottom: 1px solid var(--border-color) !important;
 }
 
@@ -507,7 +519,7 @@ input:not([type="checkbox"]):focus {
   border-top: 1px solid var(--border-color) !important;
 }
 
-.rbc-time-content > .rbc-time-gutter {
+.rbc-time-content>.rbc-time-gutter {
   border-right: 1px solid var(--border-color) !important;
 }
 
@@ -519,7 +531,7 @@ input:not([type="checkbox"]):focus {
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.rbc-time-content > * + * > * {
+.rbc-time-content>*+*>* {
   border-left: 1px solid var(--border-color) !important;
 }
 
