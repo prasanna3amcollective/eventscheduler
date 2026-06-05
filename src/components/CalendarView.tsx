@@ -84,8 +84,8 @@ interface CalendarActivity {
  * Custom toolbar with navigation arrows, "Today" button, view switcher,
  * and an optional "Create Activity" button for authorized users.
  */
-function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; onToggleResponsibilities?: () => void; showResponsibilities?: boolean; canCreate?: boolean }): JSX.Element {
-  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, onToggleResponsibilities, showResponsibilities = true, canCreate } = props;
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; onToggleResponsibilities?: () => void; showResponsibilities?: boolean; canCreateActivity?: boolean; canCreateResponsibility?: boolean }): JSX.Element {
+  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, onToggleResponsibilities, showResponsibilities = true, canCreateActivity, canCreateResponsibility } = props;
 
   return (
     <div className="calendar-toolbar">
@@ -112,50 +112,50 @@ function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreat
 <div className="toolbar-label">{label}</div>
 
        <div className="toolbar-views">
-          {canCreate && onCreate && (
-            <>
-               <button
-                 onClick={onOwnResponsibility}
-                 style={{
-                   marginRight: '12px',
-                   background: 'var(--responsibility-color)',
-                   color: 'white',
-                   border: 'none',
-                   padding: '0 12px',
-                   height: '34px',
-                   borderRadius: '6px',
-                   fontSize: '13px',
-                   fontWeight: 600,
-                   cursor: 'pointer',
-                   display: 'flex',
-                   alignItems: 'center',
-                   gap: '6px'
-                 }}
-               >
-                 <PlusCircle size={16} /> Own Responsibility
-               </button>
-              <button
-                className="rbc-create-btn"
-                onClick={onCreate}
-                style={{
-                  marginRight: '12px',
-                  background: 'var(--primary-color)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0 12px',
-                  height: '34px',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <PlusCircle size={16} /> Create Activity
-              </button>
-            </>
+          {canCreateResponsibility && onOwnResponsibility && (
+             <button
+               onClick={onOwnResponsibility}
+               style={{
+                 marginRight: '12px',
+                 background: 'var(--responsibility-color)',
+                 color: 'white',
+                 border: 'none',
+                 padding: '0 12px',
+                 height: '34px',
+                 borderRadius: '6px',
+                 fontSize: '13px',
+                 fontWeight: 600,
+                 cursor: 'pointer',
+                 display: 'flex',
+                 alignItems: 'center',
+                 gap: '6px'
+               }}
+             >
+               <PlusCircle size={16} /> Own Responsibility
+             </button>
+          )}
+          {canCreateActivity && onCreate && (
+            <button
+              className="rbc-create-btn"
+              onClick={onCreate}
+              style={{
+                marginRight: '12px',
+                background: 'var(--primary-color)',
+                color: 'white',
+                border: 'none',
+                padding: '0 12px',
+                height: '34px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <PlusCircle size={16} /> Create Activity
+            </button>
           )}
           <button
             type="button"
@@ -368,12 +368,13 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
 // ---------------------------------------------------------------------------
 
 interface CalendarViewProps {
-  refreshTrigger: number;
+  refreshTrigger?: number;
   onSelectActivity: (activity: CalendarActivity) => void;
   onSelectSlot: (slotInfo: any) => void;
   onCreateActivity: () => void;
   onOwnResponsibility?: () => void;
   userRoles: string[];
+  userPermissions?: { canCreateActivity: boolean; canCreateResponsibility: boolean };
 }
 
 /**
@@ -388,6 +389,7 @@ export default function CalendarView({
   onCreateActivity,
   onOwnResponsibility,
   userRoles = [],
+  userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
 }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
@@ -554,7 +556,8 @@ export default function CalendarView({
     [],
   );
 
-  const canCreate = userRoles.includes('core') || userRoles.includes('inhouse');
+  const canCreateActivity = userPermissions.canCreateActivity;
+  const canCreateResponsibility = userPermissions.canCreateResponsibility;
 
   const CalendarEventRenderer = useCallback(({ event }: { event: CalendarActivity }) => {
     if (event.isHoliday) {
@@ -578,12 +581,13 @@ export default function CalendarView({
            onOwnResponsibility={onOwnResponsibility}
            onToggleResponsibilities={() => setShowResponsibilities((prev) => !prev)}
            showResponsibilities={showResponsibilities}
-           canCreate={canCreate}
+           canCreateActivity={canCreateActivity}
+           canCreateResponsibility={canCreateResponsibility}
          />
        ),
        event: CalendarEventRenderer,
      }),
-     [onCreateActivity, canCreate, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
+     [onCreateActivity, canCreateActivity, canCreateResponsibility, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
    );
 
   // ---- Render ----

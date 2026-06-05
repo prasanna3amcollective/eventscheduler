@@ -26,6 +26,7 @@ export default function Home_mobile() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [userPermissions, setUserPermissions] = useState({ canCreateActivity: false, canCreateResponsibility: false });
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   const [activeSection, setActiveSection] = useState('participate');
@@ -103,6 +104,7 @@ export default function Home_mobile() {
           const data = await res.json();
           setCurrentUser(data.user);
           setUserRoles(data.roles || []);
+          setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
           setIsLoggedIn(true);
 
           // Check if we need to open scheduler tab with edit activity
@@ -153,6 +155,7 @@ export default function Home_mobile() {
       if (res.ok) {
         const data = await res.json();
         setUserRoles(data.roles || []);
+        setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
       }
     } catch (e) { /* ignore */ }
     setPendingEventId(null);
@@ -236,7 +239,7 @@ export default function Home_mobile() {
   };
 
   const handleSelectSlot = (slotInfo: any) => {
-    if (!userRoles.includes('core') && !userRoles.includes('inhouse')) return;
+    if (!userPermissions.canCreateActivity) return;
 
     if (slotInfo.action === 'select' || slotInfo.action === 'doubleClick') {
       const newActivity = {
@@ -496,6 +499,7 @@ export default function Home_mobile() {
               onCreateActivity={onCreateActivity}
               onOwnResponsibility={onOwnResponsibility}
               userRoles={userRoles}
+              userPermissions={userPermissions}
             />
           </div>
         )}

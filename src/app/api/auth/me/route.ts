@@ -41,7 +41,21 @@ export async function GET() {
 
     const roles = userRoles.map((ur: any) => ur.role.name);
 
-    return NextResponse.json({ user, roles });
+    // Evaluate dynamic ACL permissions
+    const checkAcl = async (table: string, operation: string) => {
+      const acls = await prisma.accessControlList.findMany({
+        where: { table, operation }
+      });
+      if (acls.length === 0) return true; // Default allow if no ACL
+      return acls.some((acl: any) => session.roles.includes(acl.roleId));
+    };
+
+    const permissions = {
+      canCreateActivity: await checkAcl('activity', 'create'),
+      canCreateResponsibility: await checkAcl('responsibility', 'create')
+    };
+
+    return NextResponse.json({ user, roles, permissions });
   } catch (error) {
     console.error("Auth check error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
