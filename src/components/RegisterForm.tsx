@@ -193,12 +193,12 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
     return <RegistrationSuccessView onReset={handleReset} />;
   }
 
-   /** Updates a single form field by key (for text inputs) */
+  /** Updates a single form field by key (for text inputs) */
   const updateField =
     (field: 'name' | 'username' | 'email' | 'phone' | 'password') =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-    };
+      (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+      };
 
   /** Toggles a skill in the skills array */
   const toggleSkill = (skill: string) => {
@@ -233,7 +233,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           required
           value={formData.name}
           onChange={updateField('name')}
-          placeholder="e.g. Jane Doe"
+          placeholder="e.g. Kosaksi Pasappugazh"
         />
       </div>
 
@@ -245,7 +245,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           required
           value={formData.username}
           onChange={updateField('username')}
-          placeholder="jdoe"
+          placeholder="ranjith.pa"
         />
       </div>
 
@@ -258,7 +258,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           required
           value={formData.email}
           onChange={updateField('email')}
-          placeholder="jane@example.com"
+          placeholder="3amteacigarz@gmail.com"
           className={fieldErrors.email ? 'input-error' : ''}
         />
         {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
@@ -267,8 +267,8 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
         <label>
           <Phone size={16} /> Phone Number
         </label>
-        <div className="phone-input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <select
+        <div className="phone-input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '65%' }}>
+          {/* <select
             value={selectedDialCode}
             onChange={(e) => setSelectedDialCode(e.target.value)}
             className="country-select"
@@ -279,12 +279,18 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
                 {c.flag} {c.dialCode}
               </option>
             ))}
-          </select>
+          </select> */}
           <input
             required
             type="tel"
             value={formData.phone}
-            onChange={updateField('phone')}
+            maxLength={10}
+            inputMode="numeric"
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+              e.target.value = digits;
+              updateField('phone')(e);
+            }}
             placeholder="9876543210"
             className={fieldErrors.phone ? 'input-error' : ''}
             style={{ flex: 1 }}
@@ -304,55 +310,56 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           value={formData.password}
           onChange={updateField('password')}
           placeholder="••••••••"
+          style={{ width: '65%' }}
         />
-       </div>
+      </div>
 
-       <div className="form-group">
-         <label>
-           <Tag size={16} /> Skills
-         </label>
-         <input
-           list="register-skills-options"
-           placeholder="Search and select a skill..."
-           onChange={(e) => {
-             const skill = e.target.value;
-             if (SKILLS.includes(skill as Skill) && !formData.skills.includes(skill as Skill)) {
-               toggleSkill(skill);
-               e.target.value = ''; // Reset selection
-             }
-           }}
-           onKeyDown={(e) => {
-             if (e.key === 'Enter') {
-               e.preventDefault(); // Prevent form submission
-             }
-           }}
-           style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color, #e0e0e0)', marginTop: '4px', background: 'var(--bg-color, #fff)', color: 'var(--text-color, #333)' }}
-         />
-         <datalist id="register-skills-options">
-           {SKILLS.filter(s => !formData.skills.includes(s)).map((skill, index) => (
-             <option key={index} value={skill} />
-           ))}
-         </datalist>
-         <div className="selected-skills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-           {formData.skills.map((skill, index) => (
-             <span key={index} className="skill-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-color, #f0f0f0)', padding: '4px 8px', borderRadius: '16px', fontSize: '13px', border: '1px solid var(--border-color, #ccc)' }}>
-               {skill}
-               <button type="button" onClick={() => toggleSkill(skill)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', color: 'inherit' }} aria-label={`Remove ${skill}`}>
-                 <X size={14} />
-               </button>
-             </span>
-           ))}
-         </div>
-       </div>
+      <div className="form-group">
+        <label>
+          <Tag size={16} /> Skills
+        </label>
+        <input
+          list="register-skills-options"
+          placeholder="Search and select a skill..."
+          onChange={(e) => {
+            const skill = e.target.value;
+            if (SKILLS.includes(skill as Skill) && !formData.skills.includes(skill as Skill)) {
+              toggleSkill(skill);
+              e.target.value = ''; // Reset selection
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // Prevent form submission
+            }
+          }}
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color, #e0e0e0)', marginTop: '4px', background: 'var(--bg-color, #fff)', color: 'var(--text-color, #333)' }}
+        />
+        <datalist id="register-skills-options">
+          {SKILLS.filter(s => !formData.skills.includes(s)).map((skill, index) => (
+            <option key={index} value={skill} />
+          ))}
+        </datalist>
+        <div className="selected-skills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
+          {formData.skills.map((skill, index) => (
+            <span key={index} className="skill-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-color, #f0f0f0)', padding: '4px 8px', borderRadius: '16px', fontSize: '13px', border: '1px solid var(--border-color, #ccc)' }}>
+              {skill}
+              <button type="button" onClick={() => toggleSkill(skill)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', color: 'inherit' }} aria-label={`Remove ${skill}`}>
+                <X size={14} />
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
 
-       <button
+      <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary"
-        style={{ marginTop: '10px' }}
+        className="yellow-btn"
+        style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}
       >
-        {isSubmitting ? 'Registering...' : submitText}
-        {!isSubmitting && <UserPlus size={18} />}
+        {isSubmitting ? 'Joining...' : 'Join the Circle'}
+        {/* {!isSubmitting && <UserPlus size={18} />} */}
       </button>
     </form>
   );
