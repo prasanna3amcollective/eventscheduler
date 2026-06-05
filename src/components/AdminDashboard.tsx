@@ -76,10 +76,6 @@ type AdminTab = 'roles' | 'groups' | 'group-members' | 'acls' | 'participants';
 // ---------------------------------------------------------------------------
 
 const GROUPS_CATEGORIES = ['Security', 'Operations', 'Management', 'Custom'] as const;
-const ACL_TABLES = [
-  'activity', 'user', 'group', 'role', 'participant',
-  'userrole', 'usergroupm2m', 'rolegroupm2m', 'accesscontrollist',
-] as const;
 const ACL_OPERATIONS = ['read', 'write', 'create', 'delete'] as const;
 
 const RECORDS_PER_PAGE = 10;
@@ -217,6 +213,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([]);
   const [acls, setAcls] = useState<Acl[]>([]);
   const [participants, setParticipants] = useState<ParticipantRecord[]>([]);
+  const [aclTables, setAclTables] = useState<string[]>([]);
 
   // -- Form states --
   // Roles
@@ -285,7 +282,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const [uRes, rRes, gRes, urRes, gmRes, grRes, aRes] = await Promise.all([
+      const [uRes, rRes, gRes, urRes, gmRes, grRes, aRes, tRes] = await Promise.all([
         secureFetch('/api/users'),
         secureFetch('/api/admin/roles'),
         secureFetch('/api/admin/groups'),
@@ -293,6 +290,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         secureFetch('/api/admin/group-members'),
         secureFetch('/api/admin/group-roles'),
         secureFetch('/api/admin/acls'),
+        secureFetch('/api/admin/tables'),
       ]);
 
       if (uRes.ok) setUsers(await uRes.json());
@@ -302,6 +300,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
       if (gmRes.ok) setGroupMembers(await gmRes.json());
       if (grRes.ok) setGroupRoles(await grRes.json());
       if (aRes.ok) setAcls(await aRes.json());
+      if (tRes.ok) setAclTables(await tRes.json());
 
       const pRes = await secureFetch('/api/admin/participants');
       if (pRes.ok) setParticipants(await pRes.json());
@@ -1112,7 +1111,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             required
           >
             <option value="">Select Table...</option>
-            {ACL_TABLES.map((t) => (
+            {aclTables.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
