@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ArrowLeft, CalendarFill as Calendar, Clock, Users, Refresh, XCircle, CheckCircle, ChevronRight, ChevronDown, Share2, Edit } from '@/components/Icons';
+import EditActivityModal from '@/components/EditActivityModal';
 import { secureFetch } from '@/lib/fetch';
 
 interface Participant {
@@ -138,6 +139,7 @@ export default function ActivityManagementPage() {
     const [closingActivity, setClosingActivity] = useState(false);
     const [isStaffOpen, setIsStaffOpen] = useState(false);
     const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+const [showEditModal, setShowEditModal] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -385,7 +387,7 @@ export default function ActivityManagementPage() {
                             <button onClick={handleExport} className="export-button" title="Export activity details">
                                 <Share2 size={20} />
                             </button>
-                            <button onClick={() => router.push(`/activities/${activityId}/edit`)} className="edit-button" title="Edit activity">
+                            <button onClick={() => setShowEditModal(true)} className="edit-button" title="Edit activity">
                                 <Edit size={20} />
                             </button>
                             <button onClick={async () => {
@@ -664,6 +666,7 @@ export default function ActivityManagementPage() {
                     </div>
                 </div>
             )}
+            {showEditModal && <EditActivityModal onClose={() => setShowEditModal(false)} />}
         </div>
     );
 }

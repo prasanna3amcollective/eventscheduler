@@ -271,11 +271,11 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   };
 
   return (
-    <form onSubmit={handleSubmit} className="responsibility-form bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-xl mx-auto space-y-6">
+    <form onSubmit={handleSubmit} className="responsibility-form bg-white rounded-xl p-6 md:p-8 w-full max-w-xl mx-auto space-y-6">
       <div className="form-header mb-4">
         <h2 className="text-2xl font-bold text-gray-800">{isEditing ? 'Edit Responsibility' : 'New Responsibility'}</h2>
       </div>
-      
+
       <div className="form-row grid grid-cols-[2fr_1fr] gap-6">
         <div className="form-group space-y-2">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
@@ -404,7 +404,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
               </select>
               <span className="text-xs font-medium text-gray-500">on</span>
             </div>
-            
+
             <div className="days-selector flex flex-wrap gap-2 mb-4">
               {DAYS_OF_WEEK.map(day => (
                 <button
@@ -459,7 +459,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-500">Recur until</label>
                 <DatePicker
@@ -540,13 +540,13 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       {error && <div role="alert" aria-live="assertive" className="error-banner flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg"><AlertTriangle size={16} className="text-red-500" aria-hidden="true" /> {error}</div>}
       {success && <div role="status" aria-live="polite" className="success-banner flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg"><Check size={16} className="text-green-500" aria-hidden="true" /> Responsibility created successfully!</div>}
 
-      <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+      <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4">
         {onCancel && <button type="button" onClick={onCancel} className="btn-secondary flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all"><X size={16} className="text-gray-600" aria-hidden="true" /> Cancel</button>}
         <button
           type="submit"
           disabled={isSubmitting || !formData.name.trim()}
           aria-busy={isSubmitting}
-          className="btn-primary flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all disabled:opacity-60"
+          className="pink-btn flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all "
         >
           {isSubmitting ? 'Saving...' : initialData ? 'Update Responsibility' : 'Create Responsibility'}
         </button>

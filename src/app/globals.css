@@ -9,7 +9,7 @@
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #CCCCCC;
   --color-primary: #EBFF00;
-  --color-responsibility: #CCCCCC;
+  --color-responsibility: #ff08a7;
   --color-border: #FFFFFF;
   --color-hover: #1a1aFF;
   --color-activity: #EBFF00;
@@ -24,7 +24,7 @@
   --text-primary: #FFFFFF;
   --text-secondary: #CCCCCC;
   --primary-color: #EBFF00;
-  --responsibility-color: #CCCCCC;
+  --responsibility-color: #ff08a7;
   --border-color: #FFFFFF;
   --hover-color: #1a1aFF;
   --activity-color: #EBFF00;
@@ -56,7 +56,7 @@
   --text-primary: #FFFFFF;
   --text-secondary: #CCCCCC;
   --primary-color: #EBFF00;
-  --responsibility-color: #CCCCCC;
+  --responsibility-color: #ff08a7;
   --border-color: #FFFFFF;
   --hover-color: #1a1aFF;
   --activity-color: #EBFF00;
@@ -83,30 +83,72 @@
 }
 
 .yellow-btn {
-  background-color: #EBFF00;
-  color: #000000;
-  border: 3px solid #000000;
-  padding: 10px 24px;
-  font-size: 15px;
-  font-weight: 800;
-  box-shadow: 5px 5px 0px 0px #000000;
-  transition: all 0.1s ease-in-out;
-  cursor: pointer;
-  display: inline-block;
-  text-align: center;
-  text-decoration: none;
-  border-radius: 0;
+  background: #EBFF00 !important;
+  background-color: #EBFF00 !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  background-color: #EBFF00 !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
 }
 
 .yellow-btn:hover {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0px 0px #000000;
-  opacity: 1;
+  transform: translate(2px, 2px) !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  opacity: 1 !important;
 }
 
 .yellow-btn:active {
-  transform: translate(5px, 5px);
-  box-shadow: none;
+  transform: translate(5px, 5px) !important;
+  box-shadow: none !important;
+}
+
+.pink-btn {
+  background: #ff08a7 !important;
+  background-color: #ff08a7 !important;
+  color: #ffffff !important;
+  border: 3px solid #000000 !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+}
+
+.pink-btn:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  opacity: 1 !important;
+}
+
+.pink-btn:active {
+  transform: translate(5px, 5px) !important;
+  box-shadow: none !important;
 }
 
 .nav-link-btn {
@@ -552,15 +594,53 @@ input:not([type="checkbox"]):focus {
   background-color: rgba(235, 255, 0, 0.06) !important;
 }
 
-/* Event styling */
-.rbc-event {
+.rbc-responsibility {
+  background-color: var(--responsibility-color) !important;
   border-radius: 4px !important;
   padding: 3px 6px !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
   border: none !important;
   box-shadow: none !important;
+  color: #ffffff !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
 }
+
+.rbc-event {
+  background-color: var(--primary-color);
+  border-radius: 4px;
+  padding: 3px 6px;
+  border: none;
+  box-shadow: none;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.rbc-event-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure activity and generic events have black text */
+.rbc-activity .rbc-event-content,
+.rbc-event .rbc-event-content {
+  color: #000000 !important;
+}
+
+/* Specific text color for responsibility and activity events */
+.rbc-responsibility .rbc-event-content {
+  color: #ffffff !important;
+}
+
+.rbc-activity .rbc-event-content {
+  color: #000000 !important;
+}
+
+
+
+
+
 
 .rbc-activity {
   border-radius: 4px !important;
@@ -911,7 +991,7 @@ input:not([type="checkbox"]):focus {
   border-radius: 12px;
 }
 
-.toolbar-views button {
+.toolbar-views button:not(.yellow-btn) {
   padding: 8px 16px;
   border: none;
   background: transparent;
@@ -923,7 +1003,7 @@ input:not([type="checkbox"]):focus {
   transition: all 0.2s;
 }
 
-.toolbar-views button:hover {
+.toolbar-views button:not(.yellow-btn):hover {
   color: var(--text-primary);
 }
 
@@ -1256,11 +1336,12 @@ input:not([type="checkbox"]):focus {
 .dashboard-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 16px 40px;
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 24px;
+  margin-left: auto;
 }
 
 .header-brand {
