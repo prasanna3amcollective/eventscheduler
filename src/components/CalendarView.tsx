@@ -457,19 +457,21 @@ export default function CalendarView({
 // Combine regular activities with holiday events
    const calendarActivities = useMemo<CalendarActivity[]>(
      () => [
-       ...activities,
+       ...activities.filter((a) => a.state?.toLowerCase() !== 'cancelled'),
        ...(showResponsibilities
-         ? responsibilities.map((r) => ({
-           id: r.id,
-           title: r.name,
-           start: new Date(r.startDateTime),
-           end: new Date(r.endDateTime),
-           isHoliday: false,
-           isResponsibility: true,
-           owner: r.owner,
-           category: r.category,
-           state: r.state,
-         }))
+         ? responsibilities
+             .filter((r) => r.state?.toLowerCase() !== 'cancelled')
+             .map((r) => ({
+               id: r.id,
+               title: r.name,
+               start: new Date(r.startDateTime),
+               end: new Date(r.endDateTime),
+               isHoliday: false,
+               isResponsibility: true,
+               owner: r.owner,
+               category: r.category,
+               state: r.state,
+             }))
          : []),
        ...holidays.map((h) => ({
          id: h.id,
