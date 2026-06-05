@@ -503,7 +503,7 @@ function HomeContent() {
         {activeTab === 'calendar' && (
           <div className="content-section">
             <CalendarView
-
+              refreshTrigger={refreshTrigger}
               onSelectActivity={handleSelectActivity}
               onSelectSlot={handleSelectSlot}
               onCreateActivity={onCreateActivity}

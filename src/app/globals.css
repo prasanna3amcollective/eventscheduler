@@ -447,11 +447,107 @@ input:not([type="checkbox"]):focus {
   min-width: 0;
 }
 
+/* ─── react-big-calendar vs Tailwind v4 Preflight fix ────────────────
+   Tailwind v4 preflight resets `border: 0 solid` on *, stripping all
+   grid lines from the calendar.  Re-apply them explicitly here.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Month view container */
+.rbc-month-view {
+  border: 1px solid var(--border-color) !important;
+  flex: 1 0 0px;
+  height: 100%;
+}
+
+/* Month row borders */
+.rbc-month-row + .rbc-month-row {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+.rbc-month-row {
+  flex: 1 0 0px;
+  flex-basis: 0px;
+}
+
+/* Day cell vertical dividers */
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+/* Header cell dividers */
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--border-color) !important;
+}
+
 .rbc-header {
   padding: 12px 0 !important;
   font-weight: 600 !important;
   color: var(--text-secondary) !important;
   border-bottom: 2px solid var(--border-color) !important;
+}
+
+/* Time view grid lines */
+.rbc-time-view {
+  border: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-header > .rbc-row:first-child {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-header > .rbc-row.rbc-row-resource {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-content {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+.rbc-time-content > .rbc-time-gutter {
+  border-right: 1px solid var(--border-color) !important;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.rbc-time-content > * + * > * {
+  border-left: 1px solid var(--border-color) !important;
+}
+
+/* Current time indicator */
+.rbc-current-time-indicator {
+  background-color: var(--primary-color);
+}
+
+/* Show-more link */
+.rbc-show-more {
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Today cell highlight */
+.rbc-today {
+  background-color: rgba(235, 255, 0, 0.06) !important;
+}
+
+/* Event styling */
+.rbc-event {
+  border-radius: 4px !important;
+  padding: 3px 6px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .rbc-activity {
