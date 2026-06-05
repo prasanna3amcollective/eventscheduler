@@ -23,6 +23,7 @@ export default function HeaderPanel({
   setActiveSection,
   handlePanelSignIn,
   hideNav,
+  onAboutUsClick,
 }: any) {
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -98,8 +99,12 @@ export default function HeaderPanel({
               className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.hash = '#about-us';
-                setActiveSection('about-us');
+                if (onAboutUsClick) {
+                  onAboutUsClick();
+                } else {
+                  window.location.hash = '#about-us';
+                  setActiveSection('about-us');
+                }
               }}
             >
               About Us

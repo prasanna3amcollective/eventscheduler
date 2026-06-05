@@ -8,9 +8,10 @@ interface MarqueeBannerMobileProps {
   activeSection?: string;
   setActiveSection?: (section: string) => void;
   onLoginClick?: () => void;
+  onAboutUsClick?: () => void;
 }
 
-export default function MarqueeBanner_mobile({ activeSection, setActiveSection, onLoginClick }: MarqueeBannerMobileProps) {
+export default function MarqueeBanner_mobile({ activeSection, setActiveSection, onLoginClick, onAboutUsClick }: MarqueeBannerMobileProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState<string>('');
   useEffect(() => {
@@ -26,6 +27,11 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
   ];
 
   const handleNav = (id: string) => {
+    if (id === 'about-us' && onAboutUsClick) {
+      onAboutUsClick();
+      setIsMenuOpen(false);
+      return;
+    }
     if (setActiveSection) {
       setActiveSection(id);
       if (id === 'participate') {

@@ -1396,7 +1396,7 @@ input:not([type="checkbox"]):focus {
 /* === Brutalist Top Banner (static) === */
 .marquee-banner {
   background: var(--surface-color);
-  padding: 24px 0;
+  padding: 32px 0 48px 0;
   text-align: center;
 }
 

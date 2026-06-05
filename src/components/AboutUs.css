@@ -24,6 +24,101 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   overflow: hidden;
 }
 
+.about-us-wrapper {
+  height: 100vh;
+  width: 100vw;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  font-family: 'Courier Prime', monospace;
+  color: var(--white);
+  background: var(--black);
+  cursor: none;
+}
+.about-us-wrapper::-webkit-scrollbar {
+  display: none;
+}
+.about-us-wrapper a, .about-us-wrapper button {
+  cursor: none;
+}
+
+/* CUSTOM CURSOR */
+.cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(200,169,110,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease, width 0.3s, height 0.3s;
+}
+
+/* GRAIN OVERLAY */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.5;
+}
+
+/* NAV */
+.about-us-wrapper nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  mix-blend-mode: normal;
+}
+.about-us-wrapper nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(8,8,8,0.9) 0%, transparent 100%);
+  pointer-events: none;
+}
+.about-us-wrapper .nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  text-decoration: none;
+  position: relative;
+}
+.about-us-wrapper .nav-menu {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  position: relative;
+}
+.about-us-wrapper .nav-menu a {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--light);
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.3s;
+}
+.about-us-wrapper .nav-menu a:hover { color: var(--accent); }
+
 /* HERO */
 #hero {
   display: flex;
@@ -215,6 +310,9 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   line-height: 1.1;
   margin-bottom: 32px;
   font-style: italic;
+  font-weight: 400;
+  letter-spacing: normal;
+  color: var(--white);
 }
 .section-body {
   font-size: 0.9rem;
@@ -649,6 +747,20 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   line-height: 2;
   color: var(--light);
 }
+.oath-footer {
+  text-align: center;
+  margin-top: 80px;
+  padding-top: 60px;
+  border-top: 1px solid rgba(200,169,110,0.1);
+}
+.oath-footer p {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  color: var(--mid);
+  text-transform: uppercase;
+  line-height: 2.5;
+}
 
 /* THREE NON-NEGOTIABLES */
 #nonneg {
@@ -734,6 +846,21 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   font-size: 0.8rem;
   line-height: 2;
   color: var(--light);
+}
+.goals-footer {
+  margin-top: 80px;
+  padding: 48px;
+  border: 1px solid rgba(200,169,110,0.15);
+  text-align: center;
+}
+.goals-footer p {
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--mid);
+  text-transform: uppercase;
+  line-height: 2.5;
+  font-style: italic;
 }
 
 /* THREE FIGHTS */
@@ -873,6 +1000,172 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   margin: 24px 0;
 }
 .divider.center { margin: 24px auto; }
+
+/* parallax layer */
+.parallax-text {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(80px, 14vw, 180px);
+  color: rgba(200,169,110,0.025);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+.oath-footer {
+  margin-top: 60px;
+  padding: 40px;
+  border-top: 1px solid rgba(200,169,110,0.1);
+  text-align: center;
+}
+
+/* ===== CTA ===== */
+#cta {
+  padding: 160px 80px;
+  background: var(--dark);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(120px, 22vw, 280px);
+  color: rgba(200,169,110,0.03);
+  white-space: nowrap;
+  letter-spacing: 0.1em;
+  user-select: none;
+  pointer-events: none;
+  animation: bgDrift 15s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to { transform: translate(-50%, -50%) scale(1.05); }
+}
+.cta-content { position: relative; z-index: 2; }
+.cta-content .cta-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.5em;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.cta-content h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 8vw, 100px);
+  line-height: 0.9;
+  margin-bottom: 40px;
+}
+.cta-content h2 .line1 { color: var(--white); }
+.cta-content h2 .line2 { color: var(--accent); }
+.cta-desc {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--light);
+  margin-bottom: 60px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.9;
+}
+.cta-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.about-btn-primary {
+  display: inline-block;
+  padding: 16px 48px;
+  background: var(--accent);
+  color: var(--black);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: none;
+}
+.about-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(200,169,110,0.3);
+}
+.about-btn-secondary {
+  display: inline-block;
+  padding: 15px 48px;
+  border: 1px solid rgba(200,169,110,0.4);
+  color: var(--accent);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: border-color 0.3s, background 0.3s;
+  cursor: none;
+}
+.about-btn-secondary:hover {
+  border-color: var(--accent);
+  background: rgba(200,169,110,0.05);
+}
+.cta-assoc {
+  margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0.5;
+}
+.cta-assoc span {
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+.assoc-logos {
+  display: flex;
+  gap: 48px;
+  align-items: center;
+}
+.assoc-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  color: var(--mid);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--black);
+  padding: 48px 80px;
+  border-top: 1px solid rgba(200,169,110,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+footer .f-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+footer .f-copy {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--mid);
+  text-transform: uppercase;
+}
+footer .f-tagline {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--mid);
+}
 
 @media (max-width: 900px) {
   #origin, .structures-layout, .actions-layout, .manifesto-layout { grid-template-columns: 1fr; gap: 48px; padding: 60px 24px; }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
+import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
 import AboutUs from '@/components/AboutUs';
@@ -16,6 +16,7 @@ import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner_mobile from '@/components/MarqueeBanner_mobile';
 import InstagramEmbed from '@/components/InstagramEmbed';
+import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
 import './Home_mobile.css';
@@ -138,13 +139,17 @@ export default function Home_mobile() {
     checkSession();
   }, [searchParams, router]);
 
-  useEffect(() => {
-    const handleClickOutside = () => setShowProfileDropdown(false);
-    if (showProfileDropdown) {
-      document.addEventListener('click', handleClickOutside);
-    }
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showProfileDropdown]);
+  const transitionRef = useRef<StaggeredTransitionRef>(null);
+
+  const handleTransitionMidpoint = () => {
+    setActiveSection('about-us');
+    window.location.hash = '#about-us';
+  };
+
+  const handleBackwardMidpoint = () => {
+    setActiveSection('participate');
+    window.location.hash = '#participate';
+  };
 
   const handleLoginSuccess = async (user: any) => {
     setCurrentUser(user);
@@ -334,34 +339,49 @@ export default function Home_mobile() {
 
   if (!isLoggedIn) {
     return (
+      <>
+      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
       <div className="mobile-app-container landing-page fade-in">
-        <MarqueeBanner_mobile 
-          activeSection={activeSection} 
-          setActiveSection={setActiveSection} 
-          onLoginClick={() => setShowSignInPanel(true)}
-        />
+        {activeSection !== 'about-us' && (
+          <MarqueeBanner_mobile 
+            activeSection={activeSection} 
+            setActiveSection={setActiveSection} 
+            onLoginClick={() => setShowSignInPanel(true)}
+            onAboutUsClick={() => transitionRef.current?.trigger()}
+          />
+        )}
 
-        {/* Mission Text */}
-        <div className="mobile-mission-text">
-          The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
-        </div>
+        {activeSection === 'about-us' && (
+          <div style={{ width: '100%', minHeight: '100vh' }}>
+            <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+          </div>
+        )}
 
-        {/* Auth Buttons */}
-        <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
-          <button
-            onClick={() => {
-              setShowRegisterModal(true);
-            }}
-            className="yellow-btn"
-          >
-            Join the circle
-          </button>
-        </div>
+        {activeSection === 'participate' && (
+          <>
+            {/* Mission Text */}
+            <div className="mobile-mission-text">
+              The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
+            </div>
 
-        {/* Upcoming Activities */}
-        <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
-          <ActivityCarousel refreshTrigger={refreshTrigger} />
-        </div>
+            {/* Auth Buttons */}
+            <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
+              <button
+                onClick={() => {
+                  setShowRegisterModal(true);
+                }}
+                className="yellow-btn"
+              >
+                Join the circle
+              </button>
+            </div>
+
+            {/* Upcoming Activities */}
+            <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
+              <ActivityCarousel refreshTrigger={refreshTrigger} />
+            </div>
+          </>
+        )}
 
         {/* Top Login Banner */}
         {showSignInPanel && (
@@ -438,14 +458,23 @@ export default function Home_mobile() {
           </div>
         )}
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
     <div className="mobile-app-container dashboard-layout fade-in">
-      <MarqueeBanner_mobile activeSection={activeSection} setActiveSection={setActiveSection} />
+      {activeSection !== 'about-us' && (
+        <MarqueeBanner_mobile 
+          activeSection={activeSection} 
+          setActiveSection={setActiveSection} 
+          onAboutUsClick={() => transitionRef.current?.trigger()} 
+        />
+      )}
 
-      <header className="dashboard-header">
+      <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
         <div className="header-user">
           <div className="user-menu-container">
             <button
@@ -490,23 +519,29 @@ export default function Home_mobile() {
         )}
       </nav>
 
-      <main className="app-container">
-        {activeTab === 'calendar' && (
-          <div className="content-section">
-            <CalendarView
-              onSelectActivity={handleSelectActivity}
-              onSelectSlot={handleSelectSlot}
-              onCreateActivity={onCreateActivity}
-              onOwnResponsibility={onOwnResponsibility}
-              userRoles={userRoles}
-              userPermissions={userPermissions}
-            />
-          </div>
-        )}
-        {activeTab === 'admin' && (
-          <AdminDashboard currentUser={currentUser} />
-        )}
-      </main>
+      {activeSection === 'about-us' ? (
+        <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
+          <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+        </div>
+      ) : (
+        <main className="app-container">
+          {activeTab === 'calendar' && (
+            <div className="content-section">
+              <CalendarView
+                onSelectActivity={handleSelectActivity}
+                onSelectSlot={handleSelectSlot}
+                onCreateActivity={onCreateActivity}
+                onOwnResponsibility={onOwnResponsibility}
+                userRoles={userRoles}
+                userPermissions={userPermissions}
+              />
+            </div>
+          )}
+          {activeTab === 'admin' && (
+            <AdminDashboard currentUser={currentUser} />
+          )}
+        </main>
+      )}
 
       <ActivityModal
         isOpen={isModalOpen}
@@ -567,5 +602,6 @@ export default function Home_mobile() {
         onProfileUpdate={setCurrentUser}
       />
     </div>
+    </>
   );
 }

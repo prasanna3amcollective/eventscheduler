@@ -1,8 +1,98 @@
+import React, { useEffect, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import './AboutUs.css';
 
-export default function AboutUs() {
+export default function AboutUs({ onBackClick }: { onBackClick?: () => void }) {
+  const cursorRef = useRef<HTMLDivElement>(null);
+  const cursorRingRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (cursorRef.current && cursorRingRef.current) {
+        cursorRef.current.style.left = `${e.clientX}px`;
+        cursorRef.current.style.top = `${e.clientY}px`;
+        cursorRingRef.current.style.left = `${e.clientX}px`;
+        cursorRingRef.current.style.top = `${e.clientY}px`;
+      }
+    };
+
+    const handleMouseDown = () => {
+      if (cursorRef.current) cursorRef.current.style.transform = 'translate(-50%, -50%) scale(0.8)';
+      if (cursorRingRef.current) cursorRingRef.current.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    };
+
+    const handleMouseUp = () => {
+      if (cursorRef.current) cursorRef.current.style.transform = 'translate(-50%, -50%) scale(1)';
+      if (cursorRingRef.current) cursorRingRef.current.style.transform = 'translate(-50%, -50%) scale(1)';
+    };
+
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName.toLowerCase() === 'a' || target.tagName.toLowerCase() === 'button' || target.closest('a') || target.closest('button')) {
+        if (cursorRef.current) {
+          cursorRef.current.style.width = '40px';
+          cursorRef.current.style.height = '40px';
+          cursorRef.current.style.background = 'rgba(200,169,110,0.2)';
+        }
+        if (cursorRingRef.current) cursorRingRef.current.style.width = '60px';
+        if (cursorRingRef.current) cursorRingRef.current.style.height = '60px';
+      }
+    };
+
+    const handleMouseOut = () => {
+      if (cursorRef.current) {
+        cursorRef.current.style.width = '10px';
+        cursorRef.current.style.height = '10px';
+        cursorRef.current.style.background = 'var(--accent)';
+      }
+      if (cursorRingRef.current) {
+        cursorRingRef.current.style.width = '36px';
+        cursorRingRef.current.style.height = '36px';
+      }
+    };
+
+    const wrapper = document.querySelector('.about-us-wrapper') as HTMLElement;
+    if (wrapper) {
+      wrapper.addEventListener('mousemove', handleMouseMove);
+      wrapper.addEventListener('mousedown', handleMouseDown);
+      wrapper.addEventListener('mouseup', handleMouseUp);
+      wrapper.addEventListener('mouseover', handleMouseOver);
+      wrapper.addEventListener('mouseout', handleMouseOut);
+    }
+
+    return () => {
+      if (wrapper) {
+        wrapper.removeEventListener('mousemove', handleMouseMove);
+        wrapper.removeEventListener('mousedown', handleMouseDown);
+        wrapper.removeEventListener('mouseup', handleMouseUp);
+        wrapper.removeEventListener('mouseover', handleMouseOver);
+        wrapper.removeEventListener('mouseout', handleMouseOut);
+      }
+    };
+  }, []);
+
   return (
-    <>
+    <div className="about-us-wrapper relative">
+      <div className="grain-overlay"></div>
+      <div className="cursor" ref={cursorRef}></div>
+      <div className="cursor-ring" ref={cursorRingRef}></div>
+      
+      <nav>
+        <a href="#hero" className="nav-logo">3AM ✦ COLLECTIVE</a>
+        <ul className="nav-menu">
+          <li><a href="#cta">Join</a></li>
+        </ul>
+      </nav>
+
+      {onBackClick && (
+        <button 
+          onClick={onBackClick}
+          className="fixed top-8 left-8 z-50 p-3 bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/10 rounded-full text-white transition-all duration-300"
+          aria-label="Go back"
+        >
+          <ArrowLeft size={24} />
+        </button>
+      )}
       <section id="hero" className="about-section">
         <div className="hero-bg"></div>
         <div className="hero-grid"></div>
@@ -19,9 +109,11 @@ export default function AboutUs() {
           <span>Scroll</span>
           <div className="scroll-line"></div>
         </div>
+        <div className="parallax-text" style={{ bottom: '10%', left: '-5%' }} id="pt1">3AM</div>
       </section>
 
       <section id="origin" className="about-section">
+        <div className="parallax-text" style={{ top: '10%', right: '-5%' }} id="pt2">ORIGIN</div>
         <div className="origin-3d-block reveal-left">
           <div className="origin-card">
             <div className="big-quote">"</div>
@@ -80,6 +172,7 @@ export default function AboutUs() {
       </section>
 
       <section id="actions" className="about-section">
+        <div className="parallax-text" style={{ top: '20%', left: '-8%' }} id="pt3">ACTIONS</div>
         <div className="actions-layout">
           <div className="circles-visual reveal-left">
             <div className="circle-ring"><div className="circle-dot"></div></div>
@@ -142,6 +235,7 @@ export default function AboutUs() {
       </section>
 
       <section id="structures" className="about-section">
+        <div className="parallax-text" style={{ top: '15%', right: '-8%' }} id="pt4">STRUCTURE</div>
         <div className="section-header reveal">
           <p className="section-label">The Three Structures</p>
           <h2 className="section-title">The Structural Pillars.</h2>
@@ -197,6 +291,7 @@ export default function AboutUs() {
       </section>
 
       <section id="forces" className="about-section">
+        <div className="parallax-text" style={{ bottom: '10%', left: '-5%' }} id="pt5">FORCES</div>
         <div className="section-header reveal">
           <p className="section-label">The Three Forces</p>
           <h2 className="section-title">The Creative Forces.</h2>
@@ -244,6 +339,7 @@ export default function AboutUs() {
       </section>
 
       <section id="oaths" className="about-section">
+        <div className="parallax-text" style={{ top: '10%', right: '-8%' }} id="pt6">OATHS</div>
         <div className="section-header reveal">
           <p className="section-label">The Three Oaths</p>
           <h2 className="section-title">These Oaths<br/>Are Our Bond.</h2>
@@ -299,6 +395,7 @@ export default function AboutUs() {
       </section>
 
       <section id="goals" className="about-section">
+        <div className="parallax-text" style={{ bottom: '15%', left: '-8%' }} id="pt7">GOALS</div>
         <div className="section-header reveal">
           <p className="section-label">The Three Goals</p>
           <h2 className="section-title">What We Are<br/>Building Toward.</h2>
@@ -316,6 +413,10 @@ export default function AboutUs() {
             <h3>Advance a Unified Mission.</h3>
             <p>To align our diverse voices and projects under a single, powerful purpose. By codifying our shared vision in a living manifesto, we ensure that every action contributes to our common aim, giving our collective its direction and impact.</p>
           </div>
+        </div>
+        <div className="goals-footer reveal">
+          <p>TOGETHER, THESE ROLES FORM A SYMBIOTIC ECOSYSTEM. CONTRIBUTORS SUSTAIN OUR FOUNDATION, COLLABORATORS EXPAND OUR REACH AND SOLIDARITY, AND CREATORS CHANNEL OUR COLLECTIVE POWER INTO TRANSFORMATIVE ACTION. ALL ARE UNITED BY A SHARED REJECTION OF THE OLD MODEL AND A COMMITMENT TO BUILDING THE NEW.</p>
+          <p style={{ marginTop: '16px', color: 'var(--accent)' }}>THIS IS HOW WE STRUCTURE OUR AUTONOMY. THIS IS HOW WE FIGHT.</p>
         </div>
       </section>
 
@@ -360,7 +461,8 @@ export default function AboutUs() {
 
       <section id="manifesto" className="about-section">
         <div className="manifesto-bg"></div>
-        <div className="section-header reveal">
+        <div className="parallax-text" style={{ top: '50%', right: '-5%', transform: 'translateY(-50%)' }} id="pt8">MANIFESTO</div>
+        <div className="section-header reveal" style={{ position: 'relative', zIndex: 2 }}>
           <p className="section-label">3AM Manifesto</p>
           <h2 className="section-title" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(60px,10vw,120px)', fontStyle: 'normal', letterSpacing: '0.05em' }}>3am manifesto.</h2>
         </div>
@@ -375,6 +477,38 @@ export default function AboutUs() {
           </div>
         </div>
       </section>
-    </>
+
+      <section id="cta">
+        <div className="cta-bg-text">JOIN</div>
+        <div className="cta-content">
+          <p className="cta-label">The next phase begins now</p>
+          <h2>
+            <div className="line1">JOIN OUR</div>
+            <div className="line2">COLLECTIVE.</div>
+          </h2>
+          <p className="cta-desc">For collective creation & creator's responsibility.<br/>For decentralised system & collective autonomy.</p>
+          <div className="cta-buttons">
+            <a href="#" className="about-btn-primary">Join the Movement</a>
+            <a href="#manifesto" className="about-btn-secondary">Read the Manifesto</a>
+          </div>
+          <div className="cta-assoc">
+            <span>In Association With</span>
+            <div className="assoc-logos">
+              <div className="assoc-logo">3AM COLLECTIVE</div>
+              <div style={{ width: '1px', height: '20px', background: 'var(--mid)' }}></div>
+              <div className="assoc-logo">3AM TEA CIGAZ</div>
+              <div style={{ width: '1px', height: '20px', background: 'var(--mid)' }}></div>
+              <div className="assoc-logo">AN INDIE CULT HOUSE</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div className="f-logo">3AM COLLECTIVE</div>
+        <div className="f-tagline">While the world sleeps, we build.</div>
+        <div className="f-copy">© 2026 · An Indie Cult House</div>
+      </footer>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
+import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import HeaderPanel from '@/components/HeaderPanel';
 import AboutUs from '@/components/AboutUs';
@@ -16,6 +16,7 @@ import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
 import InstagramEmbed from '@/components/InstagramEmbed';
+import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 import './Home.css';
 
@@ -125,13 +126,17 @@ function HomeContent() {
     checkSession();
   }, [searchParams, router]);
 
-  useEffect(() => {
-    const handleClickOutside = () => setShowProfileDropdown(false);
-    if (showProfileDropdown) {
-      document.addEventListener('click', handleClickOutside);
-    }
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showProfileDropdown]);
+  const transitionRef = useRef<StaggeredTransitionRef>(null);
+
+  const handleTransitionMidpoint = () => {
+    setActiveSection('about-us');
+    window.location.hash = '#about-us';
+  };
+
+  const handleBackwardMidpoint = () => {
+    setActiveSection('participate');
+    window.location.hash = '#participate';
+  };
 
   const handleLoginSuccess = async (user: any) => {
     setCurrentUser(user);
@@ -325,44 +330,59 @@ function HomeContent() {
 
   if (!isLoggedIn) {
     return (
+      <>
+      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
       <div className="landing-page fade-in">
-        <MarqueeBanner />
-        <HeaderPanel
-          isLoggedIn={isLoggedIn}
-          showSignInPanel={showSignInPanel}
-          setShowSignInPanel={setShowSignInPanel}
-          setShowRegisterModal={setShowRegisterModal}
-          signinUsername={signinPhone}
-          setSigninUsername={setSigninPhone}
-          signinPassword={signinPassword}
-          setSigninPassword={setSigninPassword}
-          signinSubmitting={signinSubmitting}
-          setSigninSubmitting={setSigninSubmitting}
-          signinError={signinError}
-          setSigninError={setSigninError}
-          handlePanelSignIn={handlePanelSignIn}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-        />
-
-
-        <section id="about-us" style={{ display: activeSection === 'about-us' ? 'block' : 'none' }}>
-          <AboutUs />
-        </section>
-        <section id="participate" style={{ display: activeSection === 'participate' ? 'block' : 'none', textAlign: 'left', padding: '40px 0' }}>
-          <p>Join our events, volunteer, or become a member of the community.</p>
-          <ActivityCarousel
-            refreshTrigger={refreshTrigger}
-            onActivityClick={handleCarouselClick}
+        {activeSection !== 'about-us' && <MarqueeBanner />}
+        {activeSection !== 'about-us' && (
+          <HeaderPanel
             isLoggedIn={isLoggedIn}
-            headerRight={null}
+            showSignInPanel={showSignInPanel}
+            setShowSignInPanel={setShowSignInPanel}
+            setShowRegisterModal={setShowRegisterModal}
+            signinUsername={signinPhone}
+            setSigninUsername={setSigninPhone}
+            signinPassword={signinPassword}
+            setSigninPassword={setSigninPassword}
+            signinSubmitting={signinSubmitting}
+            setSigninSubmitting={setSigninSubmitting}
+            signinError={signinError}
+            setSigninError={setSigninError}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            handlePanelSignIn={handlePanelSignIn}
+            onAboutUsClick={() => transitionRef.current?.trigger()}
           />
-        </section>
-        <section id="gallery" style={{ display: activeSection === 'gallery' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
-          <h2>Gallery</h2>
-          <p>Explore photos and videos from past activities.</p>
-        </section>
-        <section id="explore" style={{ display: activeSection === 'explore' ? 'block' : 'none', textAlign: 'center', padding: '40px 0' }}>
+        )}
+
+
+        {activeSection === 'about-us' && (
+          <div style={{ width: '100%', minHeight: '100vh' }}>
+            <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+          </div>
+        )}
+
+        {activeSection === 'participate' && (
+          <section id="participate" style={{ textAlign: 'left', padding: '40px 0' }}>
+            <p>Join our events, volunteer, or become a member of the community.</p>
+            <ActivityCarousel
+              refreshTrigger={refreshTrigger}
+              onActivityClick={handleCarouselClick}
+              isLoggedIn={isLoggedIn}
+              headerRight={null}
+            />
+          </section>
+        )}
+
+        {activeSection === 'gallery' && (
+          <section id="gallery" style={{ textAlign: 'center', padding: '40px 0' }}>
+            <h2>Gallery</h2>
+            <p>Explore photos and videos from past activities.</p>
+          </section>
+        )}
+
+        {activeSection === 'explore' && (
+          <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
   <h2>Explore</h2>
   <p>Discover new projects and community initiatives.</p>
   {/* Latest Posts Section */}
@@ -379,6 +399,7 @@ function HomeContent() {
     </div>
   </section>
 </section>
+)}
 
 
 
@@ -448,15 +469,18 @@ function HomeContent() {
           )
         }
       </div >
+      </>
     );
   }
 
   return (
+    <>
+    <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
     <div className="dashboard-layout fade-in">
-      <MarqueeBanner />
+      {activeSection !== 'about-us' && <MarqueeBanner />}
 
       {/* Thin controls bar below the banner (user controls only; title moved to marquee above) */}
-      <header className="dashboard-header">
+      <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
         <div className="header-user">
           <div className="user-menu-container">
             <button
@@ -501,24 +525,30 @@ function HomeContent() {
         )}
       </nav>
 
-      <main className="app-container">
-        {activeTab === 'calendar' && (
-          <div className="content-section">
-            <CalendarView
-              refreshTrigger={refreshTrigger}
-              onSelectActivity={handleSelectActivity}
-              onSelectSlot={handleSelectSlot}
-              onCreateActivity={onCreateActivity}
-              onOwnResponsibility={onOwnResponsibility}
-              userRoles={userRoles}
-              userPermissions={userPermissions}
-            />
-          </div>
-        )}
-        {activeTab === 'admin' && (
-          <AdminDashboard currentUser={currentUser} />
-        )}
-      </main>
+      {activeSection === 'about-us' ? (
+        <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
+          <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+        </div>
+      ) : (
+        <main className="app-container">
+          {activeTab === 'calendar' && (
+            <div className="content-section">
+              <CalendarView
+                refreshTrigger={refreshTrigger}
+                onSelectActivity={handleSelectActivity}
+                onSelectSlot={handleSelectSlot}
+                onCreateActivity={onCreateActivity}
+                onOwnResponsibility={onOwnResponsibility}
+                userRoles={userRoles}
+                userPermissions={userPermissions}
+              />
+            </div>
+          )}
+          {activeTab === 'admin' && (
+            <AdminDashboard currentUser={currentUser} />
+          )}
+        </main>
+      )}
 
       <ActivityModal
         isOpen={isModalOpen}
@@ -579,6 +609,7 @@ function HomeContent() {
         onProfileUpdate={setCurrentUser}
       />
     </div>
+    </>
   );
 }
 
