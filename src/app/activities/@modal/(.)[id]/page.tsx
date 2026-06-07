@@ -92,11 +92,11 @@ export default function EditActivityModal() {
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium mb-1">Start</span>
-            <input type="datetime-local" defaultValue={format(new Date(activity.startDateTime), "yyyy-MM-dd'T'HH:mm"} className="input" />
+            <input type="datetime-local" defaultValue={format(new Date(activity.startDateTime), "yyyy-MM-dd'T'HH:mm")} className="input" />
           </label>
           <label className="flex flex-col">
             <span className="text-sm font-medium mb-1">End</span>
-            <input type="datetime-local" defaultValue={format(new Date(activity.endDateTime), "yyyy-MM-dd'T'HH:mm"} className="input" />
+            <input type="datetime-local" defaultValue={format(new Date(activity.endDateTime), "yyyy-MM-dd'T'HH:mm")} className="input" />
           </label>
         </div>
         <div className="flex justify-end mt-6 gap-3">

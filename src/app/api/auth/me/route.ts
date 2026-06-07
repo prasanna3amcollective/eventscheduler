@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { withAuth } from '@/lib/prisma';
+import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 
 export async function GET() {
@@ -52,6 +52,7 @@ export async function GET() {
 
     const permissions = {
       canCreateActivity: await checkAcl('activity', 'create'),
+      canEditActivity: await checkAcl('activity', 'update'),
       canCreateResponsibility: await checkAcl('responsibility', 'create')
     };
 

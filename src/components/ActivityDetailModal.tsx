@@ -7,6 +7,7 @@ import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, Check
 import { secureFetch } from '@/lib/fetch';
 import { GOOGLE_MAPS_LINK } from '@/lib/constants';
 import { buildGoogleCalendarUrl } from '@/lib/calendar';
+import EditActivityModal from '@/components/EditActivityModal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -260,11 +261,12 @@ export default function ActivityDetailModal({
   }, [isLoggedIn, activityId, onRegisterSuccess, onClose]);
 
   /** Navigates to the scheduler tab in edit mode for this activity */
+  // Open the edit modal inline without navigation
+  const [showEditModal, setShowEditModal] = useState(false);
   const handleEdit = useCallback(() => {
-    onClose();
-    sessionStorage.setItem('editEventId', activityId);
-    router.push('/?tab=scheduler');
-  }, [activityId, onClose, router]);
+    onClose(); // close the activity detail modal first
+    setShowEditModal(true); // open the edit modal
+  }, [onClose]);
 
   /** Opens the Google Calendar URL in a new tab */
   const handleSyncCalendar = useCallback(() => {
@@ -273,58 +275,110 @@ export default function ActivityDetailModal({
     }
   }, [googleCalendarUrl]);
 
-  if (!isOpen || !activity) return null;
+  if (!activity) return null;
+  if (!isOpen && !showEditModal) return null;
 
   return (
-    <div className="modal-overlay fade-in" onClick={onClose}>
-      <div
-        className="modal-content activity-detail-card"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header-actions">
-          {canEdit && (
-            <button onClick={handleEdit} className="edit-btn-flat" title="Edit Activity">
-              <Edit size={20} />
-            </button>
-          )}
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* ---------- Intimate header: no colored block, just activity name ---------- */}
-        <div className="detail-header-flat">
-          <div className="detail-category">{activity.category || 'Activity'}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h2 className="detail-title" style={{ margin: 0 }}>{activity.name}</h2>
-            {activity.state && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '3px 8px',
-                borderRadius: '10px',
-                fontSize: '11px',
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
-                border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-              }}>
-                {activity.state === 'Completed' ? <CheckCircle size={12} /> : null}
-                {activity.state}
-              </span>
+    <>
+      {isOpen && (
+        <div className="modal-overlay fade-in" onClick={onClose}>
+        <div className="modal-content activity-detail-card" onClick={e => e.stopPropagation()}>
+          <div className="modal-header-actions">
+            {canEdit && (
+              <button onClick={handleEdit} className="edit-btn-flat" title="Edit Activity">
+                <Edit size={20} />
+              </button>
             )}
+            <button className="modal-close" onClick={onClose}>
+              <X size={20} />
+            </button>
           </div>
-        </div>
+          <div className="detail-header-flat">
+            <div className="detail-category">{activity.category || 'Activity'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="detail-title" style={{ margin: 0 }}>{activity.name}</h2>
+              {activity.state && (
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '3px 8px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                  color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
+                  border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                }}>
+                  {activity.state === 'Completed' && <CheckCircle size={12} />}
+                  {activity.state}
+                </span>
+              )}
+            </div>
+          </div>
 
-        {/* ---------- Body ---------- */}
-        <div className="detail-body-flat">
-          {/* Date & time — inline, no big separator */}
-          <div className="detail-datetime-row">
-            <span className="detail-label"><Clock size={12} /> {format(startDate, 'EEEE')}</span>
+          {/* ---------- Body ---------- */}
+          <div className="detail-body-flat">
+            {/* Date & time — inline, no big separator */}
+            <div className="detail-datetime-row">
+              <span className="detail-label"><Clock size={12} /> {format(startDate, 'EEEE')}</span>
+              <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({activity.duration} mins)</span>
+            </div>
+
+            {/* Staff — compact, no icons */}
+            {isLoggedIn && activity.participantCount !== undefined && (
+              <ParticipantCount count={activity.participantCount} />
+            )}
+
+            {/* Staff Section */}
+            <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {(activity.leaders?.length || 0) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <UserIcon size={14} color="var(--primary-color)" style={{ marginTop: '3px' }} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Leaders</div>
+                    <div style={{ color: 'var(--text-primary)' }}>{activity.leaders?.join(', ')}</div>
+                  </div>
+                </div>
+              )}
+              {(activity.guides?.length || 0) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <Users size={14} color="#10b981" style={{ marginTop: '3px' }} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Guides</div>
+                    <div style={{ color: 'var(--text-primary)' }}>{activity.guides?.join(', ')}</div>
+                  </div>
+                </div>
+              )}
+              {(activity.observers?.length || 0) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <Eye size={14} color="var(--text-secondary)" style={{ marginTop: '3px' }} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Observers</div>
+                    <div style={{ color: 'var(--text-primary)' }}>{activity.observers?.join(', ')}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
+          </div>
+
+          {/* ---------- Footer / actions ---------- */}
+          <div className="detail-footer-flat">
+            {successMessage && (
+              <div style={{
+                flex: '0 0 100%',
+                textAlign: 'center',
+                color: '#22c55e',
+                fontSize: '14px',
+                fontWeight: 500,
+                marginBottom: '8px'
+              }}>
             <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({activity.duration} mins)</span>
           </div>
+)}
 
           {/* Staff — compact, no icons */}
           {isLoggedIn && activity.participantCount !== undefined && (
@@ -410,5 +464,14 @@ export default function ActivityDetailModal({
         </div>
       </div>
     </div>
+    )}
+    {/* Inline Edit Activity Modal */}
+    {showEditModal && (
+      <EditActivityModal
+        activityId={activityId}
+        onClose={() => setShowEditModal(false)}
+      />
+    )}
+</>
   );
 }

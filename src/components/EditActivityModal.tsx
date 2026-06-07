@@ -1,81 +1,82 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { secureFetch } from "@/lib/fetch";
-import { format } from "date-fns";
 import { XCircle } from "@/components/Icons";
+import ActivityForm from "@/components/ActivityForm";
 
-interface Participant {
-  id: string;
-  type?: string;
-  user: {
-    id: string;
-    name: string;
-    username: string;
-    email: string;
-    phone: string;
-  };
-  sys_created_at: string;
-  attendance?: number;
-  payAsYouWish?: number;
+export interface EditActivityModalProps {
+  readonly onClose: () => void;
+  readonly activityId?: string;
 }
 
-interface Activity {
-  id: string;
-  name: string;
-  startDateTime: string;
-  endDateTime: string;
-  duration: number;
-  state?: string;
-  participants: Participant[];
-}
-
-export default function EditActivityModal({
-  onClose,
-}: {
-  onClose: () => void;
-}) {
-  const router = useRouter();
-  const { id } = useParams() as { id: string };
-  const [activity, setActivity] = useState<Activity | null>(null);
+export default function EditActivityModal({ onClose, activityId }: EditActivityModalProps) {
+  const { id: paramId } = useParams() as { id: string };
+  const resolvedId = activityId ?? paramId;
+  const [activity, setActivity] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await secureFetch(`/api/activities/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setActivity(data);
-        } else {
+        const res = await secureFetch(`/api/activities/${resolvedId}`);
+        if (!res.ok) {
           setError("Failed to load activity");
+          setLoading(false);
+          return;
         }
+        const data = await res.json();
+
+        // 1. ACL check
+        const meRes = await secureFetch("/api/auth/me");
+        if (!meRes.ok) {
+          setError("Not authorized to edit this activity");
+          setLoading(false);
+          return;
+        }
+        const meData = await meRes.json();
+        const currentUser = meData.user;
+
+        // Check if user is a Leader of this activity
+        const isLeader = data.participants?.some(
+          (p: any) => p.user?.id === currentUser?.id && p.type === 'Leader'
+        );
+        
+        // Use the dynamic ACL permission fetched from the server
+        const canEdit = meData.permissions?.canEditActivity || isLeader;
+        if (!canEdit) {
+          setError("You do not have permission to edit this activity.");
+          setLoading(false);
+          return;
+        }
+
+        setActivity(data);
       } catch {
         setError("Network error");
       } finally {
         setLoading(false);
       }
     };
-    if (id) load();
-  }, [id]);
+    if (resolvedId) load();
+  }, [resolvedId]);
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-        <div className="bg-var(--bg-color) p-6 rounded shadow">Loading…</div>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }}>
+        <div className="bg-white p-6 rounded-xl shadow-lg">Loading…</div>
       </div>
     );
   }
 
   if (error || !activity) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-        <div className="bg-var(--bg-color) p-6 rounded shadow">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }}>
+        <div className="bg-white p-6 rounded-xl shadow-lg">
           <XCircle size={24} className="text-red-500 mb-2" />
           <p>{error || "Activity not found"}</p>
-          <button onClick={onClose} className="mt-4 btn-primary">
+          <button onClick={onClose} className="mt-4 px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
             Close
           </button>
         </div>
@@ -83,57 +84,18 @@ export default function EditActivityModal({
     );
   }
 
-  const handleSave = async () => {
-    // TODO: implement save logic (e.g., PATCH activity)
-    alert("Save not implemented");
-    onClose();
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-[var(--bg-color)] p-6 rounded shadow max-w-lg w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-xl font-semibold mb-4">
-          Edit Activity – {activity.name}
-        </h2>
-        <div className="grid gap-4">
-          <label className="flex flex-col">
-            <span className="text-sm font-medium mb-1">Name</span>
-            <input type="text" defaultValue={activity.name} className="input" />
-          </label>
-          <label className="flex flex-col">
-            <span className="text-sm font-medium mb-1">Start</span>
-            <input
-              type="datetime-local"
-              defaultValue={format(
-                new Date(activity.startDateTime),
-                "yyyy-MM-dd'T'HH:mm"
-              )}
-              className="input"
-            />
-          </label>
-          <label className="flex flex-col">
-            <span className="text-sm font-medium mb-1">End</span>
-            <input
-              type="datetime-local"
-              defaultValue={format(
-                new Date(activity.endDateTime),
-                "yyyy-MM-dd'T'HH:mm"
-              )}
-              className="input"
-            />
-          </label>
-        </div>
-        <div className="flex justify-end mt-6 gap-3">
-          <button onClick={onClose} className="btn-secondary">
-            Cancel
-          </button>
-          <button onClick={handleSave} className="btn-primary">
-            Save
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }} onClick={onClose}>
+      <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl" onClick={(e) => e.stopPropagation()}>
+        <ActivityForm 
+          initialData={activity} 
+          onActivityCreated={() => {
+            onClose();
+            // Option to reload to show changes in the parent component
+            window.location.reload(); 
+          }}
+          onCancel={onClose}
+        />
       </div>
     </div>
   );

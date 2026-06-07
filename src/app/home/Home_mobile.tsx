@@ -340,268 +340,271 @@ export default function Home_mobile() {
   if (!isLoggedIn) {
     return (
       <>
-      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
-      <div className="mobile-app-container landing-page fade-in">
-        {activeSection !== 'about-us' && (
-          <MarqueeBanner_mobile 
-            activeSection={activeSection} 
-            setActiveSection={setActiveSection} 
-            onLoginClick={() => setShowSignInPanel(true)}
-            onAboutUsClick={() => transitionRef.current?.trigger()}
-          />
-        )}
+        <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
+        <div className="mobile-app-container landing-page fade-in">
+          {activeSection !== 'about-us' && (
+            <MarqueeBanner_mobile
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              onLoginClick={() => setShowSignInPanel(true)}
+              onAboutUsClick={() => transitionRef.current?.trigger()}
+            />
+          )}
 
-        {activeSection === 'about-us' && (
-          <div style={{ width: '100%', minHeight: '100vh' }}>
-            <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
-          </div>
-        )}
-
-        {activeSection === 'participate' && (
-          <>
-            {/* Mission Text */}
-            <div className="mobile-mission-text">
-              The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
+          {activeSection === 'about-us' && (
+            <div style={{ width: '100%', minHeight: '100vh' }}>
+              <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
             </div>
+          )}
 
-            {/* Auth Buttons */}
-            <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
-              <button
-                onClick={() => {
-                  setShowRegisterModal(true);
-                }}
-                className="yellow-btn"
-              >
-                Join the circle
-              </button>
-            </div>
-
-            {/* Upcoming Activities */}
-            <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
-              <ActivityCarousel refreshTrigger={refreshTrigger} />
-            </div>
-          </>
-        )}
-
-        {/* Top Login Banner */}
-        {showSignInPanel && (
-          <div className="mobile-login-banner fade-in">
-            <div className="login-banner-header">
-              <button onClick={() => setShowSignInPanel(false)}>×</button>
-            </div>
-            <div className="login-banner-body">
-              <div className="login-field">
-                <label>Phone Number</label>
-                <input 
-                  type="tel" 
-                  value={signinPhone}
-                  onChange={e => setSigninPhone(e.target.value)}
-                  placeholder="Enter phone number"
-                />
+          {activeSection === 'participate' && (
+            <>
+              {/* Mission Text */}
+              <div className="mobile-mission-text">
+                The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
               </div>
-              <div className="login-field">
-                <label>Password</label>
-                <input 
-                  type="password" 
-                  value={signinPassword}
-                  onChange={e => setSigninPassword(e.target.value)}
-                />
-              </div>
-              {signinError && <div className="login-error">{signinError}</div>}
-              <div className="login-banner-footer">
-                <div className="login-remember">
-                  <input type="checkbox" id="rememberMe" />
-                  <label htmlFor="rememberMe" style={{ margin: 0 }}>Remember</label>
-                  <span className="forgotten-link">Forgotten?</span>
-                </div>
-                <button 
-                  className="signin-submit"
-                  onClick={handlePanelSignIn}
-                  disabled={signinSubmitting}
-                >
-                  {signinSubmitting ? '...' : 'SIGN IN'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {showRegisterModal && (
-          <div
-            className="modal-overlay"
-            onClick={() => setShowRegisterModal(false)}
-            style={{ zIndex: 2000 }}
-          >
-            <div
-              className="modal-content register-modal"
-              style={{ maxWidth: '560px', padding: '32px' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
+              {/* Auth Buttons */}
+              <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
                 <button
-                  onClick={() => setShowRegisterModal(false)}
-                  style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
+                  onClick={() => {
+                    setShowRegisterModal(true);
+                  }}
+                  className="yellow-btn"
                 >
-                  ×
+                  Join the circle
                 </button>
               </div>
-              <RegisterForm
-                onSuccess={(user) => {
-                  handleLoginSuccess(user);
-                  setShowRegisterModal(false);
-                }}
-                pendingEventId={pendingEventId}
-                hideTitle
-                submitText="Join"
-              />
+
+              {/* Upcoming Activities */}
+              <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
+                <ActivityCarousel refreshTrigger={refreshTrigger} />
+              </div>
+            </>
+          )}
+
+          {/* Top Login Banner */}
+          {showSignInPanel && (
+            <div className="mobile-login-banner fade-in">
+              <div className="login-banner-header">
+                <button onClick={() => setShowSignInPanel(false)}>×</button>
+              </div>
+              <div className="login-banner-body">
+                <div className="login-field">
+                  <label>Phone Number</label>
+                  <input
+                    type="tel"
+                    value={signinPhone}
+                    onChange={e => setSigninPhone(e.target.value)}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div className="login-field">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    value={signinPassword}
+                    onChange={e => setSigninPassword(e.target.value)}
+                  />
+                </div>
+                {signinError && <div className="login-error">{signinError}</div>}
+                <div className="login-banner-footer">
+                  <div className="login-remember">
+                    <input type="checkbox" id="rememberMe" />
+                    <label htmlFor="rememberMe" style={{ margin: 0 }}>Remember</label>
+                    <span className="forgotten-link">Forgotten?</span>
+                  </div>
+                  <button
+                    className="signin-submit"
+                    onClick={handlePanelSignIn}
+                    disabled={signinSubmitting}
+                  >
+                    {signinSubmitting ? '...' : 'SIGN IN'}
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+
+          {showRegisterModal && (
+            <div
+              className="modal-overlay"
+              onClick={() => setShowRegisterModal(false)}
+              style={{ zIndex: 2000 }}
+            >
+              <div
+                className="modal-content register-modal"
+                style={{ maxWidth: '560px', padding: '32px' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
+                  <button
+                    onClick={() => setShowRegisterModal(false)}
+                    style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <RegisterForm
+                  onSuccess={(user) => {
+                    handleLoginSuccess(user);
+                    setShowRegisterModal(false);
+                  }}
+                  pendingEventId={pendingEventId}
+                  hideTitle
+                  submitText="Join"
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </>
     );
   }
 
   return (
     <>
-    <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
-    <div className="mobile-app-container dashboard-layout fade-in">
-      {activeSection !== 'about-us' && (
-        <MarqueeBanner_mobile 
-          activeSection={activeSection} 
-          setActiveSection={setActiveSection} 
-          onAboutUsClick={() => transitionRef.current?.trigger()} 
-        />
-      )}
-
-      <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
-        <div className="header-user">
-          <div className="user-menu-container">
-            <button
-              className="user-trigger"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowProfileDropdown(!showProfileDropdown);
-              }}
-            >
-              <div className="user-avatar">
-                <User size={20} />
-              </div>
-              <span className="user-name">{currentUser?.name}</span>
-              <ChevronDown size={14} />
-            </button>
-            {showProfileDropdown && (
-              <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowProfileDropdown(false);
-                    setIsProfileOpen(true);
-                  }}
-                >
-                  Edit Profile
-                </button>
-              </div>
-            )}
-          </div>
-          <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
-        </div>
-      </header>
-
-      <nav className="nav-container">
-        <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
-          <CalendarDays size={18} /> Calendar View
-        </button>
-        {userRoles.includes('developer') && (
-          <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-            <ShieldCheck size={18} /> Developer Panel
-          </button>
+      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
+      <div className="mobile-app-container dashboard-layout fade-in">
+        {activeSection !== 'about-us' && (
+          <MarqueeBanner_mobile
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            onAboutUsClick={() => transitionRef.current?.trigger()}
+          />
         )}
-      </nav>
 
-      {activeSection === 'about-us' ? (
-        <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
-          <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
-        </div>
-      ) : (
-        <main className="app-container">
-          {activeTab === 'calendar' && (
-            <div className="content-section">
-              <CalendarView
-                onSelectActivity={handleSelectActivity}
-                onSelectSlot={handleSelectSlot}
-                onCreateActivity={onCreateActivity}
-                onOwnResponsibility={onOwnResponsibility}
-                userRoles={userRoles}
-                userPermissions={userPermissions}
-              />
+        <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
+          <div className="header-user">
+            <div className="user-menu-container">
+              <button
+                className="user-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileDropdown(!showProfileDropdown);
+                }}
+              >
+                <div className="user-avatar">
+                  <User size={20} />
+                </div>
+                <ChevronDown size={14} />
+              </button>
+              {showProfileDropdown && (
+                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setIsProfileOpen(true);
+                    }}
+                  >
+                    <span >{currentUser?.name}</span> <br />
+                    <br />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
             </div>
+            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
+          </div>
+        </header >
+
+        <nav className="nav-container">
+          <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
+            <CalendarDays size={18} /> Calendar View
+          </button>
+          {userRoles.includes('developer') && (
+            <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
+              <ShieldCheck size={18} /> Developer Panel
+            </button>
           )}
-          {activeTab === 'admin' && (
-            <AdminDashboard currentUser={currentUser} />
+        </nav>
+
+        {
+          activeSection === 'about-us' ? (
+            <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
+              <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+            </div>
+          ) : (
+            <main className="app-container">
+              {activeTab === 'calendar' && (
+                <div className="content-section">
+                  <CalendarView
+                    onSelectActivity={handleSelectActivity}
+                    onSelectSlot={handleSelectSlot}
+                    onCreateActivity={onCreateActivity}
+                    onOwnResponsibility={onOwnResponsibility}
+                    userRoles={userRoles}
+                    userPermissions={userPermissions}
+                  />
+                </div>
+              )}
+              {activeTab === 'admin' && (
+                <AdminDashboard currentUser={currentUser} />
+              )}
+            </main>
+          )
+        }
+
+        <ActivityModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
+        >
+          {selectedActivity && (
+            <ActivityForm
+              initialData={selectedActivity}
+              onActivityCreated={handleActivityCreated}
+              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+            />
           )}
-        </main>
-      )}
+        </ActivityModal>
 
-      <ActivityModal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-        title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
-      >
-        {selectedActivity && (
-          <ActivityForm
-            initialData={selectedActivity}
-            onActivityCreated={handleActivityCreated}
-            onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-          />
-        )}
-      </ActivityModal>
+        <ActivityModal
+          isOpen={isResponsibilityModalOpen}
+          onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+          title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
+        >
+          {selectedResponsibility && (
+            <ResponsibilityForm
+              initialData={selectedResponsibility}
+              onResponsibilityCreated={() => {
+                setRefreshTrigger(prev => prev + 1);
+                setIsResponsibilityModalOpen(false);
+                setSelectedResponsibility(null);
+              }}
+              onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+            />
+          )}
+        </ActivityModal>
 
-      <ActivityModal
-        isOpen={isResponsibilityModalOpen}
-        onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-        title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
-      >
-        {selectedResponsibility && (
-          <ResponsibilityForm
-            initialData={selectedResponsibility}
-            onResponsibilityCreated={() => {
-              setRefreshTrigger(prev => prev + 1);
-              setIsResponsibilityModalOpen(false);
-              setSelectedResponsibility(null);
-            }}
-            onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-          />
-        )}
-      </ActivityModal>
+        <ActivityDetailModal
+          activity={detailActivity}
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
+          userRoles={userRoles}
+          onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
+          onSwitchToRegister={() => { }}
+        />
 
-      <ActivityDetailModal
-        activity={detailActivity}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        isLoggedIn={isLoggedIn}
-        currentUser={currentUser}
-        userRoles={userRoles}
-        onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
-        onSwitchToRegister={() => { }}
-      />
+        <ResponsibilityDetailModal
+          responsibility={responsibilityDetail}
+          isOpen={isResponsibilityDetailOpen}
+          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+          onStateChange={(id, newState) => {
+            setResponsibilityDetail(prev => prev && prev.id === id ? { ...prev, state: newState } : prev);
+          }}
+        />
 
-      <ResponsibilityDetailModal
-        responsibility={responsibilityDetail}
-        isOpen={isResponsibilityDetailOpen}
-        onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
-        onStateChange={(id, newState) => {
-          setResponsibilityDetail(prev => prev && prev.id === id ? { ...prev, state: newState } : prev);
-        }}
-      />
-
-      <ProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
-        currentUser={currentUser}
-        onProfileUpdate={setCurrentUser}
-      />
-    </div>
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          onProfileUpdate={setCurrentUser}
+        />
+      </div >
     </>
   );
 }

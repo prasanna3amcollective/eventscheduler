@@ -123,6 +123,48 @@
   box-shadow: none !important;
 }
 
+
+.orange-btn {
+  background: #f09035 !important;
+  background-color: #f09035 !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+  background-color: #f09035 !important;
+  color: #000000 !important;
+  border: 3px solid #000000 !important;
+  padding: 10px 24px !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 5px 5px 0px 0px #000000 !important;
+  transition: all 0.1s ease-in-out !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  border-radius: 0 !important;
+}
+
+.orange-btn:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 3px 3px 0px 0px #000000 !important;
+  opacity: 1 !important;
+}
+
+.orange-btn:active {
+  transform: translate(5px, 5px) !important;
+  box-shadow: none !important;
+}
+
 .pink-btn {
   background: #ff08a7 !important;
   background-color: #ff08a7 !important;
@@ -955,8 +997,8 @@ input:not([type="checkbox"]):focus {
 }
 
 .nav-btn:hover {
-  background: var(--hover-color);
-  color: var(--primary-color);
+  background: var(--primary-color);
+  color: #000000;
   border-color: var(--primary-color);
 }
 
@@ -973,7 +1015,7 @@ input:not([type="checkbox"]):focus {
 
 .nav-btn-today:hover {
   background: var(--primary-color);
-  color: white;
+  color: #000000;
   border-color: var(--primary-color);
 }
 
@@ -2619,7 +2661,7 @@ input:not([type="checkbox"]):focus {
   height: 32px;
   border-radius: 50%;
   background: var(--primary-color);
-  color: white;
+  color: rgb(0, 0, 0);
   display: flex;
   align-items: center;
   justify-content: center;

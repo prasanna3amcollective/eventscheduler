@@ -405,6 +405,12 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
+
+      if (!formData.leader || formData.leader.length === 0) {
+        alert("At least one Leader is required.");
+        return;
+      }
+
       setIsSubmitting(true);
 
       const start = formData.startDateTime;
@@ -601,7 +607,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </div>
 
         <div className="form-section-divider flex items-center my-6">
-          <span className="px-3 bg-gray-50 text-xs font-semibold text-gray-600 uppercase">Participants & Staff</span>
+          <span className="px-3 bg-gray-50 text-xs font-semibold text-gray-600 uppercase">Organisers</span>
           <div className="flex-1 border-t border-gray-300"></div>
         </div>
 
@@ -813,7 +819,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           </div>
         )}
 
-        <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+        <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4">
           {onCancel && (
             <button
               type="button"
@@ -828,23 +834,22 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             <button
               type="button"
               onClick={handleDelete}
-              className="btn-danger flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all"
+              className="orange-btn"
             >
-              <Trash size={18} className="text-red-600" />
+              {/* <Trash size={18} className="text-red-600" /> */}
               Delete
             </button>
           )}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn-primary flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all disabled:opacity-60"
-          >
+            className="yellow-btn">
             {isSubmitting
               ? 'Saving...'
               : isEditing
                 ? 'Save Changes'
                 : 'Confirm Schedule'}
-            {!isSubmitting && <Check size={18} className="ml-2" />}
+            {!isSubmitting}
           </button>
         </div>
       </form>
