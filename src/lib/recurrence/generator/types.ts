@@ -62,6 +62,7 @@ export interface MaterializeOptions {
 export interface ReconcileOptions {
   newVersionId?: string; // when a new version row exists, stamp generatedFromTemplateId with it
   asOf?: Date;
+  horizonDays?: number;
   dryRun?: boolean;
   /** Optional caller context for ACL + stamping (PHASE 5+) */
   context?: GeneratorContext;

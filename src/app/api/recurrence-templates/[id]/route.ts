@@ -79,6 +79,7 @@ export async function PUT(
     // Trigger reconcile so future non-detached children are created/updated/cancelled to match new rule
     await reconcileFutureOccurrences(prisma, id, {
       asOf: new Date(),
+      horizonDays: 365,
       context: securityContext,
     });
 

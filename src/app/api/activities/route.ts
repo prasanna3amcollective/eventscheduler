@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     console.log("POST /api/activities body:", JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
     console.log("POST /api/activities parsedData:", JSON.stringify(parsedData, null, 2));
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, recurrenceTemplateId, generatedFromTemplateId, detachReason, recurrenceWeeks } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -102,9 +102,11 @@ export async function POST(request: Request) {
           ...(securityContext ? { _context: securityContext } : {}),
         });
 
+        const horizon = recurrenceWeeks ? recurrenceWeeks * 7 + 14 : 365;
+
         await materializeTemplateWindow(prisma, tpl.id, {
           asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
-          horizonDays: 60,
+          horizonDays: horizon,
           context: securityContext,
         });
 

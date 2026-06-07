@@ -254,8 +254,9 @@ export async function reconcileFutureOccurrences(
       };
     }
 
-    // Use a generous future window for reconciliation (60 days from asOf)
-    const horizonEnd = new Date(asOf.getTime() + 60 * 24 * 60 * 60 * 1000);
+    // Use a generous future window for reconciliation
+    const horizonDays = options.horizonDays ?? 60;
+    const horizonEnd = new Date(asOf.getTime() + horizonDays * 24 * 60 * 60 * 1000);
     const effectiveHorizon = template.endDate && template.endDate < horizonEnd
       ? template.endDate
       : horizonEnd;

@@ -184,8 +184,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         formData.recurrenceFreq,
         undefined,
         formData.recurrenceStart,
-        formData.recurrenceUntil,
-        formData.recurrenceWeeks
+        formData.recurrenceUntil
       );
 
       const payload: any = {
@@ -405,13 +404,16 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
               <span className="text-xs font-medium text-gray-500">on</span>
             </div>
 
-            <div className="days-selector flex flex-wrap gap-2 mb-4">
+            <div className="days-selector">
               {DAYS_OF_WEEK.map(day => (
                 <button
                   type="button"
                   key={day.value}
-                  className={`day-btn w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 font-medium hover:bg-gray-100 hover:border-primary hover:text-primary transition-all ${formData.recurrenceDays.includes(day.value) ? 'bg-primary text-white' : ''}`}
-                  onClick={() => toggleRecurrenceDay(day.value)}
+                  className={`day-btn ${formData.recurrenceDays.includes(day.value) ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleRecurrenceDay(day.value);
+                  }}
                 >
                   {day.label}
                 </button>

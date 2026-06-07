@@ -122,13 +122,16 @@ function DaySelector({
   );
 
   return (
-    <div className="days-selector flex flex-wrap gap-2 mt-2">
+    <div className="days-selector">
       {DAYS_OF_WEEK.map((day) => (
         <button
           type="button"
           key={day.value}
-          className={`day-btn w-10 h-10 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 font-medium hover:bg-gray-100 hover:border-primary hover:text-primary transition-all ${selectedDays.includes(day.value) ? 'bg-primary text-white' : ''}`}
-          onClick={() => toggleDay(day.value)}
+          className={`day-btn ${selectedDays.includes(day.value) ? 'active' : ''}`}
+          onClick={(e) => {
+            e.preventDefault();
+            toggleDay(day.value);
+          }}
         >
           {day.label}
         </button>
@@ -339,8 +342,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           formData.recurrenceFreq,
           initialData,
           formData.recurrenceStart,
-          formData.recurrenceUntil,
-          formData.recurrenceWeeks,
+          formData.recurrenceUntil
         );
 
         const res = await secureFetch('/api/activities/check-overlap', {
@@ -381,7 +383,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       const day = dayMap[formData.startDateTime.getDay()];
       setFormData((prev) => ({ ...prev, recurrenceDays: [day] }));
     }
-  }, [formData.startDateTime, formData.recurrenceDays]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.startDateTime]);
 
   // Sync end time from start + duration; also trigger overlap check
   useEffect(() => {
@@ -423,8 +426,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         formData.recurrenceFreq,
         initialData,
         formData.recurrenceStart,
-        formData.recurrenceUntil,
-        formData.recurrenceWeeks,
+        formData.recurrenceUntil
       );
 
       const payload: any = {
@@ -824,9 +826,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             <button
               type="button"
               onClick={onCancel}
-              className="btn-secondary flex items-center gap-2 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all"
+              className="orange-btn"
             >
-              <X size={18} className="text-gray-600" />
+              {/* <X size={18} className="text-gray-600" /> */}
               Cancel
             </button>
           )}
