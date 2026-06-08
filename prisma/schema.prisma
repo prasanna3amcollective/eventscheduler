@@ -55,6 +55,7 @@ model Activity {
   sys_updated_at DateTime @updatedAt
 
   @@unique([recurrenceTemplateId, startDateTime])
+  @@index([startDateTime, detachReason])
 }
 
 model Responsibility {
@@ -84,6 +85,8 @@ model Responsibility {
   sys_updated_at DateTime @updatedAt
 
   @@unique([recurrenceTemplateId, startDateTime])
+  @@index([startDateTime, detachReason])
+  @@index([ownerId])
 }
 
 model Participant {
@@ -103,6 +106,7 @@ model Participant {
   sys_updated_at DateTime @updatedAt
 
   @@unique([activityId, userId])
+  @@index([userId])
   @@map("participants")
 }
 
@@ -157,6 +161,7 @@ model UserGroupM2M {
   sys_updated_at DateTime @updatedAt
 
   @@unique([userId, groupId])
+  @@index([groupId])
   @@map("user_group_m2m")
 }
 
@@ -189,6 +194,7 @@ model UserRole {
   sys_updated_at DateTime @updatedAt
 
   @@unique([userId, roleId])
+  @@index([roleId])
   @@map("user_role")
 }
 
@@ -206,6 +212,7 @@ model RoleGroupM2M {
   sys_updated_at DateTime @updatedAt
 
   @@unique([roleId, groupId])
+  @@index([groupId])
   @@map("role_group_m2m")
 }
 
@@ -223,6 +230,7 @@ model AccessControlList {
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
 
+  @@index([roleId, table, operation])
   @@map("sys_acl")
 }
 
