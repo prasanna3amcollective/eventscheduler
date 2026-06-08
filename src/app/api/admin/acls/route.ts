@@ -23,8 +23,8 @@ export async function GET() {
     return NextResponse.json(acls);
   } catch (error: any) {
     console.error("Error fetching ACLs:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -56,8 +56,8 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

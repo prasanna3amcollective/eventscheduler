@@ -36,6 +36,8 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
       setActiveSection(id);
       if (id === 'participate') {
         window.history.pushState(null, '', window.location.pathname);
+      } else if (id === 'about-us') {
+        window.history.pushState(null, '', '/home/aboutus');
       } else {
         window.location.hash = id;
       }

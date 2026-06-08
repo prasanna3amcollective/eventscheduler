@@ -44,8 +44,8 @@ export async function PUT(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
   }
@@ -92,8 +92,8 @@ export async function PATCH(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Failed to reset password' }, { status: 500 });
   }

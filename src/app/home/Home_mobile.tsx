@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
@@ -9,7 +9,7 @@ import ActivityForm from '@/components/ActivityForm';
 import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
-import ActivityCarousel from '@/components/ActivityCarousel';
+import ActivityCarousel_mobile from '@/components/ActivityCarousel_mobile';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
@@ -24,6 +24,7 @@ import './Home_mobile.css';
 export default function Home_mobile() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
@@ -33,11 +34,15 @@ export default function Home_mobile() {
   const [activeSection, setActiveSection] = useState('participate');
   const [activeTab, setActiveTab] = useState('calendar');
 
-  // Initialize activeSection from URL hash on mount
+  // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '') || 'participate';
-    setActiveSection(hash);
-  }, []);
+    if (pathname === '/home/aboutus') {
+      setActiveSection('about-us');
+    } else {
+      const hash = window.location.hash.replace('#', '') || 'participate';
+      setActiveSection(hash);
+    }
+  }, [pathname]);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
@@ -143,12 +148,12 @@ export default function Home_mobile() {
 
   const handleTransitionMidpoint = () => {
     setActiveSection('about-us');
-    window.location.hash = '#about-us';
+    window.history.pushState(null, '', '/home/aboutus');
   };
 
   const handleBackwardMidpoint = () => {
     setActiveSection('participate');
-    window.location.hash = '#participate';
+    window.history.pushState(null, '', '/home');
   };
 
   const handleLoginSuccess = async (user: any) => {
@@ -378,7 +383,7 @@ export default function Home_mobile() {
 
               {/* Upcoming Activities */}
               <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
-                <ActivityCarousel refreshTrigger={refreshTrigger} />
+                <ActivityCarousel_mobile refreshTrigger={refreshTrigger} />
               </div>
             </>
           )}
@@ -594,7 +599,7 @@ export default function Home_mobile() {
           isOpen={isResponsibilityDetailOpen}
           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
           onStateChange={(id, newState) => {
-            setResponsibilityDetail(prev => prev && prev.id === id ? { ...prev, state: newState } : prev);
+            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
           }}
         />
 

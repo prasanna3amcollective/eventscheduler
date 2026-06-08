@@ -31,6 +31,6 @@ export async function POST(
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: any) {
     console.error("Unregister error:", error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
   }
 }

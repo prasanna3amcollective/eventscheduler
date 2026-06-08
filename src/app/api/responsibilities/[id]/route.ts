@@ -25,8 +25,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json(responsibility);
   } catch (error: any) {
     console.error('Error fetching responsibility:', error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -61,8 +61,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json(updated);
   } catch (error: any) {
     console.error('Error updating responsibility:', error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -84,8 +84,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     return NextResponse.json({ message: 'Responsibility deleted' });
   } catch (error: any) {
     console.error('Error deleting responsibility:', error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

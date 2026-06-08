@@ -36,8 +36,8 @@ export async function GET(
     return NextResponse.json(tpl);
   } catch (error: any) {
     console.error('Error fetching recurrence template:', error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -89,8 +89,8 @@ export async function PUT(
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message, details: error.issues }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

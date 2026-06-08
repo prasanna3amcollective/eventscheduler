@@ -93,9 +93,9 @@ export default function ProfileModal({
   const toggleSkill = (skill: string) => {
     setFormData((prev) => {
       const skills = [...prev.skills];
-      const index = skills.indexOf(skill);
+      const index = skills.indexOf(skill as Skill);
       if (index === -1) {
-        skills.push(skill);
+        skills.push(skill as Skill);
       } else {
         skills.splice(index, 1);
       }

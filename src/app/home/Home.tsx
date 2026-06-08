@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import HeaderPanel from '@/components/HeaderPanel';
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
@@ -23,6 +23,7 @@ import './Home.css';
 function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
@@ -32,11 +33,15 @@ function HomeContent() {
   const [activeSection, setActiveSection] = useState('participate');
   const [activeTab, setActiveTab] = useState('calendar');
 
-  // Initialize activeSection from URL hash on mount
+  // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '') || 'participate';
-    setActiveSection(hash);
-  }, []);
+    if (pathname === '/home/aboutus') {
+      setActiveSection('about-us');
+    } else {
+      const hash = window.location.hash.replace('#', '') || 'participate';
+      setActiveSection(hash);
+    }
+  }, [pathname]);
 
 
 
@@ -130,12 +135,12 @@ function HomeContent() {
 
   const handleTransitionMidpoint = () => {
     setActiveSection('about-us');
-    window.location.hash = '#about-us';
+    window.history.pushState(null, '', '/home/aboutus');
   };
 
   const handleBackwardMidpoint = () => {
     setActiveSection('participate');
-    window.location.hash = '#participate';
+    window.history.pushState(null, '', '/home');
   };
 
   const handleLoginSuccess = async (user: any) => {
@@ -601,7 +606,7 @@ function HomeContent() {
           isOpen={isResponsibilityDetailOpen}
           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
           onStateChange={(id, newState) => {
-            setResponsibilityDetail(prev => prev && prev.id === id ? { ...prev, state: newState } : prev);
+            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
           }}
         />
 

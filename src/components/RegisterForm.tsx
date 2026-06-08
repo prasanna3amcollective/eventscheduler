@@ -60,7 +60,7 @@ const COUNTRY_CODES = [
   { code: 'AE', name: 'UAE', dialCode: '+971', flag: '🇦🇪' },
 ] as const;
 
-const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '', skills: [] };
+const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '', skills: [] as Skill[] };
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -204,9 +204,9 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
   const toggleSkill = (skill: string) => {
     setFormData((prev) => {
       const skills = [...prev.skills];
-      const index = skills.indexOf(skill);
+      const index = skills.indexOf(skill as Skill);
       if (index === -1) {
-        skills.push(skill);
+        skills.push(skill as Skill);
       } else {
         skills.splice(index, 1);
       }

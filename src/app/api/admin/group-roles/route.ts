@@ -30,8 +30,8 @@ export async function GET(request: Request) {
     return NextResponse.json(roleAssignments);
   } catch (error: any) {
     console.error("Error fetching group roles:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -69,8 +69,8 @@ export async function POST(request: Request) {
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'This role is already assigned to the group' }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

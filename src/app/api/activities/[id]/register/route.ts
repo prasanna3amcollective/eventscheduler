@@ -33,6 +33,6 @@ export async function POST(
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'You are already registered for this activity' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
   }
 }

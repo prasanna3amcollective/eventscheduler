@@ -78,9 +78,9 @@ export default function AboutUs({ onBackClick }: { onBackClick?: () => void }) {
       <div className="cursor-ring" ref={cursorRingRef}></div>
       
       <nav>
-        <a href="#hero" className="nav-logo">3AM ✦ COLLECTIVE</a>
+        <a href="#hero" className="nav-logo" onClick={(e) => { e.preventDefault(); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }); }}>3AM ✦ COLLECTIVE</a>
         <ul className="nav-menu">
-          <li><a href="#cta">Join</a></li>
+          <li><a href="#cta" onClick={(e) => { e.preventDefault(); document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth' }); }}>Join</a></li>
         </ul>
       </nav>
 
@@ -488,8 +488,8 @@ export default function AboutUs({ onBackClick }: { onBackClick?: () => void }) {
           </h2>
           <p className="cta-desc">For collective creation & creator's responsibility.<br/>For decentralised system & collective autonomy.</p>
           <div className="cta-buttons">
-            <a href="#" className="about-btn-primary">Join the Movement</a>
-            <a href="#manifesto" className="about-btn-secondary">Read the Manifesto</a>
+            <a href="#cta" className="about-btn-primary" onClick={(e) => { e.preventDefault(); document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth' }); }}>Join the Movement</a>
+            <a href="#manifesto" className="about-btn-secondary" onClick={(e) => { e.preventDefault(); document.getElementById('manifesto')?.scrollIntoView({ behavior: 'smooth' }); }}>Read the Manifesto</a>
           </div>
           <div className="cta-assoc">
             <span>In Association With</span>

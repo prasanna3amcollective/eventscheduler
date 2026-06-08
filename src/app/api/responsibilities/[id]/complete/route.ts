@@ -27,8 +27,8 @@ export async function PATCH(
         return NextResponse.json(responsibility);
     } catch (error: any) {
         console.error("Error completing responsibility:", error);
-        if (error.message?.includes('Security Restricted')) {
-            return NextResponse.json({ error: error.message }, { status: 403 });
+        if ((error as Error).message?.includes('Security Restricted')) {
+            return NextResponse.json({ error: (error as Error).message }, { status: 403 });
         }
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { materializeTemplateWindow } from '@/lib/recurrence/generator';
 import { randomUUID } from 'crypto';
 
-const responsibilitySchema = z.object({
+export const responsibilitySchema = z.object({
   name: z.string().min(1, 'Responsibility name is required').max(200),
   startDateTime: z.string().datetime({ message: "Invalid start date format" }),
   endDateTime: z.string().datetime({ message: "Invalid end date format" }),
@@ -119,11 +119,11 @@ export async function POST(request: Request) {
     return NextResponse.json(responsibility, { status: 201 });
   } catch (error: unknown) {
     console.error("Error creating responsibility:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      return NextResponse.json({ error: (error as any).errors }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -162,8 +162,8 @@ export async function GET(request: Request) {
     return NextResponse.json(responsibilities);
   } catch (error: unknown) {
     console.error("Error fetching responsibilities:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

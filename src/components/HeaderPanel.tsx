@@ -95,14 +95,14 @@ export default function HeaderPanel({
               Participate
             </Link>
             <Link
-              href="#about-us"
+              href="/home/aboutus"
               className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 if (onAboutUsClick) {
                   onAboutUsClick();
                 } else {
-                  window.location.hash = '#about-us';
+                  window.history.pushState(null, '', '/home/aboutus');
                   setActiveSection('about-us');
                 }
               }}
