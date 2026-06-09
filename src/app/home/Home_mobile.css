@@ -357,3 +357,69 @@
   align-items: center;
   width: 100%;
 }
+
+/* ---------------------------------------------------- */
+/* Mobile Profile Dropdown & Logout (Neo-Brutalism)     */
+/* ---------------------------------------------------- */
+
+.mobile-app-container .user-trigger {
+  border-radius: 0 !important;
+  border: 3px solid #000 !important;
+  background: #FFF !important;
+  box-shadow: 4px 4px 0px #000 !important;
+  backdrop-filter: none !important;
+  transition: transform 0.1s, box-shadow 0.1s !important;
+  color: #000 !important;
+}
+
+.mobile-app-container .user-trigger:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000 !important;
+}
+
+.mobile-app-container .user-avatar {
+  border-radius: 0 !important;
+  border: 2px solid #000 !important;
+  background: #EBFF00 !important; /* Yellow accent */
+  color: #000 !important;
+}
+
+.mobile-app-container .user-dropdown {
+  border-radius: 0 !important;
+  border: 3px solid #000 !important;
+  background: #FFF !important;
+  box-shadow: 6px 6px 0px #000 !important;
+  margin-top: 12px !important;
+  padding: 0 !important;
+}
+
+.mobile-app-container .dropdown-item {
+  font-family: var(--heading-font, sans-serif) !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  color: #000 !important;
+  border-bottom: 3px solid #000 !important;
+}
+
+.mobile-app-container .dropdown-item:last-child {
+  border-bottom: none !important;
+}
+
+.mobile-app-container .dropdown-item:active {
+  background: #EBFF00 !important;
+}
+
+.mobile-app-container .btn-logout {
+  border-radius: 0 !important;
+  border: 3px solid #000 !important;
+  background: #FF00FF !important; /* Vibrant magenta */
+  color: #FFF !important;
+  box-shadow: 4px 4px 0px #000 !important;
+  transition: transform 0.1s, box-shadow 0.1s !important;
+  padding: 6px !important;
+}
+
+.mobile-app-container .btn-logout:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000 !important;
+}

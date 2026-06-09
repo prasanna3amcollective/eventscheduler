@@ -10,6 +10,7 @@ import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
 import ActivityCarousel_mobile from '@/components/ActivityCarousel_mobile';
+import BannerSlideshow_mobile from '@/components/BannerSlideshow_mobile';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
@@ -380,6 +381,9 @@ export default function Home_mobile() {
                   Join the circle
                 </button>
               </div>
+
+              {/* Decorative Banner Slideshow */}
+              <BannerSlideshow_mobile />
 
               {/* Upcoming Activities */}
               <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>

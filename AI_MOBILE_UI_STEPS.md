@@ -41,5 +41,14 @@ To guarantee zero disturbance to the existing desktop UI, the AI MUST strictly f
 3. **Verify:** Check that the development server compiles successfully without errors.
 4. **Present:** Notify the user that the UI has been implemented and is ready for visual review on their end.
 
+## Neo-Brutalism Design Aesthetics
+When styling mobile components, the AI MUST apply Neo-Brutalism design principles unless instructed otherwise. Adhere to these specific visual rules:
+1. **Raw, Unrefined Shapes:** Eliminate soft curves. Avoid border radius (`border-radius: 0`) to keep corners sharp and rigid.
+2. **Bold Strokes & Hard Shadows:** Use thick, solid black borders (`border: 3px solid #000`) and pure black drop shadows with no blur (`box-shadow: 6px 6px 0px #000;`) at 100% opacity.
+3. **Vibrant & Muted Color Blocks:** Use a mix of highly saturated and low saturation (muted) solid background colors instead of traditional whites or grays. Do not tie component backgrounds strictly to a dark/light mode toggle.
+4. **No Gradients:** Never use gradients. All backgrounds, borders, and shadows must be flat, solid colors.
+5. **Experimental Typography:** Use large, bold font weights (e.g., `800` or `900`), capitalized text for headings and labels (`text-transform: uppercase`), and retain the existing sans-serif font family.
+6. **High Contrast Action States:** Active states (like clicking a button or a card) should reduce the shadow offset (e.g., `translate(3px, 3px)` and `box-shadow: 3px 3px 0px #000;`) to create a satisfying, mechanical "pressed" feeling.
+
 ---
 *Note: This is a temporary file designed to guide the AI during the mobile UI development phase.*

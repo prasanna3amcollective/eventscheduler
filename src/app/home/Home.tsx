@@ -10,6 +10,7 @@ import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import RegisterForm from '@/components/RegisterForm';
 import ActivityCarousel from '@/components/ActivityCarousel';
+import BannerSlideshow from '@/components/BannerSlideshow';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
@@ -370,6 +371,10 @@ function HomeContent() {
           {activeSection === 'participate' && (
             <section id="participate" style={{ textAlign: 'left', padding: '40px 0' }}>
               <p>Join our events, volunteer, or become a member of the community.</p>
+              
+              {/* Decorative Banner Slideshow */}
+              <BannerSlideshow />
+
               <ActivityCarousel
                 refreshTrigger={refreshTrigger}
                 onActivityClick={handleCarouselClick}
