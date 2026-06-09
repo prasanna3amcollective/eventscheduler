@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, type FormEvent } from 'react';
+import { useState, useCallback, useEffect, useRef, type FormEvent } from 'react';
 import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle, X } from '@/components/Icons';
 import { SKILLS, type Skill } from '@/lib/constants';
 
@@ -108,6 +108,56 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
+  const [mcaptchaToken, setMcaptchaToken] = useState<string>('');
+  let scriptLoaded = false;
+  useEffect(() => {
+    const MCPATCH_HOST = 'demo.mcaptcha.org';
+    const WIDGET_URL = 'https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo';
+
+    const messageHandler = (e: MessageEvent) => {
+      try {
+        if (new URL(e.origin).host !== MCPATCH_HOST) return;
+        const data = e.data as { token?: string } | string;
+        if (typeof data === 'object' && data !== null && typeof data.token === 'string') {
+          setMcaptchaToken(data.token);
+        }
+      } catch {}
+    };
+
+    const container = document.getElementById('mcaptcha__widget-container') as HTMLDivElement | null;
+    const label = document.getElementById('mcaptcha__token-label');
+    const tokenInput = document.getElementById('mcaptcha__token') as HTMLInputElement | null;
+    if (!container || !label || !tokenInput) return;
+
+    label.style.display = 'none';
+
+    const initWidget = () => {
+      if (container.querySelector('iframe')) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = WIDGET_URL;
+      iframe.title = 'mCaptcha';
+      iframe.name = 'mcaptcha-widget__iframe';
+      iframe.id = 'mcaptcha-widget__iframe';
+      iframe.setAttribute('aria-roledescription', 'presentation');
+      iframe.scrolling = 'no';
+      iframe.style.width = '100%';
+      iframe.style.height = '120px';
+      iframe.style.border = '0';
+      iframe.sandbox = 'allow-same-origin allow-scripts allow-popups';
+      container.appendChild(iframe);
+    };
+
+    window.addEventListener('message', messageHandler);
+    initWidget();
+
+    if (!scriptLoaded) {
+      scriptLoaded = true;
+    }
+
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
 
   /** Auto-enroll the newly created user in a pending activity (if pendingEventId is set) */
   const autoEnroll = useCallback(
@@ -143,14 +193,15 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
       if (!EMAIL_REGEX.test(formData.email)) errors.email = ERROR_MESSAGES.INVALID_EMAIL;
       if (!isValidPhone(formData.phone)) errors.phone = ERROR_MESSAGES.INVALID_PHONE;
 
-      if (Object.keys(errors).length > 0) {
+      if (Object.keys(errors).length > 0 || !mcaptchaToken) {
+        setError(mcaptchaToken ? null : 'Please complete the CAPTCHA');
         setFieldErrors(errors);
         setIsSubmitting(false);
         return;
       }
 
       try {
-        const payload = { ...formData, phone: `${selectedDialCode}${formData.phone}` };
+        const payload = { ...formData, phone: `${selectedDialCode}${formData.phone}`, mcaptcha__token: mcaptchaToken };
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -178,7 +229,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
         setIsSubmitting(false);
       }
     },
-    [formData, selectedDialCode, onSuccess, autoEnroll],
+    [formData, selectedDialCode, mcaptchaToken, onSuccess, autoEnroll],
   );
 
   /** Resets the form state back to the initial empty state */
@@ -214,7 +265,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
     });
   };
 
-  return (
+    return (
     <form className="activity-form" onSubmit={handleSubmit}>
       {!hideTitle && (
         <div className="form-header">
@@ -351,6 +402,20 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
           ))}
         </div>
       </div>
+
+      <label
+        data-mcaptcha_url="https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo"
+        htmlFor="mcaptcha__token"
+        id="mcaptcha__token-label"
+      >
+        mCaptcha authorization token.
+        <a
+          href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
+        >Instructions</a
+        >.
+      </label>
+      <input type="text" name="mcaptcha__token" id="mcaptcha__token" hidden />
+      <div id="mcaptcha__widget-container" style={{ width: '100%', overflow: 'hidden', marginTop: '8px' }}></div>
 
       <button
         type="submit"

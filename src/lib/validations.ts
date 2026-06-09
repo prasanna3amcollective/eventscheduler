@@ -13,7 +13,8 @@ export const userRegistrationSchema = z.object({
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
     .refine((p) => /[A-Z]/.test(p) && /[0-9]/.test(p), 'Password must contain at least one uppercase letter and one number'),
-  skills: z.array(z.string()).optional()
+  skills: z.array(z.string()).optional(),
+  mcaptcha: z.string().optional()
 });
 
 export const userProfileSchema = z.object({

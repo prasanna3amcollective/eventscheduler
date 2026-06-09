@@ -31,6 +31,32 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, username, phone, email, password, skills } = userRegistrationSchema.parse(body);
 
+    const mcaptchaToken = (body as Record<string, unknown>).mcaptcha__token as string | undefined;
+    if (!mcaptchaToken) {
+      return NextResponse.json({ error: 'CAPTCHA verification required' }, { status: 403 });
+    }
+
+    const siteKey = 'saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo';
+    const secret = process.env.MCAPTCHA_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+    }
+
+    const verifyRes = await fetch('https://demo.mcaptcha.org/api/v1/pow/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: mcaptchaToken,
+        key: siteKey,
+        secret: secret,
+      }),
+    });
+
+    const verifyData = await verifyRes.json();
+    if (!verifyRes.ok || !verifyData.valid) {
+      return NextResponse.json({ error: 'CAPTCHA verification failed' }, { status: 403 });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
