@@ -543,7 +543,13 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
       {success && <div role="status" aria-live="polite" className="success-banner flex items-center gap-3 px-4 py-3 bg-green-50 border border-green-200 rounded-lg"><Check size={16} className="text-green-500" aria-hidden="true" /> Responsibility created successfully!</div>}
 
       <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4">
-        {onCancel && <button type="button" onClick={onCancel} className="btn-secondary flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all"><X size={16} className="text-gray-600" aria-hidden="true" /> Cancel</button>}
+        {onCancel && <button type="button" onClick={onCancel} className="orange-btn flex items-center gap-3 px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all">
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+
+            <X size={16} aria-hidden="true" />
+            Cancel
+          </span>
+        </button>}
         <button
           type="submit"
           disabled={isSubmitting || !formData.name.trim()}

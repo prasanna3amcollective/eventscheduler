@@ -13,6 +13,7 @@ import ActivityCarousel from '@/components/ActivityCarousel';
 import BannerSlideshow from '@/components/BannerSlideshow';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
+import HolidayDetailModal from '@/components/HolidayDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
@@ -86,6 +87,8 @@ function HomeContent() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [responsibilityDetail, setResponsibilityDetail] = useState<any>(null);
   const [isResponsibilityDetailOpen, setIsResponsibilityDetailOpen] = useState(false);
+  const [selectedHoliday, setSelectedHoliday] = useState<{ id: string; name: string; date: string } | null>(null);
+  const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -204,8 +207,6 @@ function HomeContent() {
   };
 
   const handleSelectActivity = (activity: any) => {
-    if (activity.isHoliday) return;
-
     if (activity.isResponsibility) {
       setResponsibilityDetail({
         id: activity.id,
@@ -237,6 +238,11 @@ function HomeContent() {
 
     setDetailActivity(mappedActivity);
     setIsDetailOpen(true);
+  };
+
+  const handleSelectHoliday = (holiday: { id: string; name: string; date: string }) => {
+    setSelectedHoliday(holiday);
+    setIsHolidayModalOpen(true);
   };
 
   const handleSelectSlot = (slotInfo: any) => {
@@ -544,18 +550,19 @@ function HomeContent() {
           </div>
         ) : (
           <main className="app-container">
-            {activeTab === 'calendar' && (
-              <div className="content-section">
-                <CalendarView
-                  refreshTrigger={refreshTrigger}
-                  onSelectActivity={handleSelectActivity}
-                  onSelectSlot={handleSelectSlot}
-                  onCreateActivity={onCreateActivity}
-                  onOwnResponsibility={onOwnResponsibility}
-                  userRoles={userRoles}
-                  userPermissions={userPermissions}
-                />
-              </div>
+{activeTab === 'calendar' && (
+               <div className="content-section">
+                 <CalendarView
+                   refreshTrigger={refreshTrigger}
+                   onSelectActivity={handleSelectActivity}
+                   onSelectSlot={handleSelectSlot}
+                   onCreateActivity={onCreateActivity}
+                   onOwnResponsibility={onOwnResponsibility}
+                   onSelectHoliday={handleSelectHoliday}
+                   userRoles={userRoles}
+                   userPermissions={userPermissions}
+                 />
+               </div>
             )}
             {activeTab === 'admin' && (
               <AdminDashboard currentUser={currentUser} />
@@ -606,20 +613,26 @@ function HomeContent() {
           onSwitchToRegister={() => { }}
         />
 
-        <ResponsibilityDetailModal
-          responsibility={responsibilityDetail}
-          isOpen={isResponsibilityDetailOpen}
-          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
-          onStateChange={(id, newState) => {
-            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
-          }}
-        />
+<ResponsibilityDetailModal
+           responsibility={responsibilityDetail}
+           isOpen={isResponsibilityDetailOpen}
+           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+           onStateChange={(id, newState) => {
+             setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
+           }}
+         />
 
-        <ProfileModal
-          isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
-          currentUser={currentUser}
-          onProfileUpdate={setCurrentUser}
+         <HolidayDetailModal
+           holiday={selectedHoliday}
+           isOpen={isHolidayModalOpen}
+           onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
+         />
+
+         <ProfileModal
+           isOpen={isProfileOpen}
+           onClose={() => setIsProfileOpen(false)}
+           currentUser={currentUser}
+           onProfileUpdate={setCurrentUser}
         />
       </div>
     </>

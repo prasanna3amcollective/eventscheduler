@@ -403,19 +403,34 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
         </div>
       </div>
 
-      <label
-        data-mcaptcha_url="https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo"
-        htmlFor="mcaptcha__token"
-        id="mcaptcha__token-label"
-      >
-        mCaptcha authorization token.
-        <a
-          href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/"
-        >Instructions</a
-        >.
-      </label>
-      <input type="text" name="mcaptcha__token" id="mcaptcha__token" hidden />
-      <div id="mcaptcha__widget-container" style={{ width: '100%', overflow: 'hidden', marginTop: '8px' }}></div>
+      <div className="form-group">
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontWeight: 500, fontSize: '14px' }}>
+          <Tag size={16} /> Security Check
+        </label>
+        <label
+          data-mcaptcha_url="https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo"
+          htmlFor="mcaptcha__token"
+          id="mcaptcha__token-label"
+          style={{ display: 'none' }}
+        >
+          mCaptcha authorization token.
+          <a href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/">Instructions</a>.
+        </label>
+        <input type="text" name="mcaptcha__token" id="mcaptcha__token" hidden />
+        <div
+          id="mcaptcha__widget-container"
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            marginTop: '6px',
+            borderRadius: '8px',
+            border: '2px solid var(--border-color, #FFFFFF)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(4px)',
+            transition: 'border-color 0.2s ease',
+          }}
+        />
+      </div>
 
       <button
         type="submit"

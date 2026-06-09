@@ -1434,9 +1434,9 @@ input:not([type="checkbox"]):focus {
 }
 
 .btn-logout:hover {
-  background: #f5dfda;
-  color: #a13a2a;
-  border-color: #ebcec7;
+  background: var(--primary-color);
+  color: #000000;
+  border-color: #ffffff;
 }
 
 /* === Brutalist Top Banner (static) === */

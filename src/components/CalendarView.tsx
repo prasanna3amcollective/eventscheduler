@@ -356,6 +356,7 @@ interface CalendarViewProps {
   onSelectSlot: (slotInfo: any) => void;
   onCreateActivity: () => void;
   onOwnResponsibility?: () => void;
+  onSelectHoliday?: (holiday: { id: string; name: string; date: string }) => void;
   userRoles: string[];
   userPermissions?: { canCreateActivity: boolean; canCreateResponsibility: boolean };
 }
@@ -366,14 +367,15 @@ interface CalendarViewProps {
  * and handles activity selection, slot creation, and navigation.
  */
 export default function CalendarView({
-  refreshTrigger,
-  onSelectActivity,
-  onSelectSlot,
-  onCreateActivity,
-  onOwnResponsibility,
-  userRoles = [],
-  userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
-}: CalendarViewProps) {
+   refreshTrigger,
+   onSelectActivity,
+   onSelectSlot,
+   onCreateActivity,
+   onOwnResponsibility,
+   onSelectHoliday,
+   userRoles = [],
+   userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
+ }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -580,29 +582,37 @@ export default function CalendarView({
     [onCreateActivity, canCreateActivity, canCreateResponsibility, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
   );
 
+  const handleSelectEvent = useCallback((event: CalendarActivity) => {
+    if (event.isHoliday) {
+      onSelectHoliday?.({ id: event.id, name: event.title, date: event.start instanceof Date ? event.start.toISOString() : event.start });
+    } else {
+      onSelectActivity(event);
+    }
+  }, [onSelectActivity, onSelectHoliday]);
+
   // ---- Render ----
   return (
     <div className="calendar-page-layout">
       <div className="calendar-main-column">
         <div className="calendar-wrapper">
-          <Calendar<CalendarActivity>
-            localizer={localizer}
-            events={calendarActivities}
-            startAccessor="start"
-            endAccessor="end"
-            selectable
-            onSelectSlot={onSelectSlot}
-            onSelectEvent={onSelectActivity}
-            view={view}
-            onView={onView}
-            date={date}
-            onNavigate={onNavigate}
-            onDrillDown={handleDrillDown}
-            views={views}
-            components={components}
-            dayPropGetter={dayPropGetter}
-            eventPropGetter={eventPropGetter}
-          />
+<Calendar<CalendarActivity>
+             localizer={localizer}
+             events={calendarActivities}
+             startAccessor="start"
+             endAccessor="end"
+             selectable
+             onSelectSlot={onSelectSlot}
+             onSelectEvent={handleSelectEvent}
+             view={view}
+             onView={onView}
+             date={date}
+             onNavigate={onNavigate}
+             onDrillDown={handleDrillDown}
+             views={views}
+             components={components}
+             dayPropGetter={dayPropGetter}
+             eventPropGetter={eventPropGetter}
+           />
         </div>
       </div>
 
