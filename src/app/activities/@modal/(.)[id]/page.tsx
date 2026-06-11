@@ -3,7 +3,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { secureFetch } from "@/lib/fetch";
 import { format } from "date-fns";
-import { XCircle, CheckCircle } from "@/components/Icons";
+import { XCircle } from "@/components/Icons";
 
 interface Participant {
   id: string;
@@ -16,7 +16,7 @@ interface Participant {
     phone: string;
   };
   sys_created_at: string;
-  attendance?: number;
+  attendance?: number | null;
   payAsYouWish?: number;
 }
 
@@ -47,7 +47,7 @@ export default function EditActivityModal() {
         } else {
           setError("Failed to load activity");
         }
-      } catch (e) {
+      } catch {
         setError("Network error");
       } finally {
         setLoading(false);

@@ -4,6 +4,15 @@ import { getSessionContext } from '@/lib/auth';
 import { activitySchema } from '@/lib/validations';
 import { z } from 'zod';
 
+interface ActivityWithParticipants {
+  participants: Array<{
+    type?: string;
+    user?: {
+      name?: string;
+    };
+  }>;
+}
+
 
 
 export async function GET(
@@ -40,9 +49,10 @@ export async function GET(
     }
 
     // Extract staff members from participants
-    const leaders = (activity as any).participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
-    const guides = (activity as any).participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
-    const observers = (activity as any).participants.filter((p: any) => p.type === 'Observer').map((p: any) => p.user?.name).filter(Boolean);
+    const typedActivity = activity as unknown as ActivityWithParticipants;
+    const leaders = typedActivity.participants.filter((p) => p.type === 'Leader').map((p) => p.user?.name).filter((name): name is string => Boolean(name));
+    const guides = typedActivity.participants.filter((p) => p.type === 'Guide').map((p) => p.user?.name).filter((name): name is string => Boolean(name));
+    const observers = typedActivity.participants.filter((p) => p.type === 'Observer').map((p) => p.user?.name).filter((name): name is string => Boolean(name));
 
     const transformedActivity = {
       ...activity,
@@ -52,12 +62,12 @@ export async function GET(
     };
 
     return NextResponse.json(transformedActivity);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching activity:", error);
     if ((error as Error).message?.includes('Security Restricted')) {
       return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: (error instanceof Error ? error.message : 'Internal Server Error') }, { status: 500 });
   }
 }
 
@@ -118,7 +128,7 @@ export async function PUT(
           where: { name: name }
         });
         if (user && !addedUserIds.has(user.id)) {
-            await prisma.participant.create({
+          await prisma.participant.create({
             data: {
               activityId: activityId,
               userId: user.id,
@@ -131,7 +141,7 @@ export async function PUT(
     }
 
     return NextResponse.json(activity);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating activity FULL ERROR:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues[0].message, details: error.issues }, { status: 400 });
@@ -139,7 +149,7 @@ export async function PUT(
     if ((error as Error).message?.includes('Security Restricted')) {
       return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error', message: (error as Error).message, stack: error.stack }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', message: (error as Error).message, stack: (error as Error).stack }, { status: 500 });
   }
 }
 
@@ -167,7 +177,7 @@ export async function DELETE(
     }));
 
     return NextResponse.json({ message: 'Activity deleted' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting activity:", error);
 
     if ((error as Error).message?.includes('Security Restricted')) {
@@ -192,24 +202,49 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (!participantId) {
+      return NextResponse.json({ error: 'Participant ID is required' }, { status: 400 });
+    }
+
+    const data: { attendance?: number | null; payAsYouWish?: number } = {};
+
+    if (attendance !== undefined) {
+      if (attendance === null || attendance === '') {
+        data.attendance = null;
+      } else {
+        const attendanceNumber = Number(attendance);
+        if (!Number.isInteger(attendanceNumber) || ![0, 1, 2].includes(attendanceNumber)) {
+          return NextResponse.json({ error: 'Attendance must be Present, Half, or Absent' }, { status: 400 });
+        }
+        data.attendance = attendanceNumber;
+      }
+    }
+
+    if (payAsYouWish !== undefined && payAsYouWish !== null && payAsYouWish !== '') {
+      const payAsYouWishNumber = Number(payAsYouWish);
+      if (!Number.isFinite(payAsYouWishNumber) || payAsYouWishNumber < 0) {
+        return NextResponse.json({ error: 'Pay as you wish must be a non-negative number' }, { status: 400 });
+      }
+      data.payAsYouWish = payAsYouWishNumber;
+    }
+
+    console.log(`PATCH /api/activities/${activityId} where id: ${participantId}, data:`, JSON.stringify(data));
+
     const updated = await withAuth(securityContext, () => ({
       model: 'participant',
       operation: 'update',
       args: {
-        where: { id: participantId, activityId: activityId },
-        data: { 
-          attendance: Number(attendance),
-          ...(payAsYouWish !== undefined ? { payAsYouWish: Number(payAsYouWish) } : {})
-        }
+        where: { id: participantId },
+        data
       }
     }));
 
     return NextResponse.json(updated);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating attendance:", error);
     if ((error as Error).message?.includes('Security Restricted')) {
       return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: (error instanceof Error ? error.message : 'Internal Server Error') }, { status: 500 });
   }
 }

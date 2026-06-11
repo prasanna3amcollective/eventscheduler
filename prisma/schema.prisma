@@ -96,7 +96,7 @@ model Participant {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   type       String   @default("Participant") // Leader, Guide, Observer, Participant
-  attendance Int      @default(0) // 0=Present, 1=Half, 2=Absent
+  attendance Int? // 0=Present, 1=Half, 2=Absent
   payAsYouWish Float   @default(0)
 
   // System Columns

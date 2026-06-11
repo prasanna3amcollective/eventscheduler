@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma, withAuth } from '@/lib/prisma';
+import { withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 
 export async function POST(
@@ -22,15 +22,16 @@ export async function POST(
       args: {
         data: {
           activityId: activityId,
-          userId: securityContext.id
+          userId: securityContext.id,
+          attendance: null
         }
       }
     }));
 
     return NextResponse.json(registration, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Registration error:", error);
-    if (error.code === 'P2002') {
+    if ((error as { code?: string }).code === 'P2002') {
       return NextResponse.json({ error: 'You are already registered for this activity' }, { status: 400 });
     }
     return NextResponse.json({ error: 'Internal Server Error', details: (error as Error).message }, { status: 500 });

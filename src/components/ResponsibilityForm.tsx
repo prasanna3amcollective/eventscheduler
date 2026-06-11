@@ -304,7 +304,6 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
           />
         </div>
       </div>
-
       <div className="form-row grid grid-cols-[1fr_1fr] gap-6">
         <div className="form-group space-y-2">
           <label className="flex items-center gap-2 text-sm font-medium text-gray-600">

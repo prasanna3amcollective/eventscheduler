@@ -295,17 +295,15 @@ export function Refresh({ size, ...props }: IconProps) {
   );
 }
 
-/** Share / export icon */
 export function Share2({ size, ...props }: IconProps) {
   return (
     <svg {...base(size)} {...props}>
-      <path d="M4 12v8a2 2 0 0 0 2 2h8" />
-      <polyline points="16 8 12 4 8 8" />
-      <line x1="12" y1="4" x2="12" y2="16" />
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
     </svg>
   );
 }
-
 
 /** Save / floppy disk icon */
 export function Save({ size, ...props }: IconProps) {

@@ -104,7 +104,7 @@ function ErrorBanner({
             type="button"
             onClick={onSwitchToRegister}
             style={{
-              background: 'none', border: 'none', color: '#1d4ed8',
+              background: 'none', border: 'none', color: 'var(--primary-color)',
               textDecoration: 'underline', cursor: 'pointer', padding: 0,
               font: 'inherit', fontWeight: 'bold',
             }}
@@ -119,13 +119,26 @@ function ErrorBanner({
   );
 }
 
-/** Displays a participant count badge in the modal body */
+/** Displays a participant count badge in a neo-brutalist style */
 function ParticipantCount({ count }: { count: number }) {
   return (
     <div className="detail-section-divider">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)' }}>
-        <Users size={18} />
-        <span style={{ fontWeight: 600, fontSize: '14px' }}>
+      <div style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 14px',
+        border: '2px solid #000000',
+        background: 'var(--primary-color)',
+        color: '#000000',
+        fontFamily: 'var(--mono-font)',
+        fontWeight: 800,
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        boxShadow: '4px 4px 0 #000000',
+      }}>
+        <Users size={16} />
+        <span>
           {count} {count === 1 ? 'Participant' : 'Participants'}
         </span>
       </div>
@@ -294,24 +307,26 @@ export default function ActivityDetailModal({
               </button>
             </div>
             <div className="detail-header-flat">
-              <div className="detail-category">{activity.category || 'Activity'}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="detail-category">{activity.category || 'ACTIVITY'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <h2 className="detail-title" style={{ margin: 0 }}>{activity.name}</h2>
                 {activity.state && (
                   <span style={{
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '4px',
-                    padding: '3px 8px',
-                    borderRadius: '10px',
-                    fontSize: '11px',
-                    fontWeight: 700,
+                    padding: '4px 10px',
+                    borderRadius: '0',
+                    fontSize: '10px',
+                    fontWeight: 800,
                     textTransform: 'uppercase',
-                    background: activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                    color: activity.state === 'Completed' ? '#10b981' : '#3b82f6',
-                    border: `1px solid ${activity.state === 'Completed' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                    fontFamily: 'var(--mono-font)',
+                    background: activity.state === 'Completed' ? '#4CE819' : '#EBFF00',
+                    color: '#000000',
+                    border: '2px solid #000000',
+                    boxShadow: '3px 3px 0 #000000',
                   }}>
-                    {activity.state === 'Completed' && <CheckCircle size={12} />}
+                    {activity.state === 'Completed' && <CheckCircle size={10} />}
                     {activity.state}
                   </span>
                 )}
@@ -320,43 +335,70 @@ export default function ActivityDetailModal({
 
             {/* ---------- Body ---------- */}
             <div className="detail-body-flat">
-              {/* Date & time — inline, no big separator */}
+              {/* Date & time — brutalist block */}
               <div className="detail-datetime-row">
                 <span className="detail-label"><Clock size={12} /> {format(startDate, 'EEEE')}</span>
                 <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({activity.duration} mins)</span>
               </div>
 
-              {/* Staff — compact, no icons */}
+              {/* Participant count — neo-brutalist badge */}
               {isLoggedIn && activity.participantCount !== undefined && (
                 <ParticipantCount count={activity.participantCount} />
               )}
 
-              {/* Staff Section */}
+              {/* Staff Section — neo-brutalist blocks */}
               <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {(activity.leaders?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    fontSize: '14px',
+                    padding: '10px 14px',
+                    border: '2px solid #000000',
+                    background: 'var(--surface-color)',
+                    boxShadow: '4px 4px 0 #000000',
+                  }}>
                     <UserIcon size={14} color="var(--primary-color)" style={{ marginTop: '3px' }} />
                     <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Leaders</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.leaders?.join(', ')}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--primary-color)', fontSize: '10px', textTransform: 'uppercase', fontFamily: 'var(--mono-font)', letterSpacing: '0.1em' }}>Leaders</div>
+                      <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--mono-font)', fontSize: '12px', marginTop: '4px' }}>{activity.leaders?.join(', ')}</div>
                     </div>
                   </div>
                 )}
                 {(activity.guides?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    fontSize: '14px',
+                    padding: '10px 14px',
+                    border: '2px solid #000000',
+                    background: 'var(--surface-color)',
+                    boxShadow: '4px 4px 0 #000000',
+                  }}>
                     <Users size={14} color="#10b981" style={{ marginTop: '3px' }} />
                     <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Guides</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.guides?.join(', ')}</div>
+                      <div style={{ fontWeight: 800, color: '#10b981', fontSize: '10px', textTransform: 'uppercase', fontFamily: 'var(--mono-font)', letterSpacing: '0.1em' }}>Guides</div>
+                      <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--mono-font)', fontSize: '12px', marginTop: '4px' }}>{activity.guides?.join(', ')}</div>
                     </div>
                   </div>
                 )}
                 {(activity.observers?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    fontSize: '14px',
+                    padding: '10px 14px',
+                    border: '2px solid #000000',
+                    background: 'var(--surface-color)',
+                    boxShadow: '4px 4px 0 #000000',
+                  }}>
                     <Eye size={14} color="var(--text-secondary)" style={{ marginTop: '3px' }} />
                     <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Observers</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.observers?.join(', ')}</div>
+                      <div style={{ fontWeight: 800, color: 'var(--text-secondary)', fontSize: '10px', textTransform: 'uppercase', fontFamily: 'var(--mono-font)', letterSpacing: '0.1em' }}>Observers</div>
+                      <div style={{ color: 'var(--text-primary)', fontFamily: 'var(--mono-font)', fontSize: '12px', marginTop: '4px' }}>{activity.observers?.join(', ')}</div>
                     </div>
                   </div>
                 )}
@@ -371,64 +413,15 @@ export default function ActivityDetailModal({
                 <div style={{
                   flex: '0 0 100%',
                   textAlign: 'center',
-                  color: '#22c55e',
+                  color: '#4CE819',
                   fontSize: '14px',
-                  fontWeight: 500,
-                  marginBottom: '8px'
-                }}>
-                  <span className="detail-value">{format(startDate, 'MMM d, yyyy')} · {format(startDate, 'hh:mm aa')} ({activity.duration} mins)</span>
-                </div>
-              )}
-
-              {/* Staff — compact, no icons */}
-              {isLoggedIn && activity.participantCount !== undefined && (
-                <ParticipantCount count={activity.participantCount} />
-              )}
-
-              {/* Staff Section */}
-              <div className="detail-staff-section" style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {(activity.leaders?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
-                    <UserIcon size={14} color="var(--primary-color)" style={{ marginTop: '3px' }} />
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Leaders</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.leaders?.join(', ')}</div>
-                    </div>
-                  </div>
-                )}
-                {(activity.guides?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
-                    <Users size={14} color="#10b981" style={{ marginTop: '3px' }} />
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Guides</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.guides?.join(', ')}</div>
-                    </div>
-                  </div>
-                )}
-                {(activity.observers?.length || 0) > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
-                    <Eye size={14} color="var(--text-secondary)" style={{ marginTop: '3px' }} />
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Observers</div>
-                      <div style={{ color: 'var(--text-primary)' }}>{activity.observers?.join(', ')}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
-            </div>
-
-            {/* ---------- Footer / actions ---------- */}
-            <div className="detail-footer-flat">
-              {successMessage && (
-                <div style={{
-                  flex: '0 0 100%',
-                  textAlign: 'center',
-                  color: '#22c55e',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  marginBottom: '8px'
+                  fontWeight: 800,
+                  fontFamily: 'var(--mono-font)',
+                  marginBottom: '8px',
+                  padding: '8px 16px',
+                  border: '2px solid #000000',
+                  background: 'rgba(76, 232, 25, 0.1)',
+                  boxShadow: '3px 3px 0 #000000',
                 }}>
                   {successMessage}
                 </div>
@@ -458,11 +451,21 @@ export default function ActivityDetailModal({
                 )}
 
                 {isStaffForActivity ? null : isRegistered ? (
-                  <button className="btn-secondary" onClick={handleUnregister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+                  <button
+                    className="btn-secondary-brutal"
+                    onClick={handleUnregister}
+                    disabled={isSubmitting}
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
                     {isSubmitting ? 'Unregistering...' : 'Unregister'}
                   </button>
                 ) : (
-                  <button className="btn-secondary" onClick={handleRegister} disabled={isSubmitting} style={{ whiteSpace: 'nowrap' }}>
+                  <button
+                    className="btn-secondary-brutal"
+                    onClick={handleRegister}
+                    disabled={isSubmitting}
+                    style={{ whiteSpace: 'nowrap' }}
+                  >
                     {isSubmitting ? 'Registering...' : 'Register'}
                     <CheckCircle size={16} />
                   </button>

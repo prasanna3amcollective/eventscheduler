@@ -53,7 +53,7 @@ export default function ResponsibilityDetailModal({
         onClose();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to cancel responsibility');
+        alert(data.error || 'Failed to  ponsibility');
       }
     } catch (err) {
       console.error('Cancel error', err);
@@ -104,7 +104,7 @@ export default function ResponsibilityDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header-actions">
-          <button onClick={() => router.push(`/responsibilities/${responsibility.id}/edit`)} className="edit-btn-flat" title="Edit responsibility">
+          <button onClick={() => { onClose(); router.push(`/responsibilities/${responsibility.id}/edit`); }} className="edit-btn-flat" title="Edit responsibility">
             <Edit size={20} />
           </button>
           {/* <button onClick={handleCancel} className="cancel-button" title="Cancel responsibility">
@@ -169,23 +169,32 @@ export default function ResponsibilityDetailModal({
         </div>
 
         <div className="detail-footer-flat">
-          {responsibility.state !== 'Completed' && (
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'nowrap', overflowX: 'auto', width: '100%', justifyContent: 'flex-end' }}>
+            {responsibility.state !== 'Completed' && (
+              <button
+                onClick={handleComplete}
+                className="pink-btn"
+                disabled={completing}
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                  {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
+                  {completing ? 'Completing...' : 'Complete Responsibility'}
+                </span>
+              </button>
+            )}
             <button
-              onClick={handleComplete}
-              className="btn-secondary"
-              disabled={completing}
+              onClick={handleSyncCalendar}
+              className="yellow-btn green-btn"
+              disabled={!googleCalendarUrl}
+              style={{ whiteSpace: 'nowrap' }}
             >
-              {completing ? <Loader size={16} /> : <CheckCircle size={16} />}
-              {completing ? 'Completing...' : 'Complete Responsibility'}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                <Calendar size={16} />
+                Sync
+              </span>
             </button>
-          )}
-          <button
-            onClick={handleSyncCalendar}
-            className="btn-secondary"
-            disabled={!googleCalendarUrl}
-          >
-            <Calendar size={16} /> Sync
-          </button>
+          </div>
         </div>
       </div>
     </div>
