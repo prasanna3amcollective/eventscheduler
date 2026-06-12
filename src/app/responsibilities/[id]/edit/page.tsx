@@ -573,12 +573,12 @@ export default function ResponsibilityEditPage() {
                   Cancel Responsibility
                 </span>
               </button>
-              <button type="button" onClick={handleClose} className="yellow-btn">
+              {/* <button type="button" onClick={handleClose} className="yellow-btn">
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
                   <X size={16} aria-hidden="true" />
                   Cancel
                 </span>
-              </button>
+              </button> */}
             </div>
           </div>
         </form>

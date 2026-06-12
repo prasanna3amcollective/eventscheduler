@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { secureFetch } from "@/lib/fetch";
-import { XCircle } from "@/components/Icons";
+import { XCircle, X } from "@/components/Icons";
 import ActivityForm from "@/components/ActivityForm";
 
 export interface EditActivityModalProps {
@@ -101,6 +101,9 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
           onCancel={onClose}
         />
       </div>
+      <button className="modal-close" onClick={onClose} style={{ position: 'fixed', top: 'calc(5vh - 12px)', right: 'max(16px, calc(50% - 425px - 12px))', zIndex: 1150 }}>
+        <X size={20} />
+      </button>
     </div>
   );
 }

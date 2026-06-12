@@ -128,8 +128,20 @@ export async function PUT(
           where: { name: name }
         });
         if (user && !addedUserIds.has(user.id)) {
-          await prisma.participant.create({
-            data: {
+          // Use upsert to handle the unique constraint on [activityId, userId].
+          // If the user already has a participant record (e.g. as a registered "Participant"),
+          // update their type to the staff role instead of failing with a duplicate key error.
+          await prisma.participant.upsert({
+            where: {
+              activityId_userId: {
+                activityId: activityId,
+                userId: user.id
+              }
+            },
+            update: {
+              type: role.type
+            },
+            create: {
               activityId: activityId,
               userId: user.id,
               type: role.type

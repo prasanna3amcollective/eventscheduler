@@ -17,9 +17,8 @@ import HolidayDetailModal from '@/components/HolidayDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
-import InstagramEmbed from '@/components/InstagramEmbed';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
-import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
+import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 import './Home.css';
 
 function HomeContent() {
@@ -377,7 +376,7 @@ function HomeContent() {
           {activeSection === 'participate' && (
             <section id="participate" style={{ textAlign: 'left', padding: '40px 0' }}>
               <p>Join our events, volunteer, or become a member of the community.</p>
-              
+
               {/* Decorative Banner Slideshow */}
               <BannerSlideshow />
 
@@ -493,45 +492,47 @@ function HomeContent() {
     <>
       <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
       <div className="dashboard-layout fade-in">
-        {activeSection !== 'about-us' && <MarqueeBanner />}
-
-        {/* Thin controls bar below the banner (user controls only; title moved to marquee above) */}
-        <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
-          <div className="header-user">
-            <div className="user-menu-container">
-              <button
-                className="user-trigger"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowProfileDropdown(!showProfileDropdown);
-                }}
-              >
-                <div className="user-avatar">
-                  <User size={20} />
-                </div>
-
-                <ChevronDown size={14} />
-              </button>
-              {showProfileDropdown && (
-                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+        {activeSection !== 'about-us' && (
+          <div className="dashboard-header-row">
+            <MarqueeBanner />
+            <header className="dashboard-header">
+              <div className="header-user">
+                <div className="user-menu-container">
                   <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      setIsProfileOpen(true);
+                    className="user-trigger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowProfileDropdown(!showProfileDropdown);
                     }}
                   >
-                    <span>{currentUser?.name}</span>
-                    <br />
-                    <br />
-                    Edit Profile
+                    <div className="user-avatar">
+                      <User size={20} />
+                    </div>
+
+                    <ChevronDown size={14} />
                   </button>
+                  {showProfileDropdown && (
+                    <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => {
+                          setShowProfileDropdown(false);
+                          setIsProfileOpen(true);
+                        }}
+                      >
+                        <span>{currentUser?.name}</span>
+                        <br />
+                        <br />
+                        Edit Profile
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
+                <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
+              </div>
+            </header>
           </div>
-        </header>
+        )}
 
         <nav className="nav-container">
           <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
@@ -550,19 +551,19 @@ function HomeContent() {
           </div>
         ) : (
           <main className="app-container">
-{activeTab === 'calendar' && (
-               <div className="content-section">
-                 <CalendarView
-                   refreshTrigger={refreshTrigger}
-                   onSelectActivity={handleSelectActivity}
-                   onSelectSlot={handleSelectSlot}
-                   onCreateActivity={onCreateActivity}
-                   onOwnResponsibility={onOwnResponsibility}
-                   onSelectHoliday={handleSelectHoliday}
-                   userRoles={userRoles}
-                   userPermissions={userPermissions}
-                 />
-               </div>
+            {activeTab === 'calendar' && (
+              <div className="content-section">
+                <CalendarView
+                  refreshTrigger={refreshTrigger}
+                  onSelectActivity={handleSelectActivity}
+                  onSelectSlot={handleSelectSlot}
+                  onCreateActivity={onCreateActivity}
+                  onOwnResponsibility={onOwnResponsibility}
+                  onSelectHoliday={handleSelectHoliday}
+                  userRoles={userRoles}
+                  userPermissions={userPermissions}
+                />
+              </div>
             )}
             {activeTab === 'admin' && (
               <AdminDashboard currentUser={currentUser} />
@@ -613,28 +614,28 @@ function HomeContent() {
           onSwitchToRegister={() => { }}
         />
 
-<ResponsibilityDetailModal
-           responsibility={responsibilityDetail}
-           isOpen={isResponsibilityDetailOpen}
-           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
-           onStateChange={(id, newState) => {
-             setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
-           }}
-         />
-
-         <HolidayDetailModal
-           holiday={selectedHoliday}
-           isOpen={isHolidayModalOpen}
-           onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
-         />
-
-         <ProfileModal
-           isOpen={isProfileOpen}
-           onClose={() => setIsProfileOpen(false)}
-           currentUser={currentUser}
-           onProfileUpdate={setCurrentUser}
+        <ResponsibilityDetailModal
+          responsibility={responsibilityDetail}
+          isOpen={isResponsibilityDetailOpen}
+          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+          onStateChange={(id, newState) => {
+            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
+          }}
         />
-      </div>
+
+        <HolidayDetailModal
+          holiday={selectedHoliday}
+          isOpen={isHolidayModalOpen}
+          onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
+        />
+
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          onProfileUpdate={setCurrentUser}
+        />
+      </div >
     </>
   );
 }

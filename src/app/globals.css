@@ -1793,16 +1793,41 @@ input:not([type="checkbox"]):focus {
   gap: 16px;
 }
 
+/* Dashboard Header Row — places marquee-banner and header controls side by side */
+.dashboard-header-row {
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--surface-color);
+}
+
+.dashboard-header-row .marquee-banner {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 0;
+  text-align: center;
+  border-bottom: none;
+}
+
+.dashboard-header-row .banner-content {
+  font-size: 70px;
+  gap: 8px;
+  justify-content: center;
+}
+
+.dashboard-header-row .banner-content .center-fist {
+  width: 27px;
+  height: 27px;
+}
+
 /* Dashboard Header */
 .dashboard-header {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 16px 40px;
-  background: var(--surface-color);
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 24px;
-  margin-left: auto;
+  padding: 16px 0 16px 24px;
+  flex-shrink: 0;
 }
 
 .header-brand {
@@ -1949,7 +1974,7 @@ input:not([type="checkbox"]):focus {
   opacity: 0.18;
 }
 
-/* ── Carousel: Horizontal scroll-snapping strip ──────────────────────── */
+/* ── Neo-brutalist 3×3 Card Grid (replaces old carousel) ───────────── */
 .carousel-container {
   padding: 0 40px;
   margin-bottom: 32px;
@@ -2007,13 +2032,10 @@ input:not([type="checkbox"]):focus {
   animation: pulse 2s infinite;
 }
 
+/* ─── Collapse wrapper ─────────────────── */
 .carousel-strip-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
-  max-height: 400px;
+  max-height: 800px;
   opacity: 1;
   width: 100%;
   max-width: 100%;
@@ -2027,134 +2049,169 @@ input:not([type="checkbox"]):focus {
   pointer-events: none;
 }
 
-.carousel-strip-wrapper::-webkit-scrollbar {
-  display: none;
-}
-
-.carousel-strip {
-  display: flex;
-  gap: 16px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 8px;
-}
-
-.carousel-card {
-  position: relative;
-  flex: 0 0 320px;
-  scroll-snap-align: start;
-  background: var(--surface-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  display: flex;
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
-  border: 1px solid var(--border-color);
-}
-
-.carousel-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-color);
-}
-
-.card-accent {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--primary-color);
-}
-
-.card-content {
-  display: flex;
-  align-items: center;
+/* ─── 3×3 Grid ─────────────────────────── */
+.neo-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   width: 100%;
 }
 
-.card-date-badge {
+/* ─── Neo Brutalist Card ───────────────── */
+.neo-card {
+  position: relative;
+  border: 4px solid #000000;
+  box-shadow: 8px 8px 0 #000000;
+  padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--hover-color);
-  min-width: 54px;
-  height: 54px;
-  border-radius: 12px;
+  gap: 12px;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 160px;
 }
 
-.card-date-badge .day {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--primary-color);
-  line-height: 1;
-}
-
-.card-date-badge .month {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.card-info h4 {
-  font-size: 15px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  color: var(--text-primary);
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.card-meta span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.participant-count {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--hover-color);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.participant-count svg {
-  color: var(--primary-color);
-}
-
-.carousel-card.empty {
-  opacity: 0.5;
-  border-style: dashed;
-  background: transparent;
-  justify-content: center;
-  align-items: center;
-}
-
-.carousel-card.clickable {
+.neo-card.clickable {
   cursor: pointer;
 }
 
-/* ── Carousel Category Filter Strip ── */
+.neo-card.clickable:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 #000000;
+}
+
+.neo-card.clickable:active {
+  transform: translate(4px, 4px);
+  box-shadow: 4px 4px 0 #000000;
+}
+
+/* Accent bar along top edge */
+.neo-card-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: #000000;
+}
+
+/* Date badge — white text on black */
+.neo-card-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  border: 3px solid #000000;
+  box-shadow: 4px 4px 0 #000000;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.neo-card-day {
+  font-family: var(--mono-font);
+  font-size: 20px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.neo-card-month {
+  font-family: var(--mono-font);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+/* Card content text in black for readability on vibrant backgrounds */
+.neo-card-title {
+  color: #000000;
+}
+
+.neo-meta-item {
+  color: #000000;
+}
+
+.neo-card-footer,
+.neo-card-footer span {
+  color: #000000;
+}
+
+/* Card body */
+.neo-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.neo-card-title {
+  font-family: var(--heading-font);
+  font-size: 15px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+}
+
+.neo-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.neo-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono-font);
+  font-weight: 700;
+}
+
+/* Category tag on card — inverted chip */
+.neo-category-tag {
+  font-size: 9px;
+  font-family: var(--mono-font);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: #000000;
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border: 2px solid #000000;
+}
+
+/* Footer with participant count */
+.neo-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono-font);
+  font-size: 11px;
+  font-weight: 700;
+  border-top: 2px solid #000000;
+  padding-top: 8px;
+  margin-top: auto;
+}
+
+/* Empty placeholder card (keeps grid alignment) */
+.neo-card-empty {
+  border: 4px dashed rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* ─── Category Filter Strip (neo-brutalist) ── */
 .carousel-category-strip {
   display: flex;
   gap: 8px;
@@ -2162,7 +2219,7 @@ input:not([type="checkbox"]):focus {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 12px;
-  margin-bottom: 4px;
+  margin-bottom: 16px;
 }
 
 .carousel-category-strip::-webkit-scrollbar {
@@ -2171,42 +2228,144 @@ input:not([type="checkbox"]):focus {
 
 .category-pill {
   flex-shrink: 0;
+  font-family: var(--mono-font);
   font-size: 11px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
+  font-weight: 800;
+  padding: 6px 14px;
+  border: 3px solid #000000;
   background: var(--surface-color);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 4px 4px 0 #000000;
 }
 
 .category-pill:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000000;
 }
 
 .category-pill.active {
   background: var(--primary-color);
-  color: var(--primary-light, #fff);
-  border-color: var(--primary-color);
+  color: #000000;
+  box-shadow: 4px 4px 0 #000000;
+}
+
+/* ─── Pagination ────────────────────────── */
+.neo-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 3px solid #000000;
+}
+
+.neo-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #000000;
+  background: var(--surface-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: 4px 4px 0 #000000;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.neo-page-btn:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000000;
+  background: var(--primary-color);
+  color: #000000;
+}
+
+.neo-page-btn:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+.neo-page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.neo-page-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.neo-page-dot {
+  width: 14px;
+  height: 14px;
+  border: 3px solid #000000;
+  background: var(--surface-color);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-page-dot.active {
+  background: var(--primary-color);
+  box-shadow: 3px 3px 0 #000000;
+}
+
+.neo-page-dot:hover:not(.active) {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 #000000;
+}
+
+.neo-page-label {
+  font-family: var(--mono-font);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-secondary);
+  letter-spacing: -0.02em;
+  margin-left: 4px;
+}
+
+/* Loading state */
+.neo-grid-loading {
+  padding: 60px 0;
+  text-align: center;
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: 3px dashed rgba(255, 255, 255, 0.2);
 }
 
 /* Carousel Empty State */
 .carousel-empty-state {
-  flex: 0 0 320px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  background: var(--hover-color);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-lg);
+  padding: 60px 40px;
+  border: 4px solid #000000;
+  box-shadow: 8px 8px 0 #000000;
+  background: var(--surface-color);
   color: var(--text-secondary);
-  gap: 12px;
+  gap: 16px;
+}
+
+.carousel-empty-state p {
+  font-family: var(--mono-font);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 @keyframes pulse {
@@ -3088,25 +3247,28 @@ input:not([type="checkbox"]):focus {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  border-radius: 0;
+  border: 3px solid #000 !important;
+  background: #FFF !important;
+  backdrop-filter: none !important;
   cursor: pointer;
-  transition: all 0.2s;
+  box-shadow: 4px 4px 0px #000 !important;
+  transition: transform 0.1s, box-shadow 0.1s !important;
+  color: #000 !important;
 }
 
 .user-trigger:hover {
-  background: var(--surface-color);
-  box-shadow: var(--shadow-md);
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0px #000 !important;
 }
 
 .user-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  color: rgb(0, 0, 0);
+  border-radius: 0 !important;
+  border: 2px solid #000 !important;
+  background: #EBFF00 !important;
+  color: #000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3114,20 +3276,21 @@ input:not([type="checkbox"]):focus {
 
 .user-name {
   font-weight: 500;
-  color: var(--text-primary);
+  color: #000 !important;
 }
 
 .user-dropdown {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 8px;
-  background: var(--surface-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
+  margin-top: 12px !important;
+  background: #FFF !important;
+  border-radius: 0 !important;
+  border: 3px solid #000 !important;
+  box-shadow: 6px 6px 0px #000 !important;
   z-index: 100;
   min-width: 150px;
+  padding: 0 !important;
 }
 
 .dropdown-item {
@@ -3138,12 +3301,19 @@ input:not([type="checkbox"]):focus {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-primary);
-  font-weight: 500;
+  font-family: var(--heading-font, sans-serif) !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  color: #000 !important;
+  border-bottom: 3px solid #000 !important;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none !important;
 }
 
 .dropdown-item:hover {
-  background: var(--hover-color);
+  background: #EBFF00 !important;
 }
 
 /* Profile Modal */

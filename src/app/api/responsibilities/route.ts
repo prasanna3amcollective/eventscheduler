@@ -142,6 +142,8 @@ export async function GET(request: Request) {
     // No shadow filter, no virtual expansion.
     const where: any = {
       ownerId: securityContext?.id || undefined,
+      detachReason: { not: 'cancelled' },
+      state: { not: 'Cancelled' },
     };
     if (startParam && endParam) {
       const rangeStart = new Date(startParam);

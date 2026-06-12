@@ -243,7 +243,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   // Compute recurrence defaults (with support for parsed start/interval/until from rule)
   const parsedRecurrence = parseRecurrenceForForm(initialData?.recurrenceRule);
   const defaultRecStart = parsedRecurrence.recurrenceStart || initialStartDate;
-  
+
   let initialWeeks: number | string = 4;
   let initialUntil: Date | null = null;
 
@@ -606,7 +606,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             generatedFromTemplateId: initialData!.generatedFromTemplateId,
             detachReason: 'cancelled',
           };
-          
+
           const res = await secureFetch(`/api/activities/${initialData!.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -632,7 +632,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           <h2 style={{ fontFamily: 'var(--heading-font)', fontSize: '28px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
             {isEditing ? 'Edit Activity' : 'New Activity'}
           </h2>
-          {onCancel && (
+          {/* {onCancel && (
             <button
               type="button"
               onClick={onCancel}
@@ -641,7 +641,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             >
               <X size={24} />
             </button>
-          )}
+          )} */}
         </div>
 
         <OverlapWarningBanner message={overlapWarning} />

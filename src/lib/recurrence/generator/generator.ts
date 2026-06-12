@@ -298,7 +298,7 @@ export async function reconcileFutureOccurrences(
       const ids = toCancel.map((r) => r.id);
       const result = await prismaAny[model].updateMany({
         where: { id: { in: ids } },
-        data: { state: 'Cancelled' },
+        data: { state: 'Cancelled', detachReason: 'cancelled' },
         ...(ctx ? { _context: ctx } : {}),
       });
       cancelled = result.count;
