@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { format, startOfDay, addMonths } from 'date-fns';
+import { format, startOfDay, addMonths, addDays } from 'date-fns';
 import { Clock, CalendarDays, Users, ChevronDown, ChevronUp } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
@@ -74,15 +74,15 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
         if (res.ok) {
           const data = await res.json();
           const today = startOfDay(new Date());
+          const sevenDaysFromNow = addDays(today, 7);
 
-          const future = data
+          const thisWeek = data
             .filter((e: any) => {
               const eventDate = new Date(e.startDateTime);
-              return eventDate.getTime() >= today.getTime();
+              return eventDate >= today && eventDate <= sevenDaysFromNow;
             })
-            .sort((a: any, b: any) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())
-            .slice(0, 12);
-          setUpcomingActivities(future);
+            .sort((a: any, b: any) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime());
+          setUpcomingActivities(thisWeek);
           setFilterCategory(null);
         }
       } catch (err) {
@@ -101,7 +101,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
       <div className="carousel-header">
         <div className="carousel-title">
           <span className="carousel-dot pulse-icon" />
-          <h3>Upcoming Activities</h3>
+          <h3>Upcoming Activities - This week</h3>
 
           {isLoggedIn && (
             <button

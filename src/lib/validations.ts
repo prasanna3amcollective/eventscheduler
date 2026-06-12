@@ -36,7 +36,7 @@ export const activitySchema = z.object({
   recurrenceRule: z.string().nullable().optional(),
   recurrenceStart: z.string().datetime().optional().nullable(),
   recurrenceUntil: z.string().datetime().optional().nullable(),
-  recurrenceWeeks: z.number().int().positive().optional().nullable(),
+  recurrenceWeeks: z.number().int().positive().max(52, 'Cannot plan more than 52 weeks ahead').optional().nullable(),
   recurrenceTemplateId: z.string().uuid().nullable().optional(),
   generatedFromTemplateId: z.string().uuid().nullable().optional(),
   detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),

@@ -27,7 +27,8 @@ export async function GET(request: Request) {
       args: {
         where: {
           startDateTime: { lte: rangeEnd },
-          endDateTime: { gte: rangeStart }
+          endDateTime: { gte: rangeStart },
+          detachReason: { not: 'cancelled' }
         },
         include: {
           participants: {

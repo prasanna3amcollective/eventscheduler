@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type FormEvent, useCallback } from 'react';
+import { X as XIcon } from '@/components/Icons';
 import { addMinutes, differenceInMinutes, format, addWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -92,9 +93,9 @@ const ERROR_DELETING_EVENT = 'An error occurred';
 function OverlapWarningBanner({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div className="warning-banner p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
-      <AlertTriangle size={20} className="text-yellow-500 mr-2" />
-      <span className="text-yellow-800 text-sm">{message}</span>
+    <div className="neo-warning-banner">
+      <AlertTriangle size={16} />
+      <span>{message}</span>
     </div>
   );
 }
@@ -122,12 +123,12 @@ function DaySelector({
   );
 
   return (
-    <div className="days-selector">
+    <div className="days-selector" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
       {DAYS_OF_WEEK.map((day) => (
         <button
           type="button"
           key={day.value}
-          className={`day-btn ${selectedDays.includes(day.value) ? 'active' : ''}`}
+          className={`neo-day-btn ${selectedDays.includes(day.value) ? 'active' : ''}`}
           onClick={(e) => {
             e.preventDefault();
             toggleDay(day.value);
@@ -178,31 +179,31 @@ function MultiUserSelect({
   }, [selectedNames, onChange]);
 
   return (
-    <div className="multi-user-select-container space-y-4">
-      <div className="multi-user-header flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <div className="neo-multi-user">
+      <div className="neo-multi-user-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {icon}
-          <label className="font-medium text-gray-700">{label}</label>
+          <span className="neo-label" style={{ marginBottom: 0 }}>{label}</span>
         </div>
-        <span className="user-count-badge bg-primary text-white text-xs font-bold px-2 py-1 rounded-full">{selectedNames.length}</span>
+        <span className="neo-user-count">{selectedNames.length}</span>
       </div>
 
-      <div className="selected-users-list flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 border border-dashed border-gray-300 rounded-md">
+      <div className="neo-selected-users">
         {selectedNames.length > 0 ? (
           selectedNames.map(name => (
-            <div key={name} className="user-chip bg-primary/10 text-primary font-medium px-3 py-1 rounded-full flex items-center gap-2">
-              <span className="chip-text">{name}</span>
-              <button type="button" className="chip-remove text-primary hover:text-primary/80" onClick={() => removeUser(name)}>
-                <X size={14} />
+            <div key={name} className="neo-user-chip">
+              <span>{name}</span>
+              <button type="button" className="neo-chip-remove" onClick={() => removeUser(name)}>
+                <XIcon size={14} />
               </button>
             </div>
           ))
         ) : (
-          <div className="no-users-placeholder text-gray-500 italic text-sm">No {label.toLowerCase()} assigned</div>
+          <div className="neo-placeholder-text">No {label.toLowerCase()} assigned</div>
         )}
       </div>
 
-      <div className="add-user-trigger">
+      <div className="neo-user-typeahead">
         <UserTypeahead
           label=""
           value={inputValue}
@@ -242,8 +243,23 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   // Compute recurrence defaults (with support for parsed start/interval/until from rule)
   const parsedRecurrence = parseRecurrenceForForm(initialData?.recurrenceRule);
   const defaultRecStart = parsedRecurrence.recurrenceStart || initialStartDate;
-  const defaultRecWeeks = parsedRecurrence.recurrenceInterval || 4;
-  const defaultRecUntil = parsedRecurrence.recurrenceUntil || addWeeks(defaultRecStart, defaultRecWeeks);
+  
+  let initialWeeks: number | string = 4;
+  let initialUntil: Date | null = null;
+
+  if (isEditing || isSeriesOccurrence) {
+    if (parsedRecurrence.recurrenceUntil) {
+      initialUntil = parsedRecurrence.recurrenceUntil;
+      const diffDays = Math.max(1, Math.round((initialUntil.getTime() - defaultRecStart.getTime()) / (1000 * 3600 * 24)));
+      initialWeeks = Math.round(diffDays / 7);
+    } else {
+      initialUntil = null;
+      initialWeeks = '';
+    }
+  } else {
+    initialUntil = addWeeks(defaultRecStart, 4);
+    initialWeeks = 4;
+  }
 
   // Form state for all activity fields
   const [formData, setFormData] = useState({
@@ -258,8 +274,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     recurrenceFreq: (parsedRecurrence.recurrenceFreq as any) || 'WEEKLY',
     recurrenceDays: parsedRecurrence.recurrenceDays,
     recurrenceStart: defaultRecStart,
-    recurrenceUntil: defaultRecUntil,
-    recurrenceWeeks: defaultRecWeeks,
+    recurrenceUntil: initialUntil,
+    recurrenceWeeks: initialWeeks,
     category: initialData?.category ?? 'General',
     // Lineage fields (backend-managed for IDs; detachReason may be shown/edited)
     recurrenceTemplateId: initialData?.recurrenceTemplateId ?? null,
@@ -280,6 +296,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [confirmMessage, setConfirmMessage] = useState('');
   const [recurrenceWarning, setRecurrenceWarning] = useState<string | null>(null);
+  const [weeksError, setWeeksError] = useState<string | null>(null);
 
   // Guard so we fetch the authoritative template data only once on mount for series 'all' edits
   const hasLoadedTemplateRef = useRef(false);
@@ -317,14 +334,24 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       .then((tpl) => {
         if (tpl && tpl.recurrenceRule) {
           const p = parseRecurrenceForForm(tpl.recurrenceRule);
-          setFormData((prev) => ({
-            ...prev,
-            recurrenceDays: p.recurrenceDays.length ? p.recurrenceDays : prev.recurrenceDays,
-            recurrenceFreq: p.recurrenceFreq || prev.recurrenceFreq,
-            recurrenceStart: p.recurrenceStart || (tpl.startDate ? new Date(tpl.startDate) : prev.recurrenceStart),
-            recurrenceUntil: p.recurrenceUntil || (tpl.endDate ? new Date(tpl.endDate) : prev.recurrenceUntil),
-            recurrenceWeeks: p.recurrenceInterval || prev.recurrenceWeeks,
-          }));
+          setFormData((prev) => {
+            const tplStart = p.recurrenceStart || (tpl.startDate ? new Date(tpl.startDate) : prev.recurrenceStart);
+            const tplUntil = p.recurrenceUntil || (tpl.endDate ? new Date(tpl.endDate) : null);
+            let tplWeeks: number | string = '';
+            if (tplUntil) {
+              const diffDays = Math.max(1, Math.round((tplUntil.getTime() - tplStart.getTime()) / (1000 * 3600 * 24)));
+              tplWeeks = Math.max(1, Math.round(diffDays / 7));
+            }
+
+            return {
+              ...prev,
+              recurrenceDays: p.recurrenceDays.length ? p.recurrenceDays : prev.recurrenceDays,
+              recurrenceFreq: p.recurrenceFreq || prev.recurrenceFreq,
+              recurrenceStart: tplStart,
+              recurrenceUntil: tplUntil,
+              recurrenceWeeks: tplWeeks,
+            };
+          });
         }
       })
       .catch((err) => console.error('Failed to load series template for edit-all:', err));
@@ -342,7 +369,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           formData.recurrenceFreq,
           initialData,
           formData.recurrenceStart,
-          formData.recurrenceUntil
+          formData.recurrenceUntil ?? undefined
         );
 
         const res = await secureFetch('/api/activities/check-overlap', {
@@ -426,7 +453,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         formData.recurrenceFreq,
         initialData,
         formData.recurrenceStart,
-        formData.recurrenceUntil
+        formData.recurrenceUntil ?? undefined
       );
 
       const payload: any = {
@@ -441,7 +468,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         recurrenceRule: rruleStr,
         recurrenceStart: formData.recurrenceStart?.toISOString?.() ?? null,
         recurrenceUntil: formData.recurrenceUntil?.toISOString?.() ?? null,
-        recurrenceWeeks: formData.recurrenceWeeks,
+        recurrenceWeeks: formData.recurrenceWeeks === '' ? null : Number(formData.recurrenceWeeks),
         category: formData.category,
         // When editing entire series, clear per-occurrence lineage (legacy master path); real series 'all' goes to template endpoint instead.
         recurrenceTemplateId: saveMode === 'all' ? null : formData.recurrenceTemplateId,
@@ -476,16 +503,28 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           }
         } else if (isSeriesOccurrence && saveMode === 'all') {
           // "All in series": update via RecurrenceTemplate endpoint + reconcile.
-          // Send a minimal template-shaped payload (with startDate/endDate derived from the recurrence range fields)
-          // so that changes to Recurrence Start / Recur Until are persisted to the template row (and used for horizon capping).
-          const templateUpdate = {
-            recurrenceRule: rruleStr,
-            name: formData.name,
-            duration: formData.duration,
-            category: formData.category,
-            startDate: formData.recurrenceStart?.toISOString?.() ?? undefined,
-            endDate: formData.recurrenceUntil?.toISOString?.() ?? null,
-          };
+          // Compute diff instead of sending all fields to avoid poisoning the reconciliation process
+          const templateUpdate: Record<string, any> = {};
+
+          if (formData.name !== (initialData!.name || '')) templateUpdate.name = formData.name;
+          if (formData.duration !== initialData!.duration) templateUpdate.duration = formData.duration;
+          if (formData.category !== (initialData!.category || 'General')) templateUpdate.category = formData.category;
+
+          if (rruleStr !== (initialData!.recurrenceRule || '')) templateUpdate.recurrenceRule = rruleStr;
+
+          const newStartIso = formData.recurrenceStart?.toISOString();
+          const initialStartIso = parsedRecurrence.recurrenceStart?.toISOString();
+          if (newStartIso !== initialStartIso) templateUpdate.startDate = newStartIso ?? undefined;
+
+          const newUntilIso = formData.recurrenceUntil?.toISOString() ?? null;
+          const initialUntilIso = parsedRecurrence.recurrenceUntil?.toISOString() ?? null;
+          if (newUntilIso !== initialUntilIso) templateUpdate.endDate = newUntilIso;
+
+          if (Object.keys(templateUpdate).length === 0) {
+            onActivityCreated();
+            setIsSubmitting(false);
+            return;
+          }
           const url = `/api/recurrence-templates/${initialData!.recurrenceTemplateId}`;
           const method = 'PUT';
           const res = await secureFetch(url, {
@@ -535,69 +574,100 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   );
 
   /**
-   * Deletes the current activity or excludes the current occurrence from a recurring series.
-   * Prompts the user for confirmation before proceeding.
+   * Archives the current activity (sets detachReason to 'cancelled').
    */
-  const handleDelete = useCallback(() => {
+  const handleArchive = useCallback(() => {
     const isThisOnly = isSeriesOccurrence && saveMode === 'this';
-    const msg = `Are you sure you want to delete ${isThisOnly ? 'this specific occurrence' : 'the entire series'}?`;
+    const msg = `Are you sure you want to archive ${isThisOnly ? 'this specific occurrence' : (isSeriesOccurrence && saveMode === 'all' ? 'the entire series' : 'this activity')}?`;
     setConfirmMessage(msg);
     setConfirmAction(() => async () => {
       try {
-        if (isSeriesOccurrence && saveMode === 'this') {
-          // Real "this" delete: mark the row cancelled (history preserved)
-          await secureFetch(`/api/activities/${initialData!.id}`, {
+        if (isSeriesOccurrence && saveMode === 'all') {
+          // Delete/Archive the entire template
+          const res = await secureFetch(`/api/recurrence-templates/${initialData!.recurrenceTemplateId}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to archive template');
+        } else {
+          // Archive a single occurrence or non-recurring activity
+          const archivePayload = {
+            name: formData.name,
+            leader: formData.leader,
+            guide: formData.guide,
+            observer: formData.observer,
+            startDateTime: formData.startDateTime.toISOString(),
+            endDateTime: formData.endDateTime.toISOString(),
+            duration: formData.duration,
+            isRecurring: false,
+            recurrenceRule: null,
+            recurrenceStart: null,
+            recurrenceUntil: null,
+            recurrenceWeeks: null,
+            category: formData.category,
+            recurrenceTemplateId: initialData!.recurrenceTemplateId,
+            generatedFromTemplateId: initialData!.generatedFromTemplateId,
+            detachReason: 'cancelled',
+          };
+          
+          const res = await secureFetch(`/api/activities/${initialData!.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...initialData!, detachReason: 'cancelled' }),
+            body: JSON.stringify(archivePayload),
           });
-        } else if (isSeriesOccurrence && saveMode === 'all') {
-          await secureFetch(`/api/recurrence-templates/${initialData!.recurrenceTemplateId}`, { method: 'DELETE' });
-        } else {
-          await secureFetch(`/api/activities/${initialData!.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to archive activity');
         }
         onActivityCreated();
       } catch (err) {
         console.error(err);
-        setConfirmMessage(ERROR_DELETING_EVENT);
+        setConfirmMessage('Failed to archive. Please try again.');
         setConfirmAction(() => () => { });
       }
     });
-  }, [isSeriesOccurrence, saveMode, formData.startDateTime, initialData, onActivityCreated]);
+  }, [isSeriesOccurrence, saveMode, formData, initialData, onActivityCreated]);
 
   // ── Render ─────────────────────────────────────────────────────────
 
   return (
     <>
-      <form className="activity-form bg-white rounded-xl shadow-lg p-6 md:p-8 w-full max-w-xl mx-auto" onSubmit={handleSubmit}>
-        <div className="form-header mb-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">{isEditing ? 'Edit Activity' : 'New Activity'}</h2>
+      <form className="neo-form w-full mx-auto" onSubmit={handleSubmit}>
+        <div className="form-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h2 style={{ fontFamily: 'var(--heading-font)', fontSize: '28px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
+            {isEditing ? 'Edit Activity' : 'New Activity'}
+          </h2>
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          )}
         </div>
 
         <OverlapWarningBanner message={overlapWarning} />
 
-        <div className="form-row grid grid-cols-[3fr_1fr] gap-4 mb-6">
-          <div className="form-group space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-              <Tag size={16} className="text-primary" /> Activity Name
+        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '16px', marginBottom: '24px' }}>
+          <div className="form-group">
+            <label className="neo-label">
+              <Tag size={14} /> Activity Name
             </label>
             <input
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Project Sync-up"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              className="neo-input"
             />
           </div>
 
-          <div className="form-group space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-              <Tag size={16} className="text-primary" /> Category
+          <div className="form-group">
+            <label className="neo-label">
+              <Tag size={14} /> Category
             </label>
             <select
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22m6 9 6 6 6-6%22/%3E%3C/svg%3E')] bg-right-[12px] bg-center no-repeat"
+              className="neo-select"
             >
               {ACTIVITY_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -608,12 +678,12 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           </div>
         </div>
 
-        <div className="form-section-divider flex items-center my-6">
-          <span className="px-3 bg-gray-50 text-xs font-semibold text-gray-600 uppercase">Organisers</span>
-          <div className="flex-1 border-t border-gray-300"></div>
+        <div className="neo-section-divider">
+          <span>Organisers</span>
+          <div></div>
         </div>
 
-        <div className="staff-related-list space-y-4">
+        <div className="staff-related-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px', background: 'var(--hover-color)', padding: '20px', borderRadius: '0', border: '3px solid #000000', marginBottom: '24px', boxShadow: '4px 4px 0 #000000' }}>
           <MultiUserSelect
             label="Leaders"
             selectedNames={formData.leader}
@@ -637,10 +707,10 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           />
         </div>
 
-        <div className="form-row grid grid-cols-[1fr_1fr] gap-4 mb-4">
-          <div className="form-group space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-              <Calendar size={16} className="text-primary" /> Activity start
+        <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+          <div className="form-group">
+            <label className="neo-label">
+              <Calendar size={14} /> Activity start
             </label>
             <DatePicker
               selected={formData.startDateTime}
@@ -649,13 +719,13 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               }
               showTimeSelect
               dateFormat="MMMM d, yyyy h:mm aa"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              className="neo-input"
               placeholderText="Select start date and time"
             />
           </div>
-          <div className="form-group space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
-              <Repeat size={16} className="text-primary" /> Duration (mins)
+          <div className="form-group">
+            <label className="neo-label">
+              <Repeat size={14} /> Duration (mins)
             </label>
             <input
               type="number"
@@ -668,58 +738,71 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                   duration: parseInt(e.target.value) || 0,
                 })
               }
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              className="neo-input"
             />
           </div>
         </div>
 
-        <div className="form-group space-y-2 mb-4">
-          <label className="block text-sm font-medium text-gray-600">Activity end (Calculated)</label>
-          <div className="read-only-field w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium text-gray-600">
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label className="neo-label">Activity end (Calculated)</label>
+          <div className="neo-readonly-field">
             {format(formData.endDateTime, 'MMMM d, yyyy h:mm aa')}
           </div>
         </div>
 
-        <div className="form-group recurring-section space-y-3">
-          <label className="checkbox-label flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+        <div className="form-group" style={{ marginBottom: '16px' }}>
+          <label className="neo-checkbox-label">
             <input
               type="checkbox"
               checked={formData.isRecurring}
               onChange={(e) =>
                 setFormData({ ...formData, isRecurring: e.target.checked })
               }
-              className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
             />
             Enable Recurrence
           </label>
 
           {formData.isRecurring && (!isSeriesOccurrence || saveMode === 'all') && (
-            <div className="recurring-options fade-in space-y-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Repeat on specific days:</label>
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <label className="neo-label" style={{ marginBottom: '4px' }}>Repeat on specific days:</label>
               <DaySelector
                 selectedDays={formData.recurrenceDays}
                 onChange={(days) => setFormData({ ...formData, recurrenceDays: days })}
               />
 
               {/* New recurrence range fields (visible only for non-series recurrence) */}
-              <div className="grid grid-cols-[1fr_1fr] gap-4">
-                <div className="form-group space-y-1">
-                  <label className="block text-xs font-medium text-gray-500">how many weeks recurrence?</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label className="neo-label">Weeks recurrence</label>
                   <input
                     type="number"
                     min="1"
+                    max="52"
                     step="1"
-                    value={formData.recurrenceWeeks}
+                    value={formData.recurrenceWeeks === '' ? '' : formData.recurrenceWeeks}
                     onChange={(e) => {
-                      const w = Math.max(1, parseInt(e.target.value) || 1);
+                      if (e.target.value === '') {
+                        setFormData((prev) => ({ ...prev, recurrenceWeeks: '', recurrenceUntil: null }));
+                        setWeeksError(null);
+                        return;
+                      }
+                      const raw = parseInt(e.target.value) || 1;
+                      const w = Math.min(52, Math.max(1, raw));
                       const newUntil = addWeeks(formData.recurrenceStart, w);
                       setFormData((prev) => ({ ...prev, recurrenceWeeks: w, recurrenceUntil: newUntil }));
+                      setWeeksError(w >= 52 ? 'You can plan only up to 52 weeks ahead.' : null);
                     }}
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                    className="neo-input"
                   />
+                  {weeksError && (
+                    <div style={{ color: 'var(--error-color, #e53935)', fontSize: '12px', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <AlertTriangle size={12} />
+                      <span>{weeksError}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="form-group space-y-1">
-                  <label className="block text-xs font-medium text-gray-500">Recurrence Start</label>
+                <div className="form-group">
+                  <label className="neo-label">Recurrence Start</label>
                   <DatePicker
                     selected={formData.recurrenceStart}
                     onChange={(date: Date | null) => {
@@ -733,38 +816,40 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                       } else {
                         setRecurrenceWarning(null);
                       }
-                      const w = formData.recurrenceWeeks || 1;
+                      const w = Number(formData.recurrenceWeeks) || 1;
                       const newU = addWeeks(date, w);
                       setFormData((prev) => ({ ...prev, recurrenceStart: date, recurrenceUntil: newU }));
                     }}
                     showTimeSelect
                     dateFormat="MMM d, yyyy h:mm aa"
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                    className="neo-input"
                     placeholderText="Recurrence start"
                   />
                 </div>
               </div>
-              <div className="form-group space-y-1">
-                <label className="block text-xs font-medium text-gray-500">Recur until</label>
+              <div className="form-group">
+                <label className="neo-label">Recur until</label>
                 <DatePicker
                   selected={formData.recurrenceUntil}
                   onChange={(date: Date | null) => {
                     if (!date) return;
                     const start = formData.recurrenceStart;
                     const diffDays = Math.max(7, Math.round((date.getTime() - start.getTime()) / (1000 * 3600 * 24)));
-                    const w = Math.max(1, Math.round(diffDays / 7));
-                    setFormData((prev) => ({ ...prev, recurrenceUntil: date, recurrenceWeeks: w }));
+                    const w = Math.min(52, Math.max(1, Math.round(diffDays / 7)));
+                    const cappedUntil = addWeeks(start, w);
+                    setFormData((prev) => ({ ...prev, recurrenceUntil: cappedUntil, recurrenceWeeks: w }));
+                    setWeeksError(w >= 52 ? 'You can plan only up to 52 weeks ahead.' : null);
                   }}
                   showTimeSelect
                   dateFormat="MMM d, yyyy h:mm aa"
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  className="neo-input"
                   placeholderText="Recur until"
                 />
               </div>
               {recurrenceWarning && (
-                <div className="flex items-center gap-2 text-xs font-medium bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2">
-                  <AlertTriangle size={12} className="text-yellow-500" />
-                  {recurrenceWarning}
+                <div className="neo-warning-banner">
+                  <AlertTriangle size={14} />
+                  <span>{recurrenceWarning}</span>
                 </div>
               )}
             </div>
@@ -772,21 +857,19 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         </div>
 
         {isSeriesOccurrence && (
-          <div className="edit-choice-container bg-gray-50 rounded-lg p-4 border border-dashed border-gray-300 mb-6">
-            <p className="text-sm font-medium text-gray-600 mb-3">
-              This is part of a recurring series.
-            </p>
-            <div className="edit-choice-buttons flex gap-3">
+          <div className="neo-series-choice">
+            <p>This is part of a recurring series.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 type="button"
-                className={`nav-tab flex-1 items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'this' ? 'bg-primary text-white' : ''}`}
+                className={`neo-choice-btn ${saveMode === 'this' ? 'neo-choice-btn-active' : ''}`}
                 onClick={() => setSaveMode('this')}
               >
                 This occurrence only
               </button>
               <button
                 type="button"
-                className={`nav-tab flex-1 items-center justify-center px-3 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'all' ? 'bg-primary text-white' : ''}`}
+                className={`neo-choice-btn ${saveMode === 'all' ? 'neo-choice-btn-active' : ''}`}
                 onClick={() => setSaveMode('all')}
               >
                 All activities in series
@@ -797,8 +880,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
         {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
         {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
-          <div className="form-group space-y-1 mb-4">
-            <label className="block text-sm font-medium text-gray-600">Detach Reason</label>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="neo-label">Detach Reason</label>
             <select
               value={formData.detachReason || 'none'}
               onChange={(e) =>
@@ -807,39 +890,28 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
                   detachReason: e.target.value as 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created',
                 })
               }
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+              className="neo-select"
             >
-              <option value="none">none (part of series)</option>
+              <option value="none" disabled={!!initialData?.detachReason && initialData.detachReason !== 'none'}>none (part of series)</option>
               <option value="edited">edited</option>
               <option value="cancelled">cancelled</option>
               <option value="rescheduled">rescheduled</option>
               <option value="manually_created">manually_created</option>
             </select>
-            <small className="block text-xs font-medium text-gray-500 mt-1">
+            <div style={{ fontFamily: 'var(--mono-font)', fontSize: '11px', color: 'var(--text-secondary)', marginTop: '6px' }}>
               System-tracked reason this occurrence was detached from its recurrence template.
-            </small>
+            </div>
           </div>
         )}
 
-        <div className="form-actions flex items-center justify-end gap-3 mt-6 pt-4">
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="orange-btn"
-            >
-              {/* <X size={18} className="text-gray-600" /> */}
-              Cancel
-            </button>
-          )}
+        <div className="neo-form-actions">
           {isEditing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={handleArchive}
               className="orange-btn"
             >
-              {/* <Trash size={18} className="text-red-600" /> */}
-              Delete
+              Archive
             </button>
           )}
           <button
@@ -851,20 +923,19 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               : isEditing
                 ? 'Save Changes'
                 : 'Confirm Schedule'}
-            {!isSubmitting}
           </button>
         </div>
       </form>
 
       {confirmAction && (
-        <div className="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center" onClick={() => setConfirmAction(null)}>
-          <div className="modal-content bg-white rounded-xl shadow-xl w-full max-w-md p-6 md:p-8 relative" onClick={(e) => e.stopPropagation()}>
-            <p className="mb-4 text-center text-gray-700">{confirmMessage}</p>
-            <div className="flex justify-center gap-3">
-              <button className="btn-secondary px-5 py-3 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all" onClick={() => setConfirmAction(null)}>
+        <div className="neo-confirm-overlay" onClick={() => setConfirmAction(null)}>
+          <div className="neo-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <p>{confirmMessage}</p>
+            <div className="neo-confirm-actions">
+              <button className="btn-secondary-brutal" style={{ background: 'transparent !important', backgroundColor: 'transparent !important', color: 'var(--text-primary) !important' } as React.CSSProperties} onClick={() => setConfirmAction(null)}>
                 Cancel
               </button>
-              <button className="btn-primary px-5 py-3 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all" onClick={() => { confirmAction(); setConfirmAction(null); }}>
+              <button className="yellow-btn" style={{ margin: 0 }} onClick={() => { confirmAction(); setConfirmAction(null); }}>
                 Confirm
               </button>
             </div>

@@ -757,21 +757,22 @@ input:not([type="checkbox"]):focus {
   max-height: 90vh;
   overflow-y: auto;
   background: var(--surface-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  border: 4px solid #000000;
+  box-shadow: 12px 12px 0 #000000;
   position: relative;
-  animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0;
 }
 
 @keyframes modalIn {
   from {
     opacity: 0;
-    scale: 0.95;
+    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
-    scale: 1;
+    transform: translateY(0);
   }
 }
 
@@ -783,6 +784,377 @@ input:not([type="checkbox"]):focus {
   align-items: center;
   gap: 8px;
   z-index: 100;
+}
+
+/* Neo-brutalist form container - overrides */
+.neo-form {
+  background: var(--surface-color) !important;
+  border: 4px solid #000000 !important;
+  box-shadow: 12px 12px 0 #000000 !important;
+  border-radius: 0 !important;
+  padding: 10px !important;
+}
+
+.neo-form .form-header h2 {
+  color: var(--text-primary) !important;
+  font-family: var(--heading-font) !important;
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: -0.03em !important;
+  margin-bottom: 8px !important;
+}
+
+.neo-input {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  background: var(--bg-color) !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 14px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+.neo-input:focus {
+  box-shadow: 2px 2px 0 #000000 !important;
+  transform: translate(2px, 2px) !important;
+  border-color: #000000 !important;
+}
+
+.neo-select {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  background: var(--bg-color) !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 14px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 40px !important;
+}
+
+.neo-select:focus {
+  box-shadow: 2px 2px 0 #000000 !important;
+  transform: translate(2px, 2px) !important;
+}
+
+.neo-label {
+  font-family: var(--mono-font) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  color: var(--text-secondary) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.neo-section-divider {
+  display: flex !important;
+  align-items: center !important;
+  margin: 28px 0 !important;
+}
+
+.neo-section-divider span {
+  padding: 0 16px !important;
+  font-family: var(--mono-font) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  color: var(--text-secondary) !important;
+  background: var(--surface-color) !important;
+}
+
+.neo-section-divider>div {
+  flex: 1 !important;
+  border-top: 3px solid #000000 !important;
+}
+
+.neo-readonly-field {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  background: var(--bg-color) !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 13px !important;
+  color: var(--text-secondary) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+
+.neo-checkbox-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-primary) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.neo-checkbox-label input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  accent-color: var(--primary-color) !important;
+  cursor: pointer !important;
+}
+
+.neo-day-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  background: var(--bg-color) !important;
+  color: var(--text-secondary) !important;
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-transform: uppercase !important;
+}
+
+.neo-day-btn:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.neo-day-btn.active {
+  background: var(--primary-color) !important;
+  color: #000000 !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+
+.neo-day-btn.active:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.neo-warning-banner {
+  padding: 12px 16px !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  background: rgba(235, 255, 0, 0.1) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--primary-color) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+
+.neo-series-choice {
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  padding: 20px !important;
+  background: var(--bg-color) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+  margin-bottom: 24px !important;
+}
+
+.neo-series-choice p {
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: var(--text-secondary) !important;
+  margin-bottom: 12px !important;
+}
+
+.neo-choice-btn {
+  flex: 1 !important;
+  padding: 10px 16px !important;
+  border: 3px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  box-shadow: 4px 4px 0 #000000 !important;
+}
+
+.neo-choice-btn:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 2px 0 #000000 !important;
+}
+
+.neo-choice-btn-active {
+  background: var(--primary-color) !important;
+  color: #000000 !important;
+}
+
+.neo-form-actions {
+  display: flex !important;
+  gap: 16px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: 32px !important;
+  padding-top: 24px !important;
+  border-top: 3px solid #000000 !important;
+  flex-wrap: wrap !important;
+}
+
+/* Confirm dialog inside form */
+.neo-confirm-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1060 !important;
+  padding: 20px !important;
+}
+
+.neo-confirm-modal {
+  background: var(--surface-color) !important;
+  border: 4px solid #000000 !important;
+  padding: 40px !important;
+  max-width: 420px !important;
+  width: 100% !important;
+  box-shadow: 12px 12px 0 #000000 !important;
+  border-radius: 0 !important;
+}
+
+.neo-confirm-modal p {
+  font-family: var(--mono-font) !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  margin: 0 0 32px 0 !important;
+  color: var(--text-primary) !important;
+  text-align: center !important;
+}
+
+.neo-confirm-actions {
+  display: flex !important;
+  gap: 12px !important;
+  justify-content: center !important;
+}
+
+/* Multi-user select neo-brutalist */
+.neo-multi-user {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.neo-multi-user-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.neo-multi-user-header .neo-label {
+  margin-bottom: 0 !important;
+}
+
+.neo-user-count {
+  padding: 4px 12px !important;
+  border: 2px solid #000000 !important;
+  background: var(--primary-color) !important;
+  color: #000000 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+}
+
+.neo-selected-users {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  min-height: 44px !important;
+  padding: 12px !important;
+  border: 2px dashed #000000 !important;
+  background: var(--bg-color) !important;
+}
+
+.neo-user-chip {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 12px !important;
+  border: 2px solid #000000 !important;
+  background: rgba(235, 255, 0, 0.1) !important;
+  color: var(--primary-color) !important;
+  font-family: var(--mono-font) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.neo-user-chip:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0 #000000 !important;
+}
+
+.neo-chip-remove {
+  background: transparent !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  font-weight: 800 !important;
+}
+
+.neo-placeholder-text {
+  color: var(--text-secondary) !important;
+  font-family: var(--mono-font) !important;
+  font-size: 11px !important;
+  font-style: italic !important;
+  opacity: 0.6 !important;
+}
+
+.neo-user-typeahead input {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  background: var(--bg-color) !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  color: var(--text-primary) !important;
+  box-shadow: 3px 3px 0 #000000 !important;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  outline: none !important;
+}
+
+.neo-user-typeahead input:focus {
+  box-shadow: 1px 1px 0 #000000 !important;
+  transform: translate(2px, 2px) !important;
 }
 
 .modal-close {
@@ -1581,6 +1953,9 @@ input:not([type="checkbox"]):focus {
 .carousel-container {
   padding: 0 40px;
   margin-bottom: 32px;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .carousel-header {
@@ -1640,6 +2015,9 @@ input:not([type="checkbox"]):focus {
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out, margin 0.3s ease-in-out;
   max-height: 400px;
   opacity: 1;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .carousel-strip-wrapper.collapsed {

@@ -43,7 +43,7 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
         const isLeader = data.participants?.some(
           (p: any) => p.user?.id === currentUser?.id && p.type === 'Leader'
         );
-        
+
         // Use the dynamic ACL permission fetched from the server
         const canEdit = meData.permissions?.canEditActivity || isLeader;
         if (!canEdit) {
@@ -64,35 +64,39 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }}>
-        <div className="bg-white p-6 rounded-xl shadow-lg">Loading…</div>
+      <div className="modal-overlay" style={{ zIndex: 1050 }}>
+        <div className="neo-confirm-modal">
+          <p>Loading…</p>
+        </div>
       </div>
     );
   }
 
   if (error || !activity) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }}>
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-          <XCircle size={24} className="text-red-500 mb-2" />
+      <div className="modal-overlay" style={{ zIndex: 1050 }}>
+        <div className="neo-confirm-modal">
+          <XCircle size={24} style={{ color: 'var(--error-color)', marginBottom: '16px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }} />
           <p>{error || "Activity not found"}</p>
-          <button onClick={onClose} className="mt-4 px-6 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-            Close
-          </button>
+          <div className="neo-confirm-actions">
+            <button onClick={onClose} className="yellow-btn" style={{ margin: 0 }}>
+              Close
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4" style={{ zIndex: 1050 }} onClick={onClose}>
-      <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl" onClick={(e) => e.stopPropagation()}>
-        <ActivityForm 
-          initialData={activity} 
+    <div className="modal-overlay" style={{ zIndex: 1050, alignItems: 'flex-start', paddingTop: '5vh' }} onClick={onClose}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+        <ActivityForm
+          initialData={activity}
           onActivityCreated={() => {
             onClose();
             // Option to reload to show changes in the parent component
-            window.location.reload(); 
+            window.location.reload();
           }}
           onCancel={onClose}
         />

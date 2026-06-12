@@ -28,17 +28,13 @@ export default function ActivityModal({ isOpen, onClose, children, title }: Acti
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header-actions">
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
-        <div style={{ padding: '40px' }}>
-          {children}
-        </div>
+    <div className="modal-overlay" onClick={onClose} style={{ alignItems: 'flex-start', paddingTop: '5vh' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+        {children}
       </div>
+      <button className="modal-close" onClick={onClose} style={{ position: 'fixed', top: 'calc(5vh - 12px)', right: 'max(16px, calc(50% - 425px - 12px))', zIndex: 1150 }}>
+        <X size={20} />
+      </button>
     </div>
   );
 }

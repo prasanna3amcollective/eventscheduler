@@ -120,3 +120,6 @@ internal/plans/
 graphify-out/
 .gemini/
 
+
+# Other planning files 
+DATA_ARCHITECTURE_REVIEW.md
