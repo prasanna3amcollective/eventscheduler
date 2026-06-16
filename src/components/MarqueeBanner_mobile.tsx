@@ -23,7 +23,8 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
     { id: 'participate', label: 'Participate' },
     { id: 'about-us', label: 'About Us' },
     { id: 'gallery', label: 'Gallery' },
-    { id: 'explore', label: 'Explore' }
+    { id: 'explore', label: 'Explore' },
+    { id: 'testimonials', label: 'Testimonials' }
   ];
 
   const handleNav = (id: string) => {
@@ -38,6 +39,8 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
         window.history.pushState(null, '', window.location.pathname);
       } else if (id === 'about-us') {
         window.history.pushState(null, '', '/home/aboutus');
+      } else if (id === 'testimonials') {
+        window.history.pushState(null, '', '/home/testimonials');
       } else {
         window.location.hash = id;
       }
@@ -49,11 +52,11 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
     <div className="mobile-banner-wrapper">
       <div className="mobile-banner-content">
         <div className="mobile-banner-left">
-           {logoSrc && <img
-             src={logoSrc}
-             alt="Logo"
-             className="mobile-center-fist"
-             style={{ width: "82px", height: "82px" }} />}
+          {logoSrc && <img
+            src={logoSrc}
+            alt="Logo"
+            className="mobile-center-fist"
+            style={{ width: "82px", height: "82px" }} />}
         </div>
 
         <div className="mobile-banner-center">

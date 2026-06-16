@@ -238,31 +238,42 @@
 
 .nav-link-btn {
   color: var(--text-primary);
-  font-weight: 600;
-  font-size: 1.0625rem;
+  font-family: var(--mono-font);
+  font-weight: 800;
+  font-size: 12px;
   line-height: 1.25;
   text-decoration: none !important;
-  transition: all 0.2s ease-in-out;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 1.25rem;
   height: 50px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.5rem;
+  border: 3px solid #000000;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: 4px 4px 0 #000000;
 }
 
 .nav-link-btn:hover {
-  background-color: var(--hover-color);
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: #000000;
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000000;
 }
 
 .nav-link-btn.active {
   background-color: var(--primary-color);
   color: #000000 !important;
+  box-shadow: 4px 4px 0 #000000;
 }
 
 .nav-link-btn.active:hover {
   color: #000000 !important;
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #000000;
 }
 
 body {

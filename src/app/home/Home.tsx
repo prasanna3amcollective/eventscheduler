@@ -18,6 +18,7 @@ import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
+import Testimonials from '@/components/Testimonials';
 import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 import './Home.css';
 
@@ -36,13 +37,24 @@ function HomeContent() {
 
   // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
+    if (isLoggedIn) {
+      // If user is logged in, ensure we don't default to testimonials
+      const hash = window.location.hash.replace('#', '') || 'participate';
+      if (hash === 'testimonials') {
+        setActiveSection('participate');
+        window.history.replaceState(null, '', '/home');
+        return;
+      }
+    }
     if (pathname === '/home/aboutus') {
       setActiveSection('about-us');
+    } else if (pathname === '/home/testimonials') {
+      setActiveSection('testimonials');
     } else {
       const hash = window.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
     }
-  }, [pathname]);
+  }, [pathname, isLoggedIn]);
 
 
 
@@ -414,6 +426,12 @@ function HomeContent() {
                 </div>
               </section>
             </section>
+          )}
+
+          {activeSection === 'testimonials' && !isLoggedIn && (
+            <div style={{ width: '100%', minHeight: '100vh' }}>
+              <Testimonials onBackClick={() => { window.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
+            </div>
           )}
 
 

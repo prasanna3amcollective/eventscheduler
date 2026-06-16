@@ -269,3 +269,15 @@ model RecurrenceTemplate {
   @@index([templateType, startDate, endDate])
   @@index([sys_created_at(sort: Desc)])
 }
+
+model Testimonial {
+  id          String @id @default(uuid())
+  description String @db.Text // HTML content, mandatory
+  name        String?   // optional name
+
+  // System columns (optional, follow existing pattern)
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@map("testimonials")
+}

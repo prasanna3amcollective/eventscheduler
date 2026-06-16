@@ -131,6 +131,19 @@ export default function HeaderPanel({
             >
               Explore
             </Link>
+            {!isLoggedIn && (
+              <Link
+                href="#testimonials"
+                className={`nav-link-btn ${activeSection === 'testimonials' ? 'active text-black' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.hash = '#testimonials';
+                  setActiveSection('testimonials');
+                }}
+              >
+                Testimonials
+              </Link>
+            )}
           </>
         )}
       </div>
@@ -173,89 +186,89 @@ export default function HeaderPanel({
                 <form
                   onSubmit={(e) => { e.preventDefault(); handleSignInWithRemember(); }}
                 >
-                <div
-                  style={{
-                    background: 'var(--surface-color)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '12px',
-                    padding: '20px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px',
-                  }}
-                >
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '15px' }}>Sign In</p>
-
-                  <input
-                    id="signin-username"
-                    type="tel"
-                    placeholder="Phone Number"
-                    value={signinUsername}
-                    maxLength={10}
-                    inputMode="numeric"
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-                      setSigninUsername(digits);
-                    }}
-                    style={inputStyle}
-                  />
-
-                  <input
-                    id="signin-password"
-                    type="password"
-                    placeholder="Password"
-                    value={signinPassword}
-                    onChange={(e) => setSigninPassword(e.target.value)}
-                    style={inputStyle}
-                  />
-
-                  {/* Remember Me */}
-                  <label
-                    htmlFor="signin-remember"
+                  <div
                     style={{
+                      background: 'var(--surface-color)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      userSelect: 'none',
-                      color: 'inherit',
+                      flexDirection: 'column',
+                      gap: '12px',
                     }}
                   >
+                    <p style={{ margin: 0, fontWeight: 600, fontSize: '15px' }}>Sign In</p>
+
                     <input
-                      id="signin-remember"
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      style={{
-                        width: '15px',
-                        height: '15px',
-                        accentColor: 'var(--primary-color)',
-                        cursor: 'pointer',
-                        flexShrink: 0,
+                      id="signin-username"
+                      type="tel"
+                      placeholder="Phone Number"
+                      value={signinUsername}
+                      maxLength={10}
+                      inputMode="numeric"
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setSigninUsername(digits);
                       }}
+                      style={inputStyle}
                     />
-                    Remember me
-                  </label>
 
-                  <button
-                    type="submit"
-                    id="signin-submit"
-                    onClick={handleSignInWithRemember}
-                    disabled={signinSubmitting}
-                    className="yellow-btn"
-                    style={{ width: '100%', justifyContent: 'center' }}
-                  >
-                    {signinSubmitting ? 'Signing in…' : 'Sign In'}
-                  </button>
+                    <input
+                      id="signin-password"
+                      type="password"
+                      placeholder="Password"
+                      value={signinPassword}
+                      onChange={(e) => setSigninPassword(e.target.value)}
+                      style={inputStyle}
+                    />
 
-                  {signinError && (
-                    <span style={{ color: '#a13a2a', fontSize: '13px' }}>
-                      {signinError}
-                    </span>
-                  )}
-                </div>
+                    {/* Remember Me */}
+                    <label
+                      htmlFor="signin-remember"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        color: 'inherit',
+                      }}
+                    >
+                      <input
+                        id="signin-remember"
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        style={{
+                          width: '15px',
+                          height: '15px',
+                          accentColor: 'var(--primary-color)',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      />
+                      Remember me
+                    </label>
+
+                    <button
+                      type="submit"
+                      id="signin-submit"
+                      onClick={handleSignInWithRemember}
+                      disabled={signinSubmitting}
+                      className="yellow-btn"
+                      style={{ width: '100%', justifyContent: 'center' }}
+                    >
+                      {signinSubmitting ? 'Signing in…' : 'Sign In'}
+                    </button>
+
+                    {signinError && (
+                      <span style={{ color: '#a13a2a', fontSize: '13px' }}>
+                        {signinError}
+                      </span>
+                    )}
+                  </div>
                 </form>
               </div>
             )}

@@ -1,6 +1,3 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
 CREATE TYPE "DetachReason" AS ENUM ('none', 'edited', 'cancelled', 'rescheduled', 'manually_created');
 
@@ -62,7 +59,7 @@ CREATE TABLE "participants" (
     "activityId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL DEFAULT 'Participant',
-    "attendance" INTEGER NOT NULL DEFAULT 0,
+    "attendance" INTEGER,
     "payAsYouWish" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "sys_created_by" TEXT,
     "sys_updated_by" TEXT,
@@ -193,11 +190,34 @@ CREATE TABLE "RecurrenceTemplate" (
     CONSTRAINT "RecurrenceTemplate_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "testimonials" (
+    "id" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "name" TEXT,
+    "sys_created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "sys_updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "testimonials_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "Activity_startDateTime_detachReason_idx" ON "Activity"("startDateTime", "detachReason");
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Activity_recurrenceTemplateId_startDateTime_key" ON "Activity"("recurrenceTemplateId", "startDateTime");
 
 -- CreateIndex
+CREATE INDEX "Responsibility_startDateTime_detachReason_idx" ON "Responsibility"("startDateTime", "detachReason");
+
+-- CreateIndex
+CREATE INDEX "Responsibility_ownerId_idx" ON "Responsibility"("ownerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Responsibility_recurrenceTemplateId_startDateTime_key" ON "Responsibility"("recurrenceTemplateId", "startDateTime");
+
+-- CreateIndex
+CREATE INDEX "participants_userId_idx" ON "participants"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "participants_activityId_userId_key" ON "participants"("activityId", "userId");
@@ -206,19 +226,34 @@ CREATE UNIQUE INDEX "participants_activityId_userId_key" ON "participants"("acti
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_name_idx" ON "User"("name");
 
 -- CreateIndex
+CREATE INDEX "user_group_m2m_groupId_idx" ON "user_group_m2m"("groupId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "user_group_m2m_userId_groupId_key" ON "user_group_m2m"("userId", "groupId");
+
+-- CreateIndex
+CREATE INDEX "user_role_roleId_idx" ON "user_role"("roleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_role_userId_roleId_key" ON "user_role"("userId", "roleId");
 
 -- CreateIndex
+CREATE INDEX "role_group_m2m_groupId_idx" ON "role_group_m2m"("groupId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "role_group_m2m_roleId_groupId_key" ON "role_group_m2m"("roleId", "groupId");
+
+-- CreateIndex
+CREATE INDEX "sys_acl_roleId_table_operation_idx" ON "sys_acl"("roleId", "table", "operation");
 
 -- CreateIndex
 CREATE INDEX "RecurrenceTemplate_templateType_versionSeriesId_status_idx" ON "RecurrenceTemplate"("templateType", "versionSeriesId", "status");

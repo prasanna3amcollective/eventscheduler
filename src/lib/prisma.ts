@@ -33,7 +33,7 @@ const createPrismaClient = () => {
 
           // 2. ACL BYPASS for internal/junction tables (no ACL rows exist for these)
           // NOTE: System column stamping still runs below for ALL tables.
-          const aclBypassTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant', 'RecurrenceTemplate', 'User', 'Group'];
+          const aclBypassTables = ['AccessControlList', 'Role', 'UserRole', 'UserGroupM2M', 'RoleGroupM2M', 'Participant', 'RecurrenceTemplate', 'User', 'Group', 'Testimonial'];
           const skipAcl = aclBypassTables.includes(model);
 
           if (!skipAcl) {

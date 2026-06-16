@@ -19,6 +19,7 @@ import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner_mobile from '@/components/MarqueeBanner_mobile';
 import InstagramEmbed from '@/components/InstagramEmbed';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
+import Testimonials from '@/components/Testimonials';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
 
 import './Home_mobile.css';
@@ -40,6 +41,8 @@ export default function Home_mobile() {
   useEffect(() => {
     if (pathname === '/home/aboutus') {
       setActiveSection('about-us');
+    } else if (pathname === '/home/testimonials') {
+      setActiveSection('testimonials');
     } else {
       const hash = window.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -369,6 +372,12 @@ export default function Home_mobile() {
             </div>
           )}
 
+          {activeSection === 'testimonials' && (
+            <div style={{ width: '100%', minHeight: '100vh' }}>
+              <Testimonials onBackClick={() => { window.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
+            </div>
+          )}
+
           {activeSection === 'participate' && (
             <>
               {/* Mission Text */}
@@ -542,19 +551,19 @@ export default function Home_mobile() {
             </div>
           ) : (
             <main className="app-container">
-{activeTab === 'calendar' && (
-                 <div className="content-section">
-                   <CalendarView
-                     onSelectActivity={handleSelectActivity}
-                     onSelectSlot={handleSelectSlot}
-                     onCreateActivity={onCreateActivity}
-                     onOwnResponsibility={onOwnResponsibility}
-                     onSelectHoliday={handleSelectHoliday}
-                     userRoles={userRoles}
-                     userPermissions={userPermissions}
-                   />
-                 </div>
-               )}
+              {activeTab === 'calendar' && (
+                <div className="content-section">
+                  <CalendarView
+                    onSelectActivity={handleSelectActivity}
+                    onSelectSlot={handleSelectSlot}
+                    onCreateActivity={onCreateActivity}
+                    onOwnResponsibility={onOwnResponsibility}
+                    onSelectHoliday={handleSelectHoliday}
+                    userRoles={userRoles}
+                    userPermissions={userPermissions}
+                  />
+                </div>
+              )}
               {activeTab === 'admin' && (
                 <AdminDashboard currentUser={currentUser} />
               )}
@@ -605,27 +614,27 @@ export default function Home_mobile() {
           onSwitchToRegister={() => { }}
         />
 
-<ResponsibilityDetailModal
-           responsibility={responsibilityDetail}
-           isOpen={isResponsibilityDetailOpen}
-           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
-           onStateChange={(id, newState) => {
-             setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
-           }}
-         />
+        <ResponsibilityDetailModal
+          responsibility={responsibilityDetail}
+          isOpen={isResponsibilityDetailOpen}
+          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+          onStateChange={(id, newState) => {
+            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
+          }}
+        />
 
-         <HolidayDetailModal
-           holiday={selectedHoliday}
-           isOpen={isHolidayModalOpen}
-           onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
-         />
+        <HolidayDetailModal
+          holiday={selectedHoliday}
+          isOpen={isHolidayModalOpen}
+          onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
+        />
 
-         <ProfileModal
-           isOpen={isProfileOpen}
-           onClose={() => setIsProfileOpen(false)}
-           currentUser={currentUser}
-           onProfileUpdate={setCurrentUser}
-         />
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          onProfileUpdate={setCurrentUser}
+        />
       </div >
     </>
   );
