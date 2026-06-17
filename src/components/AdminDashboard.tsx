@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { secureFetch } from '@/lib/fetch';
 import {
-  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter
+  Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight, User
 } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
@@ -57,28 +58,31 @@ interface Acl {
   description: string | null;
 }
 
-type AdminTab = 'roles' | 'user-roles' | 'groups' | 'group-members' | 'group-roles' | 'acls';
+interface ParticipantRecord {
+  id: string;
+  user: User;
+  activity: {
+    id: string;
+    name: string;
+  };
+  type: string;
+  sys_created_at: string;
+}
+
+type AdminTab = 'roles' | 'groups' | 'group-members' | 'acls' | 'participants';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const GROUPS_CATEGORIES = ['Security', 'Operations', 'Management', 'Custom'] as const;
-const ACL_TABLES = [
-  'event', 'user', 'group', 'role', 'participant',
-  'userrole', 'usergroupm2m', 'rolegroupm2m', 'accesscontrollist',
-] as const;
 const ACL_OPERATIONS = ['read', 'write', 'create', 'delete'] as const;
 
-const FILTER_DELAY_MS = 300;
+const RECORDS_PER_PAGE = 10;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function pluralise(count: number, singular: string, plural?: string): string {
-  return count === 1 ? singular : (plural ?? `${singular}s`);
-}
 
 /** Case-insensitive substring match; handles null/undefined safely. */
 function matchesFilter(value: string | null | undefined, filter: string): boolean {
@@ -150,12 +154,53 @@ function FilterableTh({
   );
 }
 
+function Pagination({
+  currentPage,
+  totalRecords,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalRecords: number;
+  onPageChange: (page: number) => void;
+}) {
+  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE);
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="pagination fade-in">
+      <button
+        className="pagination-btn"
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+        title="Previous Page"
+      >
+        <ChevronLeft size={16} />
+      </button>
+
+      <span className="pagination-info">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        className="pagination-btn"
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+        title="Next Page"
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // AdminDashboard
 // ---------------------------------------------------------------------------
 
 export default function AdminDashboard({ currentUser }: { currentUser: User }) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<AdminTab>('roles');
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showFilterInput, setShowFilterInput] = useState<Record<string, boolean>>({});
 
@@ -167,6 +212,8 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [groupRoles, setGroupRoles] = useState<GroupRole[]>([]);
   const [acls, setAcls] = useState<Acl[]>([]);
+  const [participants, setParticipants] = useState<ParticipantRecord[]>([]);
+  const [aclTables, setAclTables] = useState<string[]>([]);
 
   // -- Form states --
   // Roles
@@ -226,6 +273,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
 
   const updateFilter = useCallback((field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
+    setCurrentPage(1);
   }, []);
 
   // -----------------------------------------------------------------------
@@ -234,7 +282,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
 
   const fetchData = useCallback(async () => {
     try {
-      const [uRes, rRes, gRes, urRes, gmRes, grRes, aRes] = await Promise.all([
+      const [uRes, rRes, gRes, urRes, gmRes, grRes, aRes, tRes] = await Promise.all([
         secureFetch('/api/users'),
         secureFetch('/api/admin/roles'),
         secureFetch('/api/admin/groups'),
@@ -242,6 +290,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         secureFetch('/api/admin/group-members'),
         secureFetch('/api/admin/group-roles'),
         secureFetch('/api/admin/acls'),
+        secureFetch('/api/admin/tables'),
       ]);
 
       if (uRes.ok) setUsers(await uRes.json());
@@ -251,6 +300,10 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
       if (gmRes.ok) setGroupMembers(await gmRes.json());
       if (grRes.ok) setGroupRoles(await grRes.json());
       if (aRes.ok) setAcls(await aRes.json());
+      if (tRes.ok) setAclTables(await tRes.json());
+
+      const pRes = await secureFetch('/api/admin/participants');
+      if (pRes.ok) setParticipants(await pRes.json());
     } catch (err) {
       showError(err instanceof Error ? err.message : 'Failed to load data');
     }
@@ -268,6 +321,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     setActiveTab(tab);
     setFilters({});
     setShowFilterInput({});
+    setCurrentPage(1);
   }, []);
 
   // ── CREATE ROLE ────────────────────────────────────────────────────────
@@ -408,6 +462,29 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [showSuccess, showError, fetchData],
   );
 
+  const requestRemoveParticipant = useCallback(
+    (id: string, userName: string, activityName: string) => {
+      setConfirmMessage(`Remove ${userName} from activity "${activityName}"?`);
+      setConfirmAction(() => async () => {
+        try {
+          const res = await secureFetch(`/api/admin/participants?id=${id}`, {
+            method: 'DELETE',
+          });
+          if (res.ok) {
+            showSuccess(`Removed ${userName} from "${activityName}"`);
+            fetchData();
+          } else {
+            const d = await res.json();
+            showError(d.error);
+          }
+        } catch (err) {
+          showError(err instanceof Error ? err.message : 'Failed to remove participant');
+        }
+      });
+    },
+    [showSuccess, showError, fetchData],
+  );
+
   // ── ASSIGN GROUP ROLE ─────────────────────────────────────────────────
 
   const handleAssignGroupRole = useCallback(
@@ -511,7 +588,6 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                 <tr>
                   {renderFilterHeader('Name', 'role_name')}
                   {renderFilterHeader('Description', 'role_desc')}
-                  <th>System ID</th>
                 </tr>
               </thead>
               <tbody>
@@ -521,18 +597,32 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(r.name, filters.role_name) &&
                       matchesFilter(r.description, filters.role_desc),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((r) => (
-                    <tr key={r.id}>
+                    <tr
+                      key={r.id}
+                      onClick={() => router.push(`/roles/${r.id}`)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-bg"
+                    >
                       <td className="font-bold">{r.name}</td>
                       <td>{r.description}</td>
-                      <td>
-                        <span className="sys-id-tag">{r.id.slice(0, 8)}</span>
-                      </td>
                     </tr>
                   ))}
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              roles.filter(
+                (r) =>
+                  matchesFilter(r.name, filters.role_name) &&
+                  matchesFilter(r.description, filters.role_desc),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateRole}>
@@ -587,8 +677,14 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(g.description, filters.group_desc) &&
                       matchesFilter(g.category, filters.group_cat),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((g) => (
-                    <tr key={g.id}>
+                    <tr
+                      key={g.id}
+                      onClick={() => router.push(`/groups/${g.id}`)}
+                      style={{ cursor: 'pointer' }}
+                      className="hover-bg"
+                    >
                       <td className="font-bold">{g.name}</td>
                       <td>{g.description}</td>
                       <td>
@@ -599,12 +695,24 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              groups.filter(
+                (g) =>
+                  matchesFilter(g.name, filters.group_name) &&
+                  matchesFilter(g.description, filters.group_desc) &&
+                  matchesFilter(g.category, filters.group_cat),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateGroup}>
           <h4>Create New Group</h4>
           <input
-            placeholder="Group Name (e.g. Event Admins)"
+            placeholder="Group Name (e.g. Activity Admins)"
             value={newGroupName}
             onChange={(e) => setNewGroupName(e.target.value)}
             required
@@ -636,108 +744,121 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [groups, filters, renderFilterHeader, newGroupName, newGroupDesc, newGroupCategory, handleCreateGroup],
   );
 
-  const groupMembersTab = useMemo(
-    () => (
-      <div className="admin-panel">
-        <h3>Group Members</h3>
-        <p className="panel-subtitle">
-          Manage which users belong to which groups. Adding a user to a group
-          automatically inherits all roles assigned to that group.
-        </p>
+  // const groupMembersTab = useMemo(
+  //   () => (
+  //     <div className="admin-panel">
+  //       <h3>Group Members</h3>
+  //       <p className="panel-subtitle">
+  //         Manage which users belong to which groups. Adding a user to a group
+  //         automatically inherits all roles assigned to that group.
+  //       </p>
 
-        <div className="table-container">
-          {groupMembers.length === 0 ? (
-            <div className="empty-state">No group memberships yet</div>
-          ) : (
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  {renderFilterHeader('User', 'gm_user')}
-                  {renderFilterHeader('Group', 'gm_group')}
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupMembers
-                  .filter(
-                    (gm) =>
-                      (matchesFilter(gm.user.name, filters.gm_user) ||
-                        matchesFilter(gm.user.username, filters.gm_user)) &&
-                      matchesFilter(gm.group.name, filters.gm_group),
-                  )
-                  .map((gm) => (
-                    <tr key={gm.id}>
-                      <td>
-                        <div className="item-info">
-                          <strong>{gm.user.name}</strong>
-                          <span>{gm.user.username}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="font-bold">{gm.group.name}</span>
-                      </td>
-                      <td>
-                        <button
-                          className="btn-icon-danger"
-                          onClick={() =>
-                            requestRemoveMember(gm.id, gm.user.name, gm.group.name)
-                          }
-                          title="Remove from group"
-                        >
-                          <Trash size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+  //       <div className="table-container">
+  //         {groupMembers.length === 0 ? (
+  //           <div className="empty-state">No group memberships yet</div>
+  //         ) : (
+  //           <table className="admin-table">
+  //             <thead>
+  //               <tr>
+  //                 {renderFilterHeader('User', 'gm_user')}
+  //                 {renderFilterHeader('Group', 'gm_group')}
+  //                 <th>Actions</th>
+  //               </tr>
+  //             </thead>
+  //             <tbody>
+  //               {groupMembers
+  //                 .filter(
+  //                   (gm) =>
+  //                     (matchesFilter(gm.user.name, filters.gm_user) ||
+  //                       matchesFilter(gm.user.username, filters.gm_user)) &&
+  //                     matchesFilter(gm.group.name, filters.gm_group),
+  //                 )
+  //                 .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
+  //                 .map((gm) => (
+  //                   <tr key={gm.id}>
+  //                     <td>
+  //                       <div className="item-info">
+  //                         <strong>{gm.user.name}</strong>
+  //                         <span>{gm.user.username}</span>
+  //                       </div>
+  //                     </td>
+  //                     <td>
+  //                       <span className="font-bold">{gm.group.name}</span>
+  //                     </td>
+  //                     <td>
+  //                       <button
+  //                         className="btn-icon-danger"
+  //                         onClick={() =>
+  //                           requestRemoveMember(gm.id, gm.user.name, gm.group.name)
+  //                         }
+  //                         title="Remove from group"
+  //                       >
+  //                         <Trash size={16} />
+  //                       </button>
+  //                     </td>
+  //                   </tr>
+  //                 ))}
+  //             </tbody>
+  //           </table>
+  //         )}
+  //         <Pagination
+  //           currentPage={currentPage}
+  //           totalRecords={
+  //             groupMembers.filter(
+  //               (gm) =>
+  //                 (matchesFilter(gm.user.name, filters.gm_user) ||
+  //                   matchesFilter(gm.user.username, filters.gm_user)) &&
+  //                 matchesFilter(gm.group.name, filters.gm_group),
+  //             ).length
+  //           }
+  //           onPageChange={setCurrentPage}
+  //         />
+  //       </div>
 
-        <form className="admin-form" onSubmit={handleAddMember}>
-          <h4>Add User to Group</h4>
-          <select
-            value={memberUser}
-            onChange={(e) => setMemberUser(e.target.value)}
-            required
-          >
-            <option value="">Select User...</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.username})
-              </option>
-            ))}
-          </select>
-          <select
-            value={memberGroup}
-            onChange={(e) => setMemberGroup(e.target.value)}
-            required
-          >
-            <option value="">Select Group...</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name} — {g.category}
-              </option>
-            ))}
-          </select>
-          <button type="submit" className="btn-primary">
-            <UserPlus size={16} /> Add to Group
-          </button>
-        </form>
-      </div>
-    ),
-    [
-      groupMembers,
-      filters,
-      renderFilterHeader,
-      users,
-      groups,
-      memberUser,
-      memberGroup,
-      handleAddMember,
-      requestRemoveMember,
-    ],
-  );
+  //       <form className="admin-form" onSubmit={handleAddMember}>
+  //         <h4>Add User to Group</h4>
+  //         <select
+  //           value={memberUser}
+  //           onChange={(e) => setMemberUser(e.target.value)}
+  //           required
+  //         >
+  //           <option value="">Select User...</option>
+  //           {users.map((u) => (
+  //             <option key={u.id} value={u.id}>
+  //               {u.name} ({u.username})
+  //             </option>
+  //           ))}
+  //         </select>
+  //         <select
+  //           value={memberGroup}
+  //           onChange={(e) => setMemberGroup(e.target.value)}
+  //           required
+  //         >
+  //           <option value="">Select Group...</option>
+  //           {groups.map((g) => (
+  //             <option key={g.id} value={g.id}>
+  //               {g.name} — {g.category}
+  //             </option>
+  //           ))}
+  //         </select>
+  //         <button type="submit" className="btn-primary">
+  //           <UserPlus size={16} /> Add to Group
+  //         </button>
+  //       </form>
+  //     </div>
+  //   ),
+  //   [
+  //     groupMembers,
+  //     filters,
+  //     renderFilterHeader,
+  //     users,
+  //     groups,
+  //     memberUser,
+  //     memberGroup,
+  //     handleAddMember,
+  //     requestRemoveMember,
+  //   ],
+  // );
 
   const groupRolesTab = useMemo(
     () => (
@@ -766,6 +887,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(gr.group.name, filters.gr_group) &&
                       matchesFilter(gr.role.name, filters.gr_role),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((gr) => (
                     <tr key={gr.id}>
                       <td className="font-bold">{gr.group.name}</td>
@@ -777,6 +899,17 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              groupRoles.filter(
+                (gr) =>
+                  matchesFilter(gr.group.name, filters.gr_group) &&
+                  matchesFilter(gr.role.name, filters.gr_role),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleAssignGroupRole}>
@@ -842,6 +975,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                         matchesFilter(ur.user.username, filters.ur_user)) &&
                       matchesFilter(ur.role.name, filters.ur_role),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((ur) => (
                     <tr key={ur.id}>
                       <td>
@@ -858,6 +992,18 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              userRoles.filter(
+                (ur) =>
+                  (matchesFilter(ur.user.name, filters.ur_user) ||
+                    matchesFilter(ur.user.username, filters.ur_user)) &&
+                  matchesFilter(ur.role.name, filters.ur_role),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleAssignRole}>
@@ -901,7 +1047,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         <h3>Access Control Lists</h3>
         <p className="panel-subtitle">
           Define table-level permissions for roles (e.g., who can read/write
-          events).
+          activities).
         </p>
 
         <div className="table-container">
@@ -926,6 +1072,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
                       matchesFilter(acl.role.name, filters.acl_role) &&
                       matchesFilter(acl.description, filters.acl_desc),
                   )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
                   .map((acl) => (
                     <tr key={acl.id}>
                       <td className="font-bold text-uppercase">{acl.table}</td>
@@ -941,6 +1088,19 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
               </tbody>
             </table>
           )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={
+              acls.filter(
+                (acl) =>
+                  matchesFilter(acl.table, filters.acl_table) &&
+                  matchesFilter(acl.operation, filters.acl_op) &&
+                  matchesFilter(acl.role.name, filters.acl_role) &&
+                  matchesFilter(acl.description, filters.acl_desc),
+              ).length
+            }
+            onPageChange={setCurrentPage}
+          />
         </div>
 
         <form className="admin-form" onSubmit={handleCreateAcl}>
@@ -951,7 +1111,7 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
             required
           >
             <option value="">Select Table...</option>
-            {ACL_TABLES.map((t) => (
+            {aclTables.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
@@ -995,6 +1155,98 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
     [acls, filters, renderFilterHeader, roles, aclTable, aclOperation, aclRoleId, aclDescription, handleCreateAcl],
   );
 
+  const participantsTab = useMemo(
+    () => (
+      <div className="admin-panel">
+        <h3>Activity Participants</h3>
+        <p className="panel-subtitle">
+          View and manage all user associations with activities (Leaders, Guides, Observers, and Participants).
+        </p>
+
+        <div className="table-container">
+          {participants.length === 0 ? (
+            <div className="empty-state">No participant records found</div>
+          ) : (
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  {renderFilterHeader('User', 'p_user')}
+                  {renderFilterHeader('Activity', 'p_activity')}
+                  {renderFilterHeader('Role', 'p_role')}
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {participants
+                  .filter(
+                    (p) =>
+                      (matchesFilter(p.user.name, filters.p_user) ||
+                        matchesFilter(p.user.username, filters.p_user)) &&
+                      matchesFilter(p.activity.name, filters.p_activity) &&
+                      matchesFilter(p.type, filters.p_role),
+                  )
+                  .slice((currentPage - 1) * RECORDS_PER_PAGE, currentPage * RECORDS_PER_PAGE)
+                  .map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="item-info">
+                          <strong>{p.user.name}</strong>
+                          <span>{p.user.username}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="font-bold">{p.activity.name}</span>
+                      </td>
+                      <td>
+                        <span className={`role-badge ${p.type.toLowerCase()}`} style={{
+                          background: p.type === 'Leader' ? 'var(--primary-glow)' :
+                            p.type === 'Guide' ? 'rgba(16, 185, 129, 0.1)' :
+                              p.type === 'Observer' ? 'rgba(107, 114, 128, 0.1)' : 'rgba(180, 83, 61, 0.05)',
+                          color: p.type === 'Leader' ? 'var(--primary-color)' :
+                            p.type === 'Guide' ? '#10b981' :
+                              p.type === 'Observer' ? '#6b7280' : 'var(--text-secondary)',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase'
+                        }}>
+                          {p.type}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-icon-danger"
+                          onClick={() =>
+                            requestRemoveParticipant(p.id, p.user.name, p.activity.name)
+                          }
+                          title="Remove from activity"
+                        >
+                          <Trash size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalRecords={participants.filter(p =>
+              (matchesFilter(p.user.name, filters.p_user) ||
+                matchesFilter(p.user.username, filters.p_user)) &&
+              matchesFilter(p.activity.name, filters.p_activity) &&
+              matchesFilter(p.type, filters.p_role)
+            ).length}
+            onPageChange={setCurrentPage}
+          />
+
+        </div>
+      </div>
+    ),
+    [participants, filters, renderFilterHeader, currentPage, requestRemoveParticipant],
+  );
+
   // -----------------------------------------------------------------------
   // Render
   // -----------------------------------------------------------------------
@@ -1005,21 +1257,20 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         return rolesTab;
       case 'groups':
         return groupsTab;
-      case 'group-members':
-        return groupMembersTab;
-      case 'group-roles':
-        return groupRolesTab;
-      case 'user-roles':
-        return userRolesTab;
       case 'acls':
         return aclsTab;
+      case 'participants':
+        return participantsTab;
       default:
         return null;
     }
-  }, [activeTab, rolesTab, groupsTab, groupMembersTab, groupRolesTab, userRolesTab, aclsTab]);
+  }, [activeTab, rolesTab, groupsTab, aclsTab, participantsTab]);
 
   return (
     <div className="admin-dashboard fade-in">
+      <h2 style={{ margin: '0 0 20px 0', fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>
+        Developer Panel
+      </h2>
       <div className="admin-nav">
         <button
           className={activeTab === 'roles' ? 'active' : ''}
@@ -1033,24 +1284,24 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         >
           <Layers size={16} /> Groups
         </button>
-        <button
+        {/* <button
           className={activeTab === 'group-members' ? 'active' : ''}
           onClick={() => handleTabChange('group-members')}
         >
           <UserPlus size={16} /> Group Members
-        </button>
-        <button
-          className={activeTab === 'group-roles' ? 'active' : ''}
-          onClick={() => handleTabChange('group-roles')}
-        >
-          <Link size={16} /> Group Roles
-        </button>
+        </button> */}
         <button
           className={activeTab === 'acls' ? 'active' : ''}
           onClick={() => handleTabChange('acls')}
         >
           <Key size={16} /> ACLs
         </button>
+        {/* <button
+          className={activeTab === 'participants' ? 'active' : ''}
+          onClick={() => handleTabChange('participants')}
+        >
+          <Users size={16} /> Participants
+        </button> */}
       </div>
 
       <SuccessBanner message={success} />

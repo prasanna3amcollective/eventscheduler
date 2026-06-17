@@ -1,0 +1,148 @@
+.mobile-banner-wrapper {
+  background-color: var(--surface-color, #fff);
+  padding: 14px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  /* Removed border-bottom as requested */
+  border-bottom: none;
+  position: relative;
+  /* Anchor for the dropdown menu */
+}
+
+.mobile-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Creates the 3-column perfect center effect */
+}
+
+.mobile-banner-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1;
+  /* Automatically balances with right side */
+}
+
+.mobile-banner-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  /* Automatically balances with left side */
+  gap: 16px;
+  /* Perfect spacing between user icon and dot */
+}
+
+.mobile-banner-center {
+  flex: 1;
+  text-align: center;
+}
+
+.mobile-banner-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  margin: 0 auto;
+  width: fit-content;
+  font-family: var(--heading-font, 'Space Mono', monospace);
+  font-size: clamp(12px, 3.5vw, 16px);
+  /* Dynamically scale text to fit */
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #FFFFFF;
+  line-height: 1.2;
+  white-space: nowrap;
+  /* Force straight horizontal line */
+}
+
+.mobile-center-fist {
+  height: 28px;
+  width: auto;
+  opacity: 0.95;
+}
+
+.mobile-menu-dot {
+  width: 16px;
+  height: 16px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.mobile-menu-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.9);
+}
+
+.mobile-top-login-icon-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.mobile-top-login-icon-inline:active {
+  transform: scale(0.9);
+}
+
+.mobile-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  background: #FFF;
+  border: 3px solid #000;
+  border-radius: 0;
+  box-shadow: 6px 6px 0px #000;
+  padding: 0;
+  min-width: 180px;
+  z-index: 100;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-dropdown-item {
+  background: none;
+  border: none;
+  padding: 16px 20px;
+  text-align: left;
+  font-family: var(--heading-font, sans-serif);
+  font-weight: 900;
+  font-size: 16px;
+  color: #000;
+  text-transform: uppercase;
+  width: 100%;
+  cursor: pointer;
+  border-bottom: 3px solid #000;
+}
+
+.mobile-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.mobile-dropdown-item:active {
+  background: #EBFF00;
+}
+
+.mobile-dropdown-item.active {
+  color: #FFF;
+  background: #FF00FF;
+}

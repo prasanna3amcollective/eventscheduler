@@ -1,12 +1,11 @@
 'use client';
 
+import { useState, useEffect, useCallback, useMemo, type JSX } from 'react';
 import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsProps, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useEffect, useState, useCallback, useMemo, type JSX } from 'react';
 import { type Holiday, getHolidays } from '@/lib/holidays';
-import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight } from '@/components/Icons';
+import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -14,10 +13,10 @@ import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight } fro
 
 const LOCALES = { 'en-US': enUS };
 
-/** Hard-coded date range to fetch. */
+/** Dynamic date range to fetch activities from the API */
 const FETCH_WINDOW = {
   start: '2025-12-01T00:00:00Z',
-  end: '2027-01-31T23:59:59Z',
+  end: addYears(new Date(), 1).toISOString(),
 } as const;
 
 const AGENDA_PAGE_SIZE = 6;
@@ -38,58 +37,120 @@ const localizer = dateFnsLocalizer({
 // Types
 // ---------------------------------------------------------------------------
 
-/** The shape of an event returned by the API (before formatting). */
-interface ApiEvent {
+/** The shape of an activity returned by the API (before formatting) */
+interface ApiActivity {
   id: string;
   name: string;
   startDateTime: string;
   endDateTime: string;
-  leader?: string;
-  guide?: string;
-  observer?: string;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
   participantCount?: number;
+  participants?: { userId: string }[];
+  category?: string;
+  state?: string;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
 }
 
-/** The shape used internall by react-big-calendar. */
-interface CalendarEvent {
+/** The shape used internally by react-big-calendar */
+interface CalendarActivity {
   id: string;
   title: string;
   start: Date;
   end: Date;
   allDay?: boolean;
   isHoliday: boolean;
-  leader?: string;
-  guide?: string;
-  observer?: string;
+  leaders?: string[];
+  guides?: string[];
+  observers?: string[];
+  participants?: { userId: string }[];
+  category?: string;
+  state?: string;
+  isResponsibility?: boolean;
+  recurrenceTemplateId?: string | null;
+  generatedFromTemplateId?: string | null;
+  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
+  owner?: string;
 }
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-// ── Toolbar ───────────────────────────────────────────────────────────────
-
-function CustomToolbar(props: ToolbarProps<CalendarEvent, object>): JSX.Element {
-  const { label, onNavigate, onView, view } = props;
+/**
+ * Custom toolbar with navigation arrows, "Today" button, view switcher,
+ * and an optional "Create Activity" button for authorized users.
+ */
+function CustomToolbar(props: ToolbarProps<CalendarActivity, object> & { onCreate?: () => void; onOwnResponsibility?: () => void; onToggleResponsibilities?: () => void; showResponsibilities?: boolean; canCreateActivity?: boolean; canCreateResponsibility?: boolean }): JSX.Element {
+  const { label, onNavigate, onView, view, onCreate, onOwnResponsibility, onToggleResponsibilities, showResponsibilities = true, canCreateActivity, canCreateResponsibility } = props;
 
   return (
     <div className="calendar-toolbar">
       <div className="toolbar-navigation">
-        <button className="nav-btn" onClick={() => onNavigate('PREV')}>
-          <ChevronLeft size={20} />
+        <button
+          className="nav-btn"
+          onClick={() => onNavigate('PREV')}
+          aria-label="Go to previous period"
+        >
+          <ChevronLeft size={20} aria-hidden="true" />
         </button>
         <button className="nav-btn-today" onClick={() => onNavigate('TODAY')}>
           Today
         </button>
-        <button className="nav-btn" onClick={() => onNavigate('NEXT')}>
-          <ChevronRight size={20} />
+        <button
+          className="nav-btn"
+          onClick={() => onNavigate('NEXT')}
+          aria-label="Go to next period"
+        >
+          <ChevronRight size={20} aria-hidden="true" />
         </button>
       </div>
 
       <div className="toolbar-label">{label}</div>
 
       <div className="toolbar-views">
-        {(['month', 'week', 'day', 'agenda'] as View[]).map((v) => (
+        {canCreateResponsibility && onOwnResponsibility && (
+          <button
+            onClick={onOwnResponsibility}
+            className="pink-btn"
+            style={{
+              marginRight: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            Own Responsibility
+          </button>
+        )}
+        {canCreateActivity && onCreate && (
+          <button
+            className="yellow-btn"
+            onClick={onCreate}
+            style={{
+              marginRight: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            Create Activity
+          </button>
+        )}
+        <button
+          type="button"
+          className={`responsibility-toggle ${showResponsibilities ? 'active' : ''}`}
+          onClick={onToggleResponsibilities}
+          aria-pressed={showResponsibilities}
+          aria-label={showResponsibilities ? 'Hide responsibilities' : 'Show responsibilities'}
+          title={showResponsibilities ? 'Hide responsibilities' : 'Show responsibilities'}
+        >
+          {showResponsibilities ? <Eye size={16} /> : <EyeSlash size={16} />}
+        </button>
+        {(['month', 'week', 'day'] as View[]).map((v) => (
           <button
             key={v}
             className={view === v ? 'rbc-active' : ''}
@@ -103,40 +164,47 @@ function CustomToolbar(props: ToolbarProps<CalendarEvent, object>): JSX.Element 
   );
 }
 
-// ── Agenda table (paginated, with leader/guide/observer) ────────────────
-
+/**
+ * Paginated agenda sidebar panel.
+ * Displays upcoming activities in a table with columns:
+ * Activity | Time (start–end in 12h format) | Date ("Today" or date string).
+ */
 interface CustomAgendaProps {
-  events: CalendarEvent[];
-  onSelectEvent: (event: CalendarEvent) => void;
+  /** List of calendar activities to display */
+  activities: CalendarActivity[];
+  /** Called when an activity row is clicked */
+  onSelectActivity: (activity: CalendarActivity) => void;
 }
 
-function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element {
+function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0);
 
-  const now = useMemo(() => new Date(), []);
+  const now = useMemo(() => startOfDay(new Date()), []);
   const sixMonthsFromNow = useMemo(() => addMonths(now, 6), [now]);
 
-  const filteredEvents = useMemo(
+  // Filter to activities within the next 6 months, sorted chronologically
+  const filteredActivities = useMemo(
     () =>
-      events
+      activities
         .filter((e) => {
           const d = e.start;
           return isAfter(d, now) && isBefore(d, sixMonthsFromNow);
         })
         .sort((a, b) => a.start.getTime() - b.start.getTime()),
-    [events, now, sixMonthsFromNow],
+    [activities, now, sixMonthsFromNow],
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / AGENDA_PAGE_SIZE));
-  const paginatedEvents = useMemo(
+  const totalPages = Math.max(1, Math.ceil(filteredActivities.length / AGENDA_PAGE_SIZE));
+  const paginatedActivities = useMemo(
     () =>
-      filteredEvents.slice(
+      filteredActivities.slice(
         currentPage * AGENDA_PAGE_SIZE,
         (currentPage + 1) * AGENDA_PAGE_SIZE,
       ),
-    [filteredEvents, currentPage],
+    [filteredActivities, currentPage],
   );
 
+  // Navigate to previous/next page
   const goBack = useCallback(
     () => setCurrentPage((p) => Math.max(0, p - 1)),
     [],
@@ -147,52 +215,49 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
   );
 
   return (
-    <div className="rbc-agenda-view" style={{ padding: '0 20px' }}>
-      {/* ---------- Header row ---------- */}
+    <div className="rbc-agenda-view-side">
+      {/* Header with pagination controls */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '20px',
+          marginBottom: '16px',
         }}
       >
         <h3
           style={{
             margin: 0,
-            fontSize: '16px',
+            fontSize: '14px',
             color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            paddingLeft: '16px'
           }}
         >
-          Upcoming Schedule (Next 6 Months)
+          Agenda
         </h3>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           <button
             className="nav-btn"
             disabled={currentPage === 0}
+            aria-disabled={currentPage === 0}
             onClick={goBack}
-            style={{ opacity: currentPage === 0 ? 0.5 : 1 }}
+            aria-label="Previous page"
+            style={{ width: '28px', height: '28px', opacity: currentPage === 0 ? 0.3 : 1 }}
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={14} aria-hidden="true" />
           </button>
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              minWidth: '80px',
-              textAlign: 'center',
-            }}
-          >
-            Page {currentPage + 1} of {totalPages}
-          </span>
           <button
             className="nav-btn"
             disabled={currentPage >= totalPages - 1}
+            aria-disabled={currentPage >= totalPages - 1}
             onClick={goForward}
-            style={{ opacity: currentPage >= totalPages - 1 ? 0.5 : 1 }}
+            aria-label="Next page"
+            style={{ width: '28px', height: '28px', opacity: currentPage >= totalPages - 1 ? 0.3 : 1 }}
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -212,18 +277,16 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
             style={{
               textAlign: 'left',
               borderBottom: '1px solid var(--border-color)',
+              fontSize: '12px'
             }}
           >
-            <th style={{ padding: '12px' }}>Date</th>
-            <th style={{ padding: '12px' }}>Time</th>
-            <th style={{ padding: '12px' }}>Event</th>
-            <th style={{ padding: '12px' }}>Leader</th>
-            <th style={{ padding: '12px' }}>Guide</th>
-            <th style={{ padding: '12px' }}>Observer</th>
+            <th style={{ padding: '8px' }}>Activity</th>
+            <th style={{ padding: '8px' }}>Time</th>
+            <th style={{ padding: '8px' }}>Date</th>
           </tr>
         </thead>
         <tbody>
-          {paginatedEvents.length === 0 ? (
+          {paginatedActivities.length === 0 ? (
             <tr>
               <td
                 colSpan={6}
@@ -233,88 +296,46 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
                   color: 'var(--text-secondary)',
                 }}
               >
-                No upcoming events found within the next 6 months
+                No upcoming activities found within the next 6 months
               </td>
             </tr>
           ) : (
-            paginatedEvents.map((event) => (
+            paginatedActivities.map((activity) => (
               <tr
-                key={event.id}
+                key={activity.id}
                 className="agenda-row clickable-row"
-                onClick={() => onSelectEvent(event)}
+                role="button"
+                tabIndex={0}
+                onClick={() => onSelectActivity(activity)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectActivity(activity);
+                  }
+                }}
+                aria-label={`${activity.title} from ${format(activity.start, 'hh:mm aa')} to ${format(activity.end, 'hh:mm aa')}`}
                 style={{
                   background: 'var(--surface-color)',
                   borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   cursor: 'pointer',
                   transition: 'transform 0.2s, box-shadow 0.2s',
                 }}
               >
-                <td
-                  style={{
-                    padding: '12px',
-                    borderTopLeftRadius: '8px',
-                    borderBottomLeftRadius: '8px',
-                    fontWeight: 600,
-                  }}
-                >
-                  {format(event.start, 'MMM dd, yyyy')}
+                <td style={{ padding: '8px', borderRadius: '8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
+                    {activity.title}
+                  </div>
                 </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  {format(event.start, 'hh:mm aa')}
+                <td style={{ padding: '8px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {format(activity.start, 'hh:mm aa')} - {format(activity.end, 'hh:mm aa')}
+                  </div>
                 </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    fontWeight: 700,
-                    color: 'var(--primary-color)',
-                  }}
-                >
-                  {event.title}
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      color: 'var(--primary-color)',
-                    }}
-                  >
-                    {event.leader ?? '-'}
-                  </span>
-                </td>
-                <td style={{ padding: '12px' }}>
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      color: '#10b981',
-                    }}
-                  >
-                    {event.guide ?? '-'}
-                  </span>
-                </td>
-                <td
-                  style={{
-                    padding: '12px',
-                    borderTopRightRadius: '8px',
-                    borderBottomRightRadius: '8px',
-                  }}
-                >
-                  <span
-                    className="role-badge"
-                    style={{
-                      background: 'rgba(107, 114, 128, 0.1)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {event.observer ?? '-'}
-                  </span>
+                <td style={{ padding: '8px' }}>
+                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {isToday(activity.start) ? 'Today' : format(activity.start, 'MMM dd, yyyy')}
+                  </div>
                 </td>
               </tr>
             ))
@@ -325,76 +346,87 @@ function CustomAgenda({ events, onSelectEvent }: CustomAgendaProps): JSX.Element
   );
 }
 
-// ─── Calendar event renderer (used by react-big-calendar component prop) ─
-
-function CalendarEventRenderer({ event }: { event: CalendarEvent }): JSX.Element {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-      {event.isHoliday ? <Umbrella size={14} /> : <CalendarIcon size={14} />}
-      <span>{event.title}</span>
-    </div>
-  );
-}
-
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
 interface CalendarViewProps {
-  refreshTrigger: number;
-  onSelectEvent: (event: CalendarEvent) => void;
-  onSelectSlot: (slotInfo: { start: Date; end: Date }) => void;
+  refreshTrigger?: number;
+  onSelectActivity: (activity: CalendarActivity) => void;
+  onSelectSlot: (slotInfo: any) => void;
+  onCreateActivity: () => void;
+  onOwnResponsibility?: () => void;
+  onSelectHoliday?: (holiday: { id: string; name: string; date: string }) => void;
+  userRoles: string[];
+  userPermissions?: { canCreateActivity: boolean; canCreateResponsibility: boolean };
 }
 
+/**
+ * Full calendar page with month/week/day views and a sidebar agenda.
+ * Fetches activities and holidays, renders them on a react-big-calendar,
+ * and handles activity selection, slot creation, and navigation.
+ */
 export default function CalendarView({
-  refreshTrigger,
-  onSelectEvent,
-  onSelectSlot,
-}: CalendarViewProps) {
-  // -- State --
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+   refreshTrigger,
+   onSelectActivity,
+   onSelectSlot,
+   onCreateActivity,
+   onOwnResponsibility,
+   onSelectHoliday,
+   userRoles = [],
+   userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
+ }: CalendarViewProps) {
+  const [activities, setActivities] = useState<CalendarActivity[]>([]);
+  const [responsibilities, setResponsibilities] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [showResponsibilities, setShowResponsibilities] = useState<boolean>(true);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
 
-  // -- Navigation --
-  const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
-  const onView = useCallback((newView: View) => setView(newView), []);
-
-  // -- Fetch events --
+  // Fetch activities and responsibilities together
   useEffect(() => {
     let cancelled = false;
 
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(
-          `/api/events?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`,
-        );
-        if (!res.ok) return;
-        const data: ApiEvent[] = await res.json();
-        if (cancelled) return;
+        const [actRes, respRes] = await Promise.all([
+          fetch(`/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`),
+          fetch('/api/responsibilities'),
+        ]);
 
-        const formatted: CalendarEvent[] = data.map((e) => ({
-          id: e.id,
-          title: e.name,
-          start: new Date(e.startDateTime),
-          end: new Date(e.endDateTime),
-          isHoliday: false,
-          leader: e.leader,
-          guide: e.guide,
-          observer: e.observer,
-        }));
-        setEvents(formatted);
+        if (!cancelled) {
+          if (actRes.ok) {
+            const data: ApiActivity[] = await actRes.json();
+            const formatted: CalendarActivity[] = data.map((e) => ({
+              id: e.id,
+              title: e.name,
+              start: new Date(e.startDateTime),
+              end: new Date(e.endDateTime),
+              isHoliday: false,
+              leaders: e.leaders || (e as any).leader || [],
+              guides: e.guides || (e as any).guide || [],
+              observers: e.observers || (e as any).observer || [],
+              participants: e.participants,
+              category: e.category,
+              state: e.state,
+            }));
+            setActivities(formatted);
+          }
+          if (respRes.ok) {
+            const data = await respRes.json();
+            setResponsibilities(data);
+          }
+        }
       } catch (err) {
-        console.error('Failed to fetch events', err);
+        console.error('Failed to fetch calendar data', err);
       }
     };
 
-    fetchEvents();
+    fetchData();
     return () => { cancelled = true; };
   }, [refreshTrigger]);
 
-  // -- Fetch holidays --
+  // Fetch holiday data once on mount
   useEffect(() => {
     let cancelled = false;
 
@@ -407,10 +439,25 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, []);
 
-  // -- Derived: combined calendar events --
-  const calendarEvents = useMemo<CalendarEvent[]>(
+  // Combine regular activities with holiday events
+  const calendarActivities = useMemo<CalendarActivity[]>(
     () => [
-      ...events,
+      ...activities.filter((a) => a.state?.toLowerCase() !== 'cancelled'),
+      ...(showResponsibilities
+        ? responsibilities
+          .filter((r) => r.state?.toLowerCase() !== 'cancelled')
+          .map((r) => ({
+            id: r.id,
+            title: r.name,
+            start: new Date(r.startDateTime),
+            end: new Date(r.endDateTime),
+            isHoliday: false,
+            isResponsibility: true,
+            owner: r.owner,
+            category: r.category,
+            state: r.state,
+          }))
+        : []),
       ...holidays.map((h) => ({
         id: h.id,
         title: h.name,
@@ -418,12 +465,16 @@ export default function CalendarView({
         end: new Date(h.date),
         allDay: true,
         isHoliday: true,
+        category: 'Holiday',
       })),
     ],
-    [events, holidays],
+    [activities, responsibilities, holidays, showResponsibilities],
   );
 
-  // -- Day styling --
+  const onView = useCallback((newView: View) => setView(newView), []);
+  const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
+
+  // style individual day cells (holidays + weekends get a green tint)
   const dayPropGetter = useCallback(
     (date: Date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -445,9 +496,9 @@ export default function CalendarView({
     [holidays],
   );
 
-  // -- Event styling --
-  const eventPropGetter = useCallback((event: CalendarEvent) => {
-    if (event.isHoliday) {
+  // style individual activity event blocks on the calendar grid
+  const eventPropGetter = useCallback((activity: CalendarActivity) => {
+    if (activity.isHoliday) {
       return {
         style: {
           backgroundColor: 'rgba(16, 185, 129, 0.6)',
@@ -457,74 +508,120 @@ export default function CalendarView({
         } as const,
       };
     }
+    if (activity.isResponsibility) {
+      return {
+        style: {
+          backgroundColor: 'var(--responsibility-color)',
+          color: 'white',
+          border: 'none',
+        } as const,
+        className: 'rbc-responsibility',
+      };
+    }
     return {
       style: {
         backgroundColor: 'var(--primary-color)',
         color: 'white',
         border: 'none',
       } as const,
+      className: 'rbc-event',
     };
   }, []);
 
-  // -- Drill-down handler: clicking a day goes to day view --
+
+
+
+  // Navigate to a specific date and switch to day view
   const handleDrillDown = useCallback((clickedDate: Date) => {
     setDate(clickedDate);
     setView(Views.DAY);
   }, []);
 
-  // -- View options --
-  const views: ViewsProps<CalendarEvent> = useMemo(
+  // Available views: month, week, day (agenda disabled — handled by sidebar)
+  const views: ViewsProps<CalendarActivity> = useMemo(
     () => ({
       month: true,
       week: true,
       day: true,
-      agenda: true,
+      agenda: false,
     }),
     [],
   );
 
-  // -- Calendar component overrides --
+  const canCreateActivity = userPermissions.canCreateActivity;
+  const canCreateResponsibility = userPermissions.canCreateResponsibility;
+
+  const CalendarEventRenderer = useCallback(({ event }: { event: CalendarActivity }) => {
+    if (event.isHoliday) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Umbrella size={14} aria-hidden="true" />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+        </div>
+      );
+    }
+    return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
+  }, []);
+
+  // Custom components override for toolbar and event rendering
   const components = useMemo(
     () => ({
-      toolbar: CustomToolbar,
+      toolbar: (props: any) => (
+        <CustomToolbar
+          {...props}
+          onCreate={onCreateActivity}
+          onOwnResponsibility={onOwnResponsibility}
+          onToggleResponsibilities={() => setShowResponsibilities((prev) => !prev)}
+          showResponsibilities={showResponsibilities}
+          canCreateActivity={canCreateActivity}
+          canCreateResponsibility={canCreateResponsibility}
+        />
+      ),
       event: CalendarEventRenderer,
     }),
-    [],
+    [onCreateActivity, canCreateActivity, canCreateResponsibility, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
   );
+
+  const handleSelectEvent = useCallback((event: CalendarActivity) => {
+    if (event.isHoliday) {
+      onSelectHoliday?.({ id: event.id, name: event.title, date: event.start instanceof Date ? event.start.toISOString() : event.start });
+    } else {
+      onSelectActivity(event);
+    }
+  }, [onSelectActivity, onSelectHoliday]);
 
   // ---- Render ----
   return (
-    <div className="calendar-wrapper">
-      <div className={view === Views.AGENDA ? 'hidden-calendar-view' : ''}>
-        <Calendar<CalendarEvent>
-          localizer={localizer}
-          events={calendarEvents}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          onSelectSlot={onSelectSlot}
-          onSelectEvent={onSelectEvent}
-          view={view}
-          onView={onView}
-          date={date}
-          onNavigate={onNavigate}
-          onDrillDown={handleDrillDown}
-          style={{ height: view === Views.AGENDA ? 'auto' : 600 }}
-          views={views}
-          components={components}
-          dayPropGetter={dayPropGetter}
-          eventPropGetter={eventPropGetter}
-        />
+    <div className="calendar-page-layout">
+      <div className="calendar-main-column">
+        <div className="calendar-wrapper">
+<Calendar<CalendarActivity>
+             localizer={localizer}
+             events={calendarActivities}
+             startAccessor="start"
+             endAccessor="end"
+             selectable
+             onSelectSlot={onSelectSlot}
+             onSelectEvent={handleSelectEvent}
+             view={view}
+             onView={onView}
+             date={date}
+             onNavigate={onNavigate}
+             onDrillDown={handleDrillDown}
+             views={views}
+             components={components}
+             dayPropGetter={dayPropGetter}
+             eventPropGetter={eventPropGetter}
+           />
+        </div>
       </div>
 
-      {view === Views.AGENDA && (
-        <div className="custom-agenda-container fade-in">
-          <CustomAgenda
-            events={calendarEvents.filter((e) => !e.isHoliday)}
-            onSelectEvent={onSelectEvent}
-          />
-        </div>
-      )}
+      <div className="calendar-side-column">
+        <CustomAgenda
+          activities={calendarActivities.filter((e) => !e.isHoliday && (showResponsibilities || !e.isResponsibility))}
+          onSelectActivity={onSelectActivity}
+        />
+      </div>
     </div>
   );
 }

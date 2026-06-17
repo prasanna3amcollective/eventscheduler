@@ -1,39 +1,50 @@
 'use client';
 
-import { useState, useCallback, type FormEvent } from 'react';
+import { useState, useCallback, useEffect, type FormEvent } from 'react';
 import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle } from '@/components/Icons';
+import SkillPicker from '@/components/SkillPicker';
+import { type Skill } from '@/lib/constants';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+/** Minimal user profile returned after successful registration */
 interface UserData {
   id: string;
   name: string;
   email?: string;
-  type?: string;
+  skills: Skill[];
 }
 
+/** Props for the registration form */
 interface RegisterFormProps {
+  /** Called with the new user data after successful registration */
   onSuccess?: (user: UserData) => void;
+  /** If set, the user will be auto-enrolled in this activity after registration */
   pendingEventId?: string | null;
+  /** When true, hides the "User Registration" title and description (useful for popups) */
+  hideTitle?: boolean;
+  /** Custom text for the submit button (defaults to "Complete Registration") */
+  submitText?: string;
 }
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-
-
 const ERROR_MESSAGES = {
   REGISTRATION_FAILED: 'Registration failed',
   UNEXPECTED_ERROR: 'An unexpected error occurred',
   INVALID_EMAIL: 'Please enter a valid email address',
-  INVALID_PHONE: 'Please enter a valid phone number (10 digits)',
+  INVALID_PHONE: 'Please enter a valid phone number (7-15 digits)',
 } as const;
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\d{10}$/;
+const isValidPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+};
 
 const COUNTRY_CODES = [
   { code: 'IN', name: 'India', dialCode: '+91', flag: '🇮🇳' },
@@ -50,48 +61,31 @@ const COUNTRY_CODES = [
   { code: 'AE', name: 'UAE', dialCode: '+971', flag: '🇦🇪' },
 ] as const;
 
-const AUTO_ENROLL_DELAY_MS = 2000;
-const EMPTY_FORM = {
-  name: '',
-  username: '',
-  email: '',
-  phone: '',
-  password: '',
-  type: 'team',
-} as const;
+const EMPTY_FORM = { name: '', username: '', email: '', phone: '', password: '', skills: [] as Skill[] };
 
 // ---------------------------------------------------------------------------
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function RegistrationSuccessView({
-  onReset,
-}: {
-  onReset: () => void;
-}) {
+/** Shown after successful registration; offers a button to register another user */
+function RegistrationSuccessView({ onReset }: { onReset: () => void }) {
   return (
     <div className="registration-success fade-in">
       <CheckCircle size={64} color="var(--primary-color)" />
       <h2>Registration Successful!</h2>
       <p>User has been created and can now be searched in the scheduler.</p>
-      <button onClick={onReset} className="btn-primary" style={{ marginTop: '20px' }}>
+      <button onClick={onReset} className="mt-5 btn-primary">
         Register Another User
       </button>
     </div>
   );
 }
 
+/** Inline error banner for form-level validation errors */
 function ErrorBanner({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div
-      className="warning-banner"
-      style={{
-        background: '#FFEBEE',
-        color: '#C62828',
-        borderColor: '#FFCDD2',
-      }}
-    >
+    <div className="warning-banner" style={{ background: '#FFEBEE', color: '#C62828', borderColor: '#FFCDD2' }}>
       <Tag size={20} />
       <span>{message}</span>
     </div>
@@ -99,24 +93,79 @@ function ErrorBanner({ message }: { message: string | null }) {
 }
 
 // ---------------------------------------------------------------------------
-// RegisterForm
+// Main component
 // ---------------------------------------------------------------------------
 
-export default function RegisterForm({ onSuccess, pendingEventId }: RegisterFormProps) {
+/**
+ * Registration form for creating new user accounts.
+ * Collects name, username, email, phone (with country code), and password.
+ * Performs client-side validation, submits to the API, and optionally auto-enrolls
+ * the new user in a pending activity.
+ */
+export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = false, submitText = 'Complete Registration' }: RegisterFormProps) {
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [selectedDialCode, setSelectedDialCode] = useState('+91');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; phone?: string }>({});
+  const [mcaptchaToken, setMcaptchaToken] = useState<string>('');
+  let scriptLoaded = false;
+  useEffect(() => {
+    const MCPATCH_HOST = 'demo.mcaptcha.org';
+    const WIDGET_URL = 'https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo';
 
-  // ── Auto-enroll user in a pending event ────────────────────────────────
+    const messageHandler = (e: MessageEvent) => {
+      try {
+        if (new URL(e.origin).host !== MCPATCH_HOST) return;
+        const data = e.data as { token?: string } | string;
+        if (typeof data === 'object' && data !== null && typeof data.token === 'string') {
+          setMcaptchaToken(data.token);
+        }
+      } catch {}
+    };
 
+    const container = document.getElementById('mcaptcha__widget-container') as HTMLDivElement | null;
+    const label = document.getElementById('mcaptcha__token-label');
+    const tokenInput = document.getElementById('mcaptcha__token') as HTMLInputElement | null;
+    if (!container || !label || !tokenInput) return;
+
+    label.style.display = 'none';
+
+    const initWidget = () => {
+      if (container.querySelector('iframe')) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = WIDGET_URL;
+      iframe.title = 'mCaptcha';
+      iframe.name = 'mcaptcha-widget__iframe';
+      iframe.id = 'mcaptcha-widget__iframe';
+      iframe.setAttribute('aria-roledescription', 'presentation');
+      iframe.scrolling = 'no';
+      iframe.style.width = '100%';
+      iframe.style.height = '120px';
+      iframe.style.border = '0';
+      iframe.sandbox = 'allow-same-origin allow-scripts allow-popups';
+      container.appendChild(iframe);
+    };
+
+    window.addEventListener('message', messageHandler);
+    initWidget();
+
+    if (!scriptLoaded) {
+      scriptLoaded = true;
+    }
+
+    return () => {
+      window.removeEventListener('message', messageHandler);
+    };
+  }, []);
+
+  /** Auto-enroll the newly created user in a pending activity (if pendingEventId is set) */
   const autoEnroll = useCallback(
     async (userId: string) => {
       if (!pendingEventId) return;
       try {
-        await fetch(`/api/events/${pendingEventId}/register`, {
+        await fetch(`/api/activities/${pendingEventId}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId }),
@@ -128,8 +177,10 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
     [pendingEventId],
   );
 
-  // ── Submit handler ─────────────────────────────────────────────────────
-
+  /**
+   * Handles form submission: validates input, creates the user via POST,
+   * then optionally auto-enrolls and calls onSuccess.
+   */
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -140,25 +191,18 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
 
       // Client-side validation
       const errors: { email?: string; phone?: string } = {};
-      if (!EMAIL_REGEX.test(formData.email)) {
-        errors.email = ERROR_MESSAGES.INVALID_EMAIL;
-      }
-      if (!PHONE_REGEX.test(formData.phone)) {
-        errors.phone = ERROR_MESSAGES.INVALID_PHONE;
-      }
+      if (!EMAIL_REGEX.test(formData.email)) errors.email = ERROR_MESSAGES.INVALID_EMAIL;
+      if (!isValidPhone(formData.phone)) errors.phone = ERROR_MESSAGES.INVALID_PHONE;
 
-      if (Object.keys(errors).length > 0) {
+      if (Object.keys(errors).length > 0 || !mcaptchaToken) {
+        setError(mcaptchaToken ? null : 'Please complete the CAPTCHA');
         setFieldErrors(errors);
         setIsSubmitting(false);
         return;
       }
 
       try {
-        const payload = {
-          ...formData,
-          phone: `${selectedDialCode}${formData.phone}`,
-        };
-
+        const payload = { ...formData, phone: `${selectedDialCode}${formData.phone}`, mcaptcha__token: mcaptchaToken };
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -171,11 +215,11 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           setSuccess(true);
           setFormData({ ...EMPTY_FORM });
 
-          // Auto-enroll if there's a pending event
+          // Auto-enroll if there's a pending activity
           await autoEnroll(data.id);
 
           if (onSuccess) {
-            setTimeout(() => onSuccess(data as UserData), AUTO_ENROLL_DELAY_MS);
+            onSuccess(data as UserData);
           }
         } else {
           setError(data.error ?? ERROR_MESSAGES.REGISTRATION_FAILED);
@@ -186,11 +230,10 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
         setIsSubmitting(false);
       }
     },
-    [formData, selectedDialCode, onSuccess, autoEnroll],
+    [formData, selectedDialCode, mcaptchaToken, onSuccess, autoEnroll],
   );
 
-  // ── Reset callback ─────────────────────────────────────────────────────
-
+  /** Resets the form state back to the initial empty state */
   const handleReset = useCallback(() => {
     setSuccess(false);
     setError(null);
@@ -202,18 +245,35 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
     return <RegistrationSuccessView onReset={handleReset} />;
   }
 
+  /** Updates a single form field by key (for text inputs) */
   const updateField =
-    (field: keyof typeof formData) =>
+    (field: 'name' | 'username' | 'email' | 'phone' | 'password') =>
       (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData((prev) => ({ ...prev, [field]: e.target.value }));
       };
 
-  return (
-    <form className="event-form" onSubmit={handleSubmit}>
-      <div className="form-header">
-        <h2>User Registration</h2>
-        <p>Create a new user account for the system</p>
-      </div>
+  /** Toggles a skill in the skills array */
+  const toggleSkill = (skill: string) => {
+    setFormData((prev) => {
+      const skills = [...prev.skills];
+      const index = skills.indexOf(skill as Skill);
+      if (index === -1) {
+        skills.push(skill as Skill);
+      } else {
+        skills.splice(index, 1);
+      }
+      return { ...prev, skills };
+    });
+  };
+
+    return (
+    <form className="activity-form" onSubmit={handleSubmit}>
+      {!hideTitle && (
+        <div className="form-header">
+          <h2>User Registration</h2>
+          <p>Create a new user account for the system</p>
+        </div>
+      )}
 
       <ErrorBanner message={error} />
 
@@ -225,7 +285,7 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           required
           value={formData.name}
           onChange={updateField('name')}
-          placeholder="e.g. Jane Doe"
+          placeholder="e.g. Kosaksi Pasappugazh"
         />
       </div>
 
@@ -237,52 +297,58 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
           required
           value={formData.username}
           onChange={updateField('username')}
-          placeholder="jdoe"
+          placeholder="ranjith.pa"
         />
       </div>
 
-      <div className="form-row">
-        <div className="form-group">
-          <label>
-            <Mail size={16} /> Email Address
-          </label>
+      <div className="form-group">
+        <label>
+          <Mail size={16} /> Email Address
+        </label>
+        <input
+          type="email"
+          required
+          value={formData.email}
+          onChange={updateField('email')}
+          placeholder="3amteacigarz@gmail.com"
+          className={fieldErrors.email ? 'input-error' : ''}
+        />
+        {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
+      </div>
+      <div className="form-group">
+        <label>
+          <Phone size={16} /> Phone Number
+        </label>
+        <div className="phone-input-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '65%' }}>
+          {/* <select
+            value={selectedDialCode}
+            onChange={(e) => setSelectedDialCode(e.target.value)}
+            className="country-select"
+            style={{ width: '80px' }}
+          >
+            {COUNTRY_CODES.map((c) => (
+              <option key={c.code} value={c.dialCode}>
+                {c.flag} {c.dialCode}
+              </option>
+            ))}
+          </select> */}
           <input
-            type="email"
             required
-            value={formData.email}
-            onChange={updateField('email')}
-            placeholder="jane@example.com"
-            className={fieldErrors.email ? 'input-error' : ''}
+            type="tel"
+            value={formData.phone}
+            maxLength={10}
+            inputMode="numeric"
+            onChange={(e) => {
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+              e.target.value = digits;
+              updateField('phone')(e);
+            }}
+            placeholder="9876543210"
+            className={fieldErrors.phone ? 'input-error' : ''}
+            style={{ flex: 1 }}
           />
-          {fieldErrors.email && <span className="error-text">{fieldErrors.email}</span>}
         </div>
-        <div className="form-group">
-          <label>
-            <Phone size={16} /> Phone Number
-          </label>
-          <div className="phone-input-group">
-            <select
-              value={selectedDialCode}
-              onChange={(e) => setSelectedDialCode(e.target.value)}
-              className="country-select"
-            >
-              {COUNTRY_CODES.map((c) => (
-                <option key={c.code} value={c.dialCode}>
-                  {c.flag} {c.dialCode}
-                </option>
-              ))}
-            </select>
-            <input
-              required
-              type="tel"
-              value={formData.phone}
-              onChange={updateField('phone')}
-              placeholder="9876543210"
-              className={fieldErrors.phone ? 'input-error' : ''}
-            />
-          </div>
-          {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
-        </div>
+        {fieldErrors.phone && <span className="error-text">{fieldErrors.phone}</span>}
       </div>
 
       <div className="form-group">
@@ -292,21 +358,62 @@ export default function RegisterForm({ onSuccess, pendingEventId }: RegisterForm
         <input
           type="password"
           required
-          minLength={6}
+          minLength={8}
           value={formData.password}
           onChange={updateField('password')}
           placeholder="••••••••"
+          style={{ width: '65%' }}
+        />
+      </div>
+
+      <div className="form-group">
+        <label>
+          <Tag size={16} /> Skills
+        </label>
+        <SkillPicker
+          selected={formData.skills}
+          onToggle={toggleSkill}
+          idPrefix="register-skill"
+        />
+      </div>
+
+      <div className="form-group">
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', fontWeight: 500, fontSize: '14px' }}>
+          <Tag size={16} /> Security Check
+        </label>
+        <label
+          data-mcaptcha_url="https://demo.mcaptcha.org/widget/?sitekey=saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo"
+          htmlFor="mcaptcha__token"
+          id="mcaptcha__token-label"
+          style={{ display: 'none' }}
+        >
+          mCaptcha authorization token.
+          <a href="https://mcaptcha.org/docs/user-manual/how-to-mcaptcha-without-js/">Instructions</a>.
+        </label>
+        <input type="text" name="mcaptcha__token" id="mcaptcha__token" hidden />
+        <div
+          id="mcaptcha__widget-container"
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            marginTop: '6px',
+            borderRadius: '8px',
+            border: '2px solid var(--border-color, #FFFFFF)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(4px)',
+            transition: 'border-color 0.2s ease',
+          }}
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="btn-primary"
-        style={{ marginTop: '10px' }}
+        className="yellow-btn"
+        style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}
       >
-        {isSubmitting ? 'Registering...' : 'Complete Registration'}
-        {!isSubmitting && <UserPlus size={18} />}
+        {isSubmitting ? 'Joining...' : 'Join the Circle'}
+        {/* {!isSubmitting && <UserPlus size={18} />} */}
       </button>
     </form>
   );

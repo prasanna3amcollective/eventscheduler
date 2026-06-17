@@ -1,23 +1,33 @@
 'use client';
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
-import { X, User, Mail, Phone, Save, Loader } from '@/components/Icons';
+import { X, User, Mail, Phone, Save, Loader, Tag, Lock } from '@/components/Icons';
+import { type Skill } from '@/lib/constants';
+import SkillPicker from '@/components/SkillPicker';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
+/** Shape of the user profile for display and editing */
 interface UserData {
   id: string;
   name: string;
   email: string;
   phone?: string | null;
+  groups?: { group: { name: string } }[];
+  skills: Skill[];
 }
 
+/** Props for the profile edit modal */
 interface ProfileModalProps {
+  /** Whether the modal is visible */
   isOpen: boolean;
+  /** Called to close the modal */
   onClose: () => void;
+  /** The current user's profile data */
   currentUser: UserData | null;
+  /** Called with the updated user data after a successful save */
   onProfileUpdate: (updatedUser: UserData) => void;
 }
 
@@ -28,57 +38,73 @@ interface ProfileModalProps {
 const ERROR_MESSAGES = {
   UPDATE_FAILED: 'Failed to update profile',
   NETWORK_ERROR: 'Network error',
+  PASSWORD_CURRENT_REQUIRED: 'Current password is required',
+  PASSWORD_NEW_REQUIRED: 'New password is required',
+  PASSWORD_LENGTH: 'Password must be at least 8 characters',
+  PASSWORD_FORMAT: 'Password must contain at least one uppercase letter and one number',
+  PASSWORD_CURRENT_INCORRECT: 'Current password is incorrect',
+  PASSWORD_RESET_FAILED: 'Failed to reset password',
+  PASSWORD_RESET_SUCCESS: 'Password reset successfully',
 } as const;
 
 // ---------------------------------------------------------------------------
-// ProfileModal
+// Main component
 // ---------------------------------------------------------------------------
 
+/**
+ * Modal for editing the current user's profile (name, email, phone).
+ * Handles Escape key, body scroll lock, server-side update via PUT,
+ * and displays the user's read-only group memberships.
+ */
 export default function ProfileModal({
   isOpen,
   onClose,
   currentUser,
   onProfileUpdate,
 }: ProfileModalProps) {
-  const [formData, setFormData] = useState({
-    name: currentUser?.name ?? '',
-    email: currentUser?.email ?? '',
-    phone: currentUser?.phone ?? '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', skills: [] as Skill[] });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
-  // Escape key handler + body scroll lock — always called (hooks are invariant)
+  // Escape key handler + body scroll lock — always active while open
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleEsc);
     }
-
     return () => {
       document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleEsc);
     };
   }, [isOpen, onClose]);
 
-  // Reset form data when modal opens or user changes
+  // Reset form data when the modal opens or when currentUser changes
   useEffect(() => {
     if (isOpen && currentUser) {
-      setFormData({
-        name: currentUser.name ?? '',
-        email: currentUser.email ?? '',
-        phone: currentUser.phone ?? '',
-      });
+      setFormData({ name: currentUser.name ?? '', email: currentUser.email ?? '', phone: currentUser.phone ?? '', skills: currentUser.skills ?? [] });
     }
   }, [isOpen, currentUser]);
 
-  // ── Submit handler ──────────────────────────────────────────────────────
-  // (defined BEFORE early return so hook order is stable)
+  /** Toggles a skill in the skills array */
+  const toggleSkill = (skill: string) => {
+    setFormData((prev) => {
+      const skills = [...prev.skills];
+      const index = skills.indexOf(skill as Skill);
+      if (index === -1) {
+        skills.push(skill as Skill);
+      } else {
+        skills.splice(index, 1);
+      }
+      return { ...prev, skills };
+    });
+  };
 
+  /** Submits the updated profile via PUT to /api/user/profile */
   const handleSubmit = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
@@ -91,7 +117,6 @@ export default function ProfileModal({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
-
         if (response.ok) {
           const updatedUser: UserData = await response.json();
           onProfileUpdate(updatedUser);
@@ -109,97 +134,221 @@ export default function ProfileModal({
     [formData, onProfileUpdate, onClose],
   );
 
-  // Guard — AFTER all hooks
+  /** Handles password reset form submission */
+  const handlePasswordReset = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      setPasswordError('');
+
+      if (!passwordData.currentPassword) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_CURRENT_REQUIRED);
+        return;
+      }
+      if (!passwordData.newPassword) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_NEW_REQUIRED);
+        return;
+      }
+      if (passwordData.newPassword.length < 8) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_LENGTH);
+        return;
+      }
+      if (!/[A-Z]/.test(passwordData.newPassword) || !/[0-9]/.test(passwordData.newPassword)) {
+        setPasswordError(ERROR_MESSAGES.PASSWORD_FORMAT);
+        return;
+      }
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        setPasswordError('New passwords do not match');
+        return;
+      }
+
+      setIsResettingPassword(true);
+
+      try {
+        const response = await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+          }),
+        });
+
+        if (response.ok) {
+          setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+          setShowPasswordReset(false);
+        } else {
+          const err = await response.json();
+          setPasswordError(err.error ?? ERROR_MESSAGES.PASSWORD_RESET_FAILED);
+        }
+      } catch (_err) {
+        setPasswordError(ERROR_MESSAGES.NETWORK_ERROR);
+      } finally {
+        setIsResettingPassword(false);
+      }
+    },
+    [passwordData],
+  );
+
   if (!isOpen) return null;
 
-  // ── Render ──────────────────────────────────────────────────────────────
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay fade-in" onClick={onClose}>
       <div
-        className="modal-content profile-modal"
+        className="modal-content"
+        style={{ maxWidth: '500px', padding: '40px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal-close" onClick={onClose}>
-          <X size={20} />
-        </button>
-
-        <div style={{ padding: '24px' }}>
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '22px', fontWeight: 600 }}>
-            Edit Profile
-          </h2>
-
-          <form onSubmit={handleSubmit} className="profile-form">
-            {error && <div className="error-message">{error}</div>}
-
-            <div className="form-group">
-              <label>
-                <User size={16} /> Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                <Mail size={16} /> Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>
-                <Phone size={16} /> Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                disabled={isSaving}
-              />
-            </div>
-
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={onClose}
-                disabled={isSaving}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <Loader className="animate-spin" size={16} />
-                ) : (
-                  <Save size={16} />
-                )}
-                Save Changes
-              </button>
-            </div>
-          </form>
+        <div className="modal-header-actions">
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
         </div>
+
+        <div className="form-header">
+          <span >{currentUser?.name}</span> <br />
+          <br />
+
+          <h2>Edit Profile</h2>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
+          <div className="form-group">
+            <label htmlFor="name">
+              <User size={14} /> Full Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Your name"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="email">
+              <Mail size={14} /> Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="your@email.com"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">
+              <Phone size={14} /> Phone Number
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="e.g. +91 98765 43210"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="skills">
+              <Tag size={14} /> Skills
+            </label>
+            <SkillPicker
+              selected={formData.skills}
+              onToggle={toggleSkill}
+              idPrefix="profile-skill"
+            />
+          </div>
+
+          {currentUser?.groups && currentUser.groups.length > 0 && (
+            <div className="form-group">
+              <label style={{ marginBottom: '12px' }}>Member of Groups</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {currentUser.groups.map((g, idx) => (
+                  <span key={idx} className="category-badge">
+                    {g.group.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="form-group">
+            <button
+              type="button"
+              onClick={() => setShowPasswordReset(!showPasswordReset)}
+              className="btn-secondary"
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <Lock size={16} />
+              {showPasswordReset ? 'Cancel Password Reset' : 'Change Password'}
+            </button>
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px', width: '100%' }}>
+            {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </form>
+
+        {showPasswordReset && (
+          <form onSubmit={handlePasswordReset} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '24px' }}>
+            <div className="form-group">
+              <label htmlFor="currentPassword">
+                <Lock size={14} /> Current Password
+              </label>
+              <input
+                id="currentPassword"
+                type="password"
+                value={passwordData.currentPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                placeholder="Enter current password"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="newPassword">
+                <Lock size={14} /> New Password
+              </label>
+              <input
+                id="newPassword"
+                type="password"
+                value={passwordData.newPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                placeholder="New password (min 8 chars, 1 uppercase, 1 number)"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword">
+                <Lock size={14} /> Confirm New Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword}
+                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                placeholder="Confirm new password"
+                required
+              />
+            </div>
+
+            {passwordError && <div className="error-banner" style={{ margin: 0 }}>{passwordError}</div>}
+
+            <button type="submit" className="btn-primary" disabled={isResettingPassword} style={{ width: '100%' }}>
+              {isResettingPassword ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+              {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+            </button>
+          </form>
+        )}
+
+        {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
       </div>
     </div>
   );

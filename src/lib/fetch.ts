@@ -1,9 +1,10 @@
 'use client';
 
 export async function secureFetch(url: string, options: RequestInit = {}) {
+  const hasBody = options.body !== undefined && options.body !== null;
   const headers = {
+    ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
     ...options.headers,
-    'Content-Type': 'application/json'
   };
 
   const res = await fetch(url, { 

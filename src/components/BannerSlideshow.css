@@ -1,0 +1,123 @@
+/* Neo-Brutalism Banner Slideshow (Desktop) */
+.banner-slideshow-container {
+  width: 100%;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  overflow: hidden;
+}
+
+.banner-slideshow-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 32px;
+  padding: 16px 16px 32px 16px; /* padding for shadows */
+}
+
+.banner-slideshow-track::-webkit-scrollbar {
+  display: none;
+}
+
+.banner-slideshow-slide {
+  flex: 0 0 500px;
+  height: 250px;
+  scroll-snap-align: start;
+  border: 6px solid #000;
+  box-shadow: 12px 12px 0px #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  padding: 40px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.banner-slideshow-slide:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 16px 16px 0px #000;
+}
+
+.banner-slideshow-slide:active {
+  transform: translate(4px, 4px);
+  box-shadow: 8px 8px 0px #000;
+}
+
+.banner-slide-content {
+  position: relative;
+  z-index: 2;
+}
+
+.banner-slide-content h2 {
+  font-size: 42px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  line-height: 1;
+}
+
+.banner-slide-content p {
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 8px 16px;
+  border: 4px solid #000;
+  box-shadow: 6px 6px 0px #000;
+}
+
+/* Background Variations */
+.banner-bg-cyan {
+  background: #00FFEA;
+  color: #000;
+}
+.banner-bg-cyan h2 {
+  text-shadow: 4px 4px 0px #FFF;
+}
+.banner-bg-cyan p {
+  background: #FFF;
+  color: #000;
+}
+
+.banner-bg-magenta {
+  background: #FF00FF;
+  color: #FFF;
+}
+.banner-bg-magenta h2 {
+  text-shadow: 5px 5px 0px #000;
+}
+.banner-bg-magenta p {
+  background: #000;
+  color: #FFF;
+  border-color: #000;
+  box-shadow: 6px 6px 0px #FFF;
+}
+
+.banner-bg-yellow {
+  background: #FFD600;
+  color: #000;
+}
+.banner-bg-yellow h2 {
+  text-shadow: 4px 4px 0px #FFF;
+}
+.banner-bg-yellow p {
+  background: #FFF;
+  color: #000;
+}
+
+/* Decorative Element (Star) */
+.banner-slide-deco-star {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  width: 150px;
+  height: 150px;
+  background: #000;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  z-index: 1;
+  opacity: 0.2;
+}

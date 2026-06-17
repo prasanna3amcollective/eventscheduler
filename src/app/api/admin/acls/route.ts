@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
+import { aclSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET() {
   try {
@@ -9,19 +11,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const acls = await withAuth(
-      () => prisma.accessControlList.findMany({
+    const acls = await withAuth(securityContext, () => ({
+      model: 'accessControlList',
+      operation: 'findMany',
+      args: {
         include: { role: true },
         orderBy: { table: 'asc' }
-      }),
-      securityContext
-    );
+      }
+    }));
 
     return NextResponse.json(acls);
   } catch (error: any) {
     console.error("Error fetching ACLs:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -30,26 +33,31 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { table, operation, roleId, description } = body;
+    const { table, operation, roleId, description } = aclSchema.parse(body);
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const acl = await withAuth(
-      () => prisma.accessControlList.create({
+    const acl = await withAuth(securityContext, () => ({
+      model: 'accessControlList',
+      operation: 'create',
+      args: {
         data: { table, operation, roleId, description },
-        include: { role: true }
-      }),
-      securityContext
-    );
+        include: { role: true },
+        _context: securityContext
+      }
+    }));
 
     return NextResponse.json(acl, { status: 201 });
   } catch (error: any) {
     console.error("Error creating ACL:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    }
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

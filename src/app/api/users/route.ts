@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, withAuth } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { signToken } from '@/lib/jwt';
 import { cookies } from 'next/headers';
+import { userRegistrationSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET() {
   try {
@@ -12,8 +14,7 @@ export async function GET() {
         name: true,
         username: true,
         email: true,
-        phone: true,
-        type: true
+        phone: true
         // Exclude password
       },
       orderBy: { name: 'asc' }
@@ -28,23 +29,60 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, username, phone, email, type, password } = body;
+    const { name, username, phone, email, password, skills } = userRegistrationSchema.parse(body);
 
-    // Simple sanitization - remove HTML tags to prevent XSS
-    const sanitize = (str: string) => str.replace(/<[^>]*>?/gm, '');
+    const rawToken = (body as Record<string, unknown>).mcaptcha__token;
+    // Validate token is a plain non-empty string with no HTML/script injection
+    if (typeof rawToken !== 'string' || rawToken.trim() === '' || /<|>/g.test(rawToken)) {
+      return NextResponse.json({ error: 'CAPTCHA verification required' }, { status: 403 });
+    }
+    const mcaptchaToken: string = rawToken.trim();
+
+    const siteKey = 'saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo';
+    const secret = process.env.MCAPTCHA_SECRET;
+    if (!secret) {
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+    }
+
+    const verifyRes = await fetch('https://demo.mcaptcha.org/api/v1/pow/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: mcaptchaToken,
+        key: siteKey,
+        secret: secret,
+      }),
+    });
+
+    const verifyData = await verifyRes.json();
+    if (!verifyRes.ok || !verifyData.valid) {
+      return NextResponse.json({ error: 'CAPTCHA verification failed' }, { status: 403 });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
-        name: sanitize(name),
-        username: sanitize(username),
-        phone: sanitize(phone),
-        email: sanitize(email),
-        type: sanitize(type),
-        password: hashedPassword
+        name,
+        username,
+        phone,
+        email,
+        password: hashedPassword,
+        skills: skills || []
       }
     });
+
+    // Stamp sys_created_by / sys_updated_by with the new user's own ID.
+    // We can't do this inside the create above because the ID doesn't exist yet,
+    // and there is no session context available during public registration.
+    await withAuth({ id: user.id, roles: [] }, () => ({
+      model: 'user',
+      operation: 'update',
+      args: {
+        where: { id: user.id },
+        data: { sys_created_by: user.id, sys_updated_by: user.id }
+      }
+    }));
 
     // Set JWT Session Cookie immediately
     const token = await signToken({ sub: user.id });
@@ -62,13 +100,14 @@ export async function POST(request: Request) {
     return NextResponse.json(userWithoutPassword);
   } catch (error: any) {
     console.error("Error creating user:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    }
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'Username or Email already exists' }, { status: 400 });
     }
     return NextResponse.json({ 
-      error: 'Internal Server Error', 
-      details: error.message,
-      stack: error.stack
+      error: 'Internal Server Error'
     }, { status: 500 });
   }
 }

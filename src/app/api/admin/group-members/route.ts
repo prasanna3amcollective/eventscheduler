@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
+import { groupMemberSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,23 +14,24 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const members = await withAuth(
-      () => prisma.userGroupM2M.findMany({
+    const members = await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'findMany',
+      args: {
         where: groupId ? { groupId } : undefined,
         include: {
-          user: { select: { id: true, name: true, username: true, type: true } },
+          user: { select: { id: true, name: true, username: true } },
           group: { select: { id: true, name: true, category: true } }
         },
         orderBy: { sys_created_at: 'desc' }
-      }),
-      securityContext
-    );
-    
+      }
+    }));
+
     return NextResponse.json(members);
   } catch (error: any) {
     console.error("Error fetching group members:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -37,32 +40,37 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, groupId } = body;
+    const { userId, groupId } = groupMemberSchema.parse(body);
 
     const securityContext = await getSessionContext();
     if (!securityContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const member = await withAuth(
-      () => prisma.userGroupM2M.create({
+    const member = await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'create',
+      args: {
         data: { userId, groupId },
         include: {
           user: { select: { id: true, name: true, username: true } },
           group: { select: { id: true, name: true } }
-        }
-      }),
-      securityContext
-    );
+        },
+        _context: securityContext
+      }
+    }));
 
     return NextResponse.json(member, { status: 201 });
   } catch (error: any) {
     console.error("Error adding group member:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+    }
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'User is already a member of this group' }, { status: 400 });
     }
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -82,16 +90,17 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await withAuth(
-      () => prisma.userGroupM2M.delete({ where: { id } }),
-      securityContext
-    );
+    await withAuth(securityContext, () => ({
+      model: 'userGroupM2M',
+      operation: 'delete',
+      args: { where: { id } }
+    }));
 
     return NextResponse.json({ message: 'Member removed from group' });
   } catch (error: any) {
     console.error("Error removing group member:", error);
-    if (error.message?.includes('Security Restricted')) {
-      return NextResponse.json({ error: error.message }, { status: 403 });
+    if ((error as Error).message?.includes('Security Restricted')) {
+      return NextResponse.json({ error: (error as Error).message }, { status: 403 });
     }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

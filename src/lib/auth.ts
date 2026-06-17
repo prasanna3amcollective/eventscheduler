@@ -18,10 +18,14 @@ export async function getSessionContext() {
   const cookieStore = await cookies();
   const token = cookieStore.get('session_token')?.value;
 
-  if (!token) return undefined;
+  if (!token) {
+    return undefined;
+  }
 
   const payload = await verifyToken(token);
-  if (!payload || !payload.sub) return undefined;
+  if (!payload || !payload.sub) {
+    return undefined;
+  }
 
   return getSecurityContext(payload.sub);
 }

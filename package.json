@@ -2,35 +2,60 @@
   "name": "event-scheduler",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:all": "node prisma/seed.js",
+    "seed:security": "node prisma/seed/seed-security.js",
+    "seed:acl": "node prisma/seed/seed-inhouse-acl.js",
+    "seed": "node prisma/seed.js",
+    "seed:roles-users": "node prisma/seed-roles-users.js",
+    "seed:system-cron": "node prisma/seed/seed-system-cron.js",
+    "cron:advance": "npx tsx scripts/advance-materialization.ts",
+    "test:generator": "npx tsx --test src/lib/recurrence/generator/**/*.test.ts",
+    "studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@tailwindcss/postcss": "^4.3.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-datepicker": "^6.2.0",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
+    "gsap": "^3.15.0",
     "jose": "^6.2.3",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
+    "npx": "^10.2.2",
+    "pg": "^8.20.0",
     "react": "19.2.4",
     "react-big-calendar": "^1.19.4",
     "react-datepicker": "^9.1.0",
     "react-dom": "19.2.4",
-    "rrule": "^2.8.1"
+    "rrule": "^2.8.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
-    "prisma": "^5.22.0",
+    "graphify": "^1.0.0",
+    "postcss": "^8.5.14",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4.3.0",
+    "tsx": "^4.22.4",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
