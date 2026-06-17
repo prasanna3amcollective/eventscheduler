@@ -3879,3 +3879,126 @@ input:not([type="checkbox"]):focus {
     transform: rotate(360deg);
   }
 }
+
+/* ── SkillPicker ─────────────────────────────────────────────────────── */
+
+.skill-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* more breathing room */
+  width: 100% !important;
+}
+
+
+.skill-picker__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px; /* separate from grid */
+}
+
+
+.skill-picker__hint {
+  font-size: 12px !important;
+  font-family: var(--mono-font) !important;
+  color: var(--text-secondary) !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+
+.skill-picker__count {
+  font-size: 12px !important;
+  font-family: var(--mono-font) !important;
+  font-weight: 700 !important;
+  background: #EBFF00 !important;
+  color: #000 !important;
+  padding: 3px 10px !important;
+  letter-spacing: 0.04em !important;
+  border: 1.5px solid #000 !important;
+  border-radius: 2px !important;
+  line-height: 1.4 !important;
+}
+
+
+.skill-picker__grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  border: 2px solid rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: 4px !important; /* soften container */
+}
+
+
+/* ── Base pill — unselected ── */
+.skill-pill {
+  all: unset !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 8px 16px !important; /* larger touch target */
+  font-family: var(--mono-font) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 4px !important; /* subtle rounding */
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: transform 0.07s ease, box-shadow 0.07s ease,
+              background 0.1s ease, color 0.1s ease,
+              border-color 0.1s ease !important;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5) !important;
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.skill-pill:hover {
+  background: rgba(235, 255, 0, 0.1) !important;
+  border-color: #EBFF00 !important;
+  color: #EBFF00 !important;
+  transform: translate(1px, 1px) !important;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6) !important;
+}
+
+.skill-pill:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: none !important;
+}
+
+/* ── Selected pill — solid yellow ── */
+.skill-pill--selected {
+  background: #EBFF00 !important;
+  border-color: #000 !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  border-radius: 4px !important; /* keep rounding */
+}
+
+.skill-pill--selected:hover {
+  background: #d4e600 !important;
+  border-color: #000 !important;
+  color: #000 !important;
+  transform: translate(1px, 1px) !important;
+  box-shadow: 2px 2px 0 #000 !important;
+}
+
+.skill-pill__check {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  margin-right: 1px !important;
+}

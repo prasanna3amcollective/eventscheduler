@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { X, User, Mail, Phone, Save, Loader, Tag, Lock } from '@/components/Icons';
-import { SKILLS, type Skill } from '@/lib/constants';
+import { type Skill } from '@/lib/constants';
+import SkillPicker from '@/components/SkillPicker';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -256,39 +257,11 @@ export default function ProfileModal({
             <label htmlFor="skills">
               <Tag size={14} /> Skills
             </label>
-            <input
-              id="skills"
-              list="profile-skills-options"
-              placeholder="Search and select a skill..."
-              onChange={(e) => {
-                const skill = e.target.value;
-                if (SKILLS.includes(skill as Skill) && !formData.skills.includes(skill as Skill)) {
-                  toggleSkill(skill);
-                  e.target.value = ''; // Reset selection
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault(); // Prevent form submission
-                }
-              }}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color, #e0e0e0)', marginTop: '4px', background: 'var(--bg-color, #fff)', color: 'var(--text-color, #333)' }}
+            <SkillPicker
+              selected={formData.skills}
+              onToggle={toggleSkill}
+              idPrefix="profile-skill"
             />
-            <datalist id="profile-skills-options">
-              {SKILLS.filter(s => !formData.skills.includes(s)).map((skill, index) => (
-                <option key={index} value={skill} />
-              ))}
-            </datalist>
-            <div className="selected-skills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px' }}>
-              {formData.skills.map((skill, index) => (
-                <span key={index} className="skill-tag" style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--surface-color, #f0f0f0)', padding: '4px 8px', borderRadius: '16px', fontSize: '13px', border: '1px solid var(--border-color, #ccc)' }}>
-                  {skill}
-                  <button type="button" onClick={() => toggleSkill(skill)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center', color: 'inherit' }} aria-label={`Remove ${skill}`}>
-                    <X size={14} />
-                  </button>
-                </span>
-              ))}
-            </div>
           </div>
 
           {currentUser?.groups && currentUser.groups.length > 0 && (

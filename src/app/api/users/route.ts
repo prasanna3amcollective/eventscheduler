@@ -31,10 +31,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, username, phone, email, password, skills } = userRegistrationSchema.parse(body);
 
-    const mcaptchaToken = (body as Record<string, unknown>).mcaptcha__token as string | undefined;
-    if (!mcaptchaToken) {
+    const rawToken = (body as Record<string, unknown>).mcaptcha__token;
+    // Validate token is a plain non-empty string with no HTML/script injection
+    if (typeof rawToken !== 'string' || rawToken.trim() === '' || /<|>/g.test(rawToken)) {
       return NextResponse.json({ error: 'CAPTCHA verification required' }, { status: 403 });
     }
+    const mcaptchaToken: string = rawToken.trim();
 
     const siteKey = 'saAQ6skgAJ1HfFfhgWZvK1TjNJ9C7UCo';
     const secret = process.env.MCAPTCHA_SECRET;

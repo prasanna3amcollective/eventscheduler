@@ -241,7 +241,7 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
                                 type="button"
                                 className="testimonials-submit-btn"
                                 onClick={handleSubmit}
-                                disabled={!testimonialText.trim() || (modalOpenTime && Date.now() - modalOpenTime < 5000)}
+                                disabled={!testimonialText.trim() || (modalOpenTime !== null && Date.now() - modalOpenTime < 5000)}
                             >
                                 SUBMIT
                             </button>
