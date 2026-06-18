@@ -35,7 +35,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "20.19",
     "@types/react": "^19",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19",
