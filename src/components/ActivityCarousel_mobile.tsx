@@ -124,7 +124,7 @@ export default function ActivityCarousel_mobile({ refreshTrigger, onActivityClic
       )}
 
       <div className={`carousel-mobile-strip-wrapper ${isCollapsed ? 'collapsed' : ''}`}>
-        <div className="carousel-mobile-strip" ref={scrollRef}>
+        <div className="carousel-mobile-grid" ref={scrollRef}>
           {filteredActivities.length > 0 ? (
             filteredActivities.map((activity) => (
               <div
@@ -132,12 +132,16 @@ export default function ActivityCarousel_mobile({ refreshTrigger, onActivityClic
                 className="carousel-mobile-card clickable"
                 onClick={() => onActivityClick?.(activity)}
               >
-                <div className="card-mobile-accent"></div>
-                <div className="card-mobile-content">
+                <div className="card-mobile-image-container">
+                  <img src={`https://picsum.photos/seed/${activity.id}/400/300`} alt={activity.name} className="card-mobile-image" loading="lazy" />
+                  
                   <div className="card-mobile-date-badge">
                     <span className="day">{format(new Date(activity.startDateTime), 'dd')}</span>
                     <span className="month">{format(new Date(activity.startDateTime), 'MMM')}</span>
                   </div>
+                </div>
+
+                <div className="card-mobile-content">
                   <div className="card-mobile-info">
                     <h4>{activity.name}</h4>
                     <div className="card-mobile-meta">
