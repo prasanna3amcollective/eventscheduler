@@ -93,7 +93,3 @@ bun.lock text eol=lf
 
 # Images / assets in public/
 public/**/* binary
-
-# Kilo / agent artifacts that may contain binary or generated data
-.kilo/**/* binary
-.kilo/**/*.md text eol=lf
