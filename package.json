@@ -9,12 +9,6 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
-    "seed:all": "node prisma/seed.js",
-    "seed:security": "node prisma/seed/seed-security.js",
-    "seed:acl": "node prisma/seed/seed-inhouse-acl.js",
-    "seed": "node prisma/seed.js",
-    "seed:roles-users": "node prisma/seed-roles-users.js",
-    "seed:system-cron": "node prisma/seed/seed-system-cron.js",
     "cron:advance": "npx tsx scripts/advance-materialization.ts",
     "test:generator": "npx tsx --test src/lib/recurrence/generator/**/*.test.ts",
     "studio": "prisma studio"

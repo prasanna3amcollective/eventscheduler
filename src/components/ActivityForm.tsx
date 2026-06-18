@@ -473,7 +473,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         // When editing entire series, clear per-occurrence lineage (legacy master path); real series 'all' goes to template endpoint instead.
         recurrenceTemplateId: saveMode === 'all' ? null : formData.recurrenceTemplateId,
         generatedFromTemplateId: saveMode === 'all' ? null : formData.generatedFromTemplateId,
-        detachReason: saveMode === 'all' ? 'none' : formData.detachReason,
+        detachReason: formData.detachReason,
       };
 
       try {
@@ -503,8 +503,11 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           }
         } else if (isSeriesOccurrence && saveMode === 'all') {
           // "All in series": update via RecurrenceTemplate endpoint + reconcile.
+          const templateUpdate: any = {}; // diff payload for series update
           // Compute diff instead of sending all fields to avoid poisoning the reconciliation process
-          const templateUpdate: Record<string, any> = {};
+          if (formData.detachReason && formData.detachReason !== 'none') {
+            templateUpdate.detachReason = formData.detachReason;
+          }
 
           if (formData.name !== (initialData!.name || '')) templateUpdate.name = formData.name;
           if (formData.duration !== initialData!.duration) templateUpdate.duration = formData.duration;

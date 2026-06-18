@@ -104,11 +104,10 @@ export async function POST(request: Request) {
           ...(securityContext ? { _context: securityContext } : {}),
         });
 
-        const horizon = recurrenceWeeks ? recurrenceWeeks * 7 + 14 : 365;
-
+        // Use a fixed horizon of 45 days for materialization, matching the cron job
         await materializeTemplateWindow(prisma, tpl.id, {
           asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
-          horizonDays: horizon,
+          horizonDays: 45,
           context: securityContext,
         });
 
