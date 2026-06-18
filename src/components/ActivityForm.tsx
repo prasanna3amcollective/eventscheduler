@@ -230,6 +230,7 @@ function MultiUserSelect({
  */
 export default function ActivityForm({ onActivityCreated, initialData, onCancel }: ActivityFormProps) {
   const isEditing = !!initialData?.id;
+  console.log('templateId:', initialData?.recurrenceTemplateId);
   const isSeriesOccurrence = !!initialData?.recurrenceTemplateId &&
     (initialData?.detachReason ?? 'none') === 'none'; // real non-detached series occurrence (PHASE 6)
 
@@ -581,17 +582,48 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
    */
   const handleArchive = useCallback(() => {
     const isThisOnly = isSeriesOccurrence && saveMode === 'this';
-    const msg = `Are you sure you want to archive ${isThisOnly ? 'this specific occurrence' : (isSeriesOccurrence && saveMode === 'all' ? 'the entire series' : 'this activity')}?`;
-    setConfirmMessage(msg);
+    // Ensure we have a recurrenceTemplateId when archiving the whole series
+    let templateId = initialData?.recurrenceTemplateId ?? formData.recurrenceTemplateId;
+    
+    setConfirmMessage(`Are you sure you want to archive ${isThisOnly ? 'this specific occurrence' : (isSeriesOccurrence && saveMode === 'all' ? 'the entire series' : 'this activity')}?`);
     setConfirmAction(() => async () => {
       try {
         if (isSeriesOccurrence && saveMode === 'all') {
-          // Delete/Archive the entire template
-          const res = await secureFetch(`/api/recurrence-templates/${initialData!.recurrenceTemplateId}`, { method: 'DELETE' });
-          if (!res.ok) throw new Error('Failed to archive template');
+          // Attempt to fetch the template ID if not available
+          if (!templateId) {
+            try {
+              const res = await secureFetch(`/api/activities/${initialData?.id}`, { method: 'GET' });
+              if (res.ok) {
+                const activity = await res.json();
+                templateId = activity.recurrenceTemplateId;
+              }
+            } catch (e) {
+              console.error('Failed to fetch recurrenceTemplateId', e);
+            }
+          }
+
+          // Delete/Archive the entire template using PUT to set status to archived
+          if (!templateId) {
+            setConfirmMessage('Unable to archive: missing recurrence template ID.');
+            setConfirmAction(() => () => {});
+            return;
+          }
+          const res = await secureFetch(`/api/recurrence-templates/${templateId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'archived' }),
+          });
+          if (!res.ok) {
+            let errMsg = 'Failed to archive template';
+            try {
+              const errorData = await res.json();
+              errMsg = errorData.error || errMsg;
+            } catch {}
+            throw new Error(errMsg);
+          }
         } else {
           // Archive a single occurrence or non-recurring activity
-          const archivePayload = {
+          const archivePayload: Record<string, unknown> = {
             name: formData.name,
             leader: formData.leader,
             guide: formData.guide,
@@ -605,22 +637,32 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             recurrenceUntil: null,
             recurrenceWeeks: null,
             category: formData.category,
-            recurrenceTemplateId: initialData!.recurrenceTemplateId,
-            generatedFromTemplateId: initialData!.generatedFromTemplateId,
+            // Only include recurrenceTemplateId if it exists
+            ...(initialData?.recurrenceTemplateId ?? formData.recurrenceTemplateId ? {
+              recurrenceTemplateId: initialData?.recurrenceTemplateId ?? formData.recurrenceTemplateId,
+            } : {}),
+            generatedFromTemplateId: initialData?.generatedFromTemplateId ?? formData.generatedFromTemplateId,
             detachReason: 'cancelled',
           };
-
+          
           const res = await secureFetch(`/api/activities/${initialData!.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(archivePayload),
           });
-          if (!res.ok) throw new Error('Failed to archive activity');
+          if (!res.ok) {
+            let errMsg = 'Failed to archive activity';
+            try {
+              const errorData = await res.json();
+              errMsg = errorData.error || errMsg;
+            } catch {}
+            throw new Error(errMsg);
+          }
         }
         onActivityCreated();
       } catch (err) {
         console.error(err);
-        setConfirmMessage('Failed to archive. Please try again.');
+        setConfirmMessage(err instanceof Error ? err.message : 'Failed to archive. Please try again.');
         setConfirmAction(() => () => { });
       }
     });
@@ -882,7 +924,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         )}
 
         {/* Detach Reason dropdown - only for lineage tracking (IDs are backend-only per spec) */}
-        {(isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
+        {!isEditing && (isSeriesOccurrence || formData.recurrenceTemplateId || formData.detachReason !== 'none') && (
           <div className="form-group" style={{ marginBottom: '16px' }}>
             <label className="neo-label">Detach Reason</label>
             <select
