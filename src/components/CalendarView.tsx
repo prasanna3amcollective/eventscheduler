@@ -6,6 +6,7 @@ import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, start
 import { enUS } from 'date-fns/locale';
 import { type Holiday, getHolidays } from '@/lib/holidays';
 import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash } from '@/components/Icons';
+import EmptyState from './EmptyState';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -288,16 +289,9 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
         <tbody>
           {paginatedActivities.length === 0 ? (
             <tr>
-              <td
-                colSpan={6}
-                style={{
-                  textAlign: 'center',
-                  padding: '40px',
-                  color: 'var(--text-secondary)',
-                }}
-              >
-                No upcoming activities found within the next 6 months
-              </td>
+              <td colSpan={6}>
+                  <EmptyState message="No upcoming activities found within the next 6 months" />
+                </td>
             </tr>
           ) : (
             paginatedActivities.map((activity) => (

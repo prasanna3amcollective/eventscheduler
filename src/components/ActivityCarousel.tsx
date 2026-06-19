@@ -136,6 +136,23 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
     const colors = colorOrderRef.current;
     const bg = colors[idx % colors.length];
 
+    // Quirky deterministic random placement and shape
+    const SHAPES = [
+      '/shapes/star-burst.svg',
+      '/shapes/pill.svg',
+      '/shapes/polygon.svg',
+      '/shapes/circle.svg',
+    ];
+    const shapeUrl = SHAPES[(idx * 3) % SHAPES.length];
+    const rot = [-15, 25, -45, 60, -10, 180][(idx * 5) % 6];
+    const positions = [
+      { top: '-30px', right: '-30px' },
+      { bottom: '-20px', left: '-20px' },
+      { top: '30%', right: '-40px' },
+      { bottom: '-40px', right: '-10px' },
+    ];
+    const pos = positions[(idx * 7) % positions.length];
+
     return (
       <div
         key={activity.id}
@@ -143,6 +160,12 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
         style={{ backgroundColor: bg }}
         onClick={() => onActivityClick?.(activity)}
       >
+        <div className="neo-card-bg-shape" style={{
+          '--bg-shape-url': `url(${shapeUrl})`,
+          transform: `rotate(${rot}deg)`,
+          ...pos
+        } as any} />
+        
         <div className="neo-card-accent" />
         <div className="neo-card-date">
           <span className="neo-card-day">{format(new Date(activity.startDateTime), 'dd')}</span>

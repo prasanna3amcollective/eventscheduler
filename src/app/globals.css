@@ -337,13 +337,29 @@ h4 {
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 24px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
+  padding: 24px 24px 40px;
+  /* extra bottom space for border */
+  overflow: visible;
+  background: var(--surface-color);
   position: sticky;
   top: 0;
   z-index: 50;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: none;
+  /* removed white border */
+  position: relative;
+}
+
+/* Rhombus border below nav container */
+.nav-container::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -20px;
+  height: 20px;
+  background: url('/shapes/rhombus.svg') repeat-x center;
+  background-size: contain;
+  z-index: 1;
 }
 
 .nav-tab {
@@ -549,18 +565,14 @@ input:not([type="checkbox"]):focus {
   width: 280px;
   flex-shrink: 0;
   background: var(--surface-color);
-  border-radius: var(--radius-lg);
   padding: 20px;
-  box-shadow: var(--shadow-lg);
   height: 700px;
   overflow-y: auto;
 }
 
 .calendar-wrapper {
   background: var(--surface-color);
-  border-radius: var(--radius-lg);
   padding: 24px;
-  box-shadow: var(--shadow-lg);
   height: 700px;
   width: 100%;
   position: relative;
@@ -657,12 +669,22 @@ input:not([type="checkbox"]):focus {
   border-top: 1px solid var(--border-color) !important;
 }
 
+/* Hide all-day cell as it's not used */
+.rbc-allday-cell {
+  display: none !important;
+}
+
+/* Hide the entire all-day row in the time header */
+.rbc-time-header>.rbc-row:nth-child(2) {
+  display: none !important;
+}
+
 .rbc-time-content>.rbc-time-gutter {
   border-right: 1px solid var(--border-color) !important;
 }
 
 .rbc-timeslot-group {
-  border-bottom: 1px solid var(--border-color) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .rbc-day-slot .rbc-time-slot {
@@ -707,7 +729,7 @@ input:not([type="checkbox"]):focus {
   padding: 3px 6px;
   border: 2px solid #000000 !important;
   box-shadow: none;
-  color: #000000;
+  color: #000000 !important;
   font-size: 15px;
   font-weight: 800;
 }
@@ -720,7 +742,8 @@ input:not([type="checkbox"]):focus {
 
 /* Ensure activity and generic events have black text */
 .rbc-activity .rbc-event-content,
-.rbc-event .rbc-event-content {
+.rbc-event .rbc-event-content,
+.rbc-event .rbc-event-label {
   color: #000000 !important;
 }
 
@@ -1458,7 +1481,7 @@ input:not([type="checkbox"]):focus {
 .toolbar-views {
   display: flex;
   flex-wrap: wrap;
-  background: var(--hover-color);
+  /* background: var(--bg-color); */
   padding: 4px;
   border-radius: 12px;
 }
@@ -1808,9 +1831,25 @@ input:not([type="checkbox"]):focus {
 .dashboard-header-row {
   display: flex;
   align-items: center;
-  padding: 0 40px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0 40px 15px 40px;
   background: var(--surface-color);
+  position: relative;
+}
+
+.dashboard-header-row::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 15px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 50' width='80' height='50'%3E%3Cpath d='M -40 25 Q -20 45, 0 25 Q 20 5, 40 25 T 80 25 T 120 25' fill='none' stroke='%23FFFFFF' stroke-width='6' /%3E%3Ccircle cx='20' cy='38' r='4' fill='%23FFFFFF' /%3E%3Ccircle cx='60' cy='12' r='4' fill='%23FFFFFF' /%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  /* Hardcoding the exact 24px calculated width (80 * 15/50) to prevent browser subpixel rounding gaps */
+  background-size: 24px 15px;
+  background-position: left bottom;
+  background-color: transparent;
+  z-index: 10;
 }
 
 .dashboard-header-row .marquee-banner {
@@ -2079,6 +2118,33 @@ input:not([type="checkbox"]):focus {
   gap: 12px;
   transition: all 0.12s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 160px;
+  overflow: hidden;
+  /* keep background shapes inside the card */
+  z-index: 1;
+  /* establish context */
+}
+
+/* Dynamic background shape for neo-cards */
+.neo-card-bg-shape {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  background-image: var(--bg-shape-url);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* Turn the SVG completely black and lower opacity to make it a subtle darkening shadow */
+  filter: brightness(0);
+  opacity: 0.15;
+  z-index: 0;
+  /* Important: Must be >= 0 to show above the card's background color */
+  pointer-events: none;
+}
+
+/* Ensure card text and buttons stay above the background shape */
+.neo-card>*:not(.neo-card-bg-shape) {
+  position: relative;
+  z-index: 1;
 }
 
 .neo-card.clickable {
@@ -3885,7 +3951,8 @@ input:not([type="checkbox"]):focus {
 .skill-picker {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* more breathing room */
+  gap: 16px;
+  /* more breathing room */
   width: 100% !important;
 }
 
@@ -3894,7 +3961,8 @@ input:not([type="checkbox"]):focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px; /* separate from grid */
+  margin-bottom: 4px;
+  /* separate from grid */
 }
 
 
@@ -3932,7 +4000,8 @@ input:not([type="checkbox"]):focus {
   background: rgba(255, 255, 255, 0.04) !important;
   width: 100% !important;
   box-sizing: border-box !important;
-  border-radius: 4px !important; /* soften container */
+  border-radius: 4px !important;
+  /* soften container */
 }
 
 
@@ -3943,7 +4012,8 @@ input:not([type="checkbox"]):focus {
   display: inline-flex !important;
   align-items: center !important;
   gap: 5px !important;
-  padding: 8px 16px !important; /* larger touch target */
+  padding: 8px 16px !important;
+  /* larger touch target */
   font-family: var(--mono-font) !important;
   font-size: 12px !important;
   font-weight: 700 !important;
@@ -3952,14 +4022,15 @@ input:not([type="checkbox"]):focus {
   line-height: 1 !important;
   white-space: nowrap !important;
   border: 2px solid rgba(255, 255, 255, 0.5) !important;
-  border-radius: 4px !important; /* subtle rounding */
+  border-radius: 4px !important;
+  /* subtle rounding */
   background: transparent !important;
   color: rgba(255, 255, 255, 0.8) !important;
   cursor: pointer !important;
   user-select: none !important;
   transition: transform 0.07s ease, box-shadow 0.07s ease,
-              background 0.1s ease, color 0.1s ease,
-              border-color 0.1s ease !important;
+    background 0.1s ease, color 0.1s ease,
+    border-color 0.1s ease !important;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5) !important;
   width: auto !important;
   min-width: 0 !important;
@@ -3985,7 +4056,8 @@ input:not([type="checkbox"]):focus {
   border-color: #000 !important;
   color: #000 !important;
   box-shadow: 3px 3px 0 #000 !important;
-  border-radius: 4px !important; /* keep rounding */
+  border-radius: 4px !important;
+  /* keep rounding */
 }
 
 .skill-pill--selected:hover {
@@ -4001,4 +4073,57 @@ input:not([type="checkbox"]):focus {
   align-items: center !important;
   flex-shrink: 0 !important;
   margin-right: 1px !important;
+}
+
+/* ── Shape Ambient Animations ─────────────────────────────────────── */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0%);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-marquee-scroll {
+  animation: marquee-scroll 20s linear infinite;
+}
+
+/* ── Shape Mouse Interactivity (Parallax) ───────────────────────── */
+/* These utilize the --mouse-x and --mouse-y set by useMouseMove */
+
+.parallax-shape-sm {
+  transform: translate(calc(var(--mouse-x, 0) * -10px), calc(var(--mouse-y, 0) * -10px));
+  transition: transform 0.1s ease-out;
+}
+
+.parallax-shape-md {
+  transform: translate(calc(var(--mouse-x, 0) * -20px), calc(var(--mouse-y, 0) * -20px));
+  transition: transform 0.1s ease-out;
+}
+
+.parallax-shape-lg {
+  transform: translate(calc(var(--mouse-x, 0) * -40px), calc(var(--mouse-y, 0) * -40px));
+  transition: transform 0.1s ease-out;
+}
+
+/* Reverse parallax moves towards the mouse */
+.parallax-shape-reverse {
+  transform: translate(calc(var(--mouse-x, 0) * 20px), calc(var(--mouse-y, 0) * 20px));
+  transition: transform 0.1s ease-out;
 }

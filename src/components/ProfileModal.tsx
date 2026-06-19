@@ -192,24 +192,19 @@ export default function ProfileModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay fade-in" onClick={onClose}>
+    <div className="modal-overlay fade-in" style={{ alignItems: 'flex-start', paddingTop: '5vh' }} onClick={onClose}>
       <div
         className="modal-content"
         style={{ maxWidth: '500px', padding: '40px' }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header-actions">
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
 
-        <div className="form-header">
-          <span >{currentUser?.name}</span> <br />
-          <br />
+        {/* <div className="form-header"> */}
+        {/* <span >{currentUser?.name}</span> <br /> */}
+        {/* <br />
 
-          <h2>Edit Profile</h2>
-        </div>
+          <h2>Edit Profile</h2> */}
+        {/* </div> */}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
           <div className="form-group">
@@ -281,17 +276,19 @@ export default function ProfileModal({
             <button
               type="button"
               onClick={() => setShowPasswordReset(!showPasswordReset)}
-              className="btn-secondary"
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              className="btn-secondary-brutal"
+              style={{ width: '100%' }}
             >
               <Lock size={16} />
               {showPasswordReset ? 'Cancel Password Reset' : 'Change Password'}
             </button>
           </div>
 
-          <button type="submit" className="btn-primary" disabled={isSaving} style={{ marginTop: '8px', width: '100%' }}>
-            {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
-            {isSaving ? 'Saving...' : 'Save Changes'}
+          <button type="submit" className="pink-btn" disabled={isSaving} style={{ marginTop: '8px', width: '100%' }}>
+            <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {isSaving ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </span>
           </button>
         </form>
 
@@ -341,15 +338,20 @@ export default function ProfileModal({
 
             {passwordError && <div className="error-banner" style={{ margin: 0 }}>{passwordError}</div>}
 
-            <button type="submit" className="btn-primary" disabled={isResettingPassword} style={{ width: '100%' }}>
-              {isResettingPassword ? <Loader size={18} className="spinning" /> : <Save size={18} />}
-              {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+            <button type="submit" className="pink-btn" disabled={isResettingPassword} style={{ width: '100%' }}>
+              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                {isResettingPassword ? <Loader size={18} className="spinning" /> : <Save size={18} />}
+                {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+              </span>
             </button>
           </form>
         )}
 
         {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
       </div>
+      <button className="modal-close" onClick={onClose} style={{ position: 'fixed', top: 'calc(5vh - 12px)', right: 'max(16px, calc(50% - 250px - 12px))', zIndex: 1150 }}>
+        <X size={20} />
+      </button>
     </div>
   );
 }
