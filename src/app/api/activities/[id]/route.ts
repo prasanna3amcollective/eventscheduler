@@ -82,7 +82,7 @@ export async function PUT(
     console.log(`PUT /api/activities/${activityId} body:`, JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
     console.log(`PUT /api/activities/${activityId} parsedData:`, JSON.stringify(parsedData, null, 2));
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, description, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, category, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -93,6 +93,7 @@ export async function PUT(
         where: { id: activityId },
         data: {
           name,
+          description,
           startDateTime: new Date(startDateTime),
           endDateTime: new Date(endDateTime),
           duration: Number(duration),

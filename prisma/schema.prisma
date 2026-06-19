@@ -31,6 +31,7 @@ enum RecurrenceStatus {
 
 model Activity {
   id             String   @id @default(uuid()) // sys_id
+  description    String?  @db.Text // Optional description up to 1000 chars
   name           String
   startDateTime  DateTime
   endDateTime    DateTime
@@ -60,6 +61,7 @@ model Activity {
 
 model Responsibility {
   id             String   @id @default(uuid()) // sys_id
+  description    String?  @db.Text // Optional description up to 1000 chars
   name           String
   startDateTime  DateTime
   endDateTime    DateTime
@@ -238,13 +240,14 @@ model RecurrenceTemplate {
   id                 String   @id @default(uuid())
   templateType       RecurrenceTemplateType @default(activity)
   name               String?
-   duration           Int      @default(60)
-   category           String   @default("General")
-   recurrenceRule     String
-   startDate          DateTime
-   endDate            DateTime?
-   lastGeneratedAt    DateTime?
-   generatedUntil     DateTime?
+  description        String?  @db.Text
+  duration           Int      @default(60)
+  category           String   @default("General")
+  recurrenceRule     String
+  startDate          DateTime
+  endDate            DateTime?
+  lastGeneratedAt    DateTime?
+  generatedUntil     DateTime?
 
   // Versioning
   versionSeriesId    String

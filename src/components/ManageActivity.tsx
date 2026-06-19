@@ -3,7 +3,7 @@
 import { useState, useEffect, useLayoutEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { ArrowLeft, Refresh, Share2, XCircle, CheckCircle, ChevronDown, ChevronRight, Users } from '@/components/Icons';
+import { ArrowLeft, Refresh, Share2, XCircle, ChevronDown, ChevronRight, Users } from '@/components/Icons';
 import EditActivityModal from '@/components/EditActivityModal';
 import { secureFetch } from '@/lib/fetch';
 import styles from './ManageActivity.module.css';
@@ -39,6 +39,7 @@ interface Activity {
     leaders?: string[];
     guides?: string[];
     observers?: string[];
+    description?: string;
     participants: Participant[];
 }
 
@@ -138,10 +139,10 @@ export default function ManageActivity() {
     const [savingActivity, setSavingActivity] = useState(false);
 
     useLayoutEffect(() => {
-        const resetScroll = () => window.scrollTo(0, 0);
+        const resetScroll = () => globalThis.scrollTo(0, 0);
         resetScroll();
         const frame = requestAnimationFrame(resetScroll);
-        const timeout = window.setTimeout(resetScroll, 50);
+        const timeout = globalThis.setTimeout(resetScroll, 50);
         return () => {
             cancelAnimationFrame(frame);
             clearTimeout(timeout);
@@ -241,9 +242,6 @@ export default function ManageActivity() {
         return matchesSearch;
     });
 
-    const isLeader = !!currentUser && !!activity?.participants?.some(
-        p => p.user?.id === currentUser.id && p.type === 'Leader'
-    );
 
     const saveParticipants = async (participants: Participant[]) => {
         const responses = await Promise.all(
@@ -307,54 +305,6 @@ export default function ManageActivity() {
         }
     };
 
-    const handleOpenCloseConfirm = async () => {
-        if (!activity) return;
-
-        setCloseModalMessage(null);
-
-        const missingFormParticipants = getMissingAttendanceParticipants(activity.participants);
-        if (missingFormParticipants.length > 0) {
-            setCloseModalMessage(`Please mark attendance for ${formatParticipantNames(missingFormParticipants)} before closing this activity.`);
-            setShowCloseConfirm(true);
-            return;
-        }
-
-        setClosingActivity(true);
-        try {
-            const res = await secureFetch(`/api/activities/${activityId}`);
-            if (res.ok) {
-                const data = await res.json();
-                const missingDbParticipants = getMissingAttendanceParticipants(data.participants || []);
-                if (missingDbParticipants.length > 0) {
-                    try {
-                        await saveParticipants(activity.participants);
-                        const refreshedRes = await secureFetch(`/api/activities/${activityId}`);
-                        if (refreshedRes.ok) {
-                            const refreshedData = await refreshedRes.json();
-                            const refreshedMissingDbParticipants = getMissingAttendanceParticipants(refreshedData.participants || []);
-                            if (refreshedMissingDbParticipants.length > 0) {
-                                setCloseModalMessage(`Please mark attendance for ${formatParticipantNames(refreshedMissingDbParticipants)} before closing this activity.`);
-                                setShowCloseConfirm(true);
-                                return;
-                            }
-                        }
-                    } catch (err) {
-                        console.error('Failed to save attendance before closing activity', err);
-                        setCloseModalMessage(err instanceof Error ? err.message : 'Failed to save attendance before closing this activity');
-                        setShowCloseConfirm(true);
-                        return;
-                    }
-                }
-            }
-            setShowCloseConfirm(true);
-        } catch (err) {
-            console.error('Failed to validate attendance before closing activity', err);
-            setShowCloseConfirm(true);
-        } finally {
-            setClosingActivity(false);
-        }
-    };
-
     const handleSave = async () => {
         if (!activity?.participants) return;
 
@@ -402,6 +352,32 @@ export default function ManageActivity() {
         } catch (err) {
             console.error('Failed to update staff', err);
         }
+    };
+
+    const handleAttendanceChange = (participantId: string, value: string) => {
+        const newVal = value === '' ? null : Number.parseInt(value, 10);
+        setActivity(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                participants: prev.participants?.map(p =>
+                    p.id === participantId ? { ...p, attendance: newVal } : p
+                )
+            };
+        });
+    };
+
+    const handlePayAsYouWishChange = (participantId: string, value: string) => {
+        const newVal = Number.parseFloat(value) || 0;
+        setActivity(prev => {
+            if (!prev) return prev;
+            return {
+                ...prev,
+                participants: prev.participants?.map(p =>
+                    p.id === participantId ? { ...p, payAsYouWish: newVal } : p
+                )
+            };
+        });
     };
 
     if (loading) {
@@ -458,6 +434,7 @@ export default function ManageActivity() {
                     <h1 className={styles['hero-title']}>
                         {activity.name}
                     </h1>
+                    { }
                     <div className={styles['hero-meta']}>
                         <span className={styles['hero-date']}>
                             {format(new Date(activity.startDateTime), 'EEEE, MMMM d')}
@@ -489,8 +466,29 @@ export default function ManageActivity() {
                         <span className={styles['stat-value']}>{activity.observers?.length || 0}</span>
                         <span className={styles['stat-label']}>OBSERVERS</span>
                     </div>
-                </div> */}
+                </div>
 
+                {/* Description Block */}
+                <section id="description" className={styles['description-section']}>
+                    <h2 className={styles['section-title']}>Description</h2>
+                    <br />
+
+                    <textarea
+                        className={styles['description-text']}
+                        value={activity.description || ''}
+                        onChange={(e) => setActivity(prev => {
+                            if (!prev) return null;
+                            return { ...prev, description: e.target.value };
+                        })}
+                        onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = `${target.scrollHeight}px`;
+                        }}
+                        style={{ overflow: 'hidden' }}
+                    ></textarea>
+
+                </section>
                 {/* Participants Section */}
                 <section className={styles['participants-section']}>
                     <div className={styles['section-header']}>
@@ -536,7 +534,7 @@ export default function ManageActivity() {
                                         <tr key={participant.id}>
                                             <td className="font-bold">{participant.user.name}</td>
                                             <td>
-                                                <span className={`${styles['role-badge']} ${styles[`role-badge-${participant.type?.toLowerCase() || 'participant'}`]}`}>
+                                                <span className={[styles['role-badge'], styles[`role-badge-${participant.type?.toLowerCase() || 'participant'}`]].join(' ')}>
                                                     {participant.type || 'Participant'}
                                                 </span>
                                             </td>
@@ -550,18 +548,7 @@ export default function ManageActivity() {
                                                 <select
                                                     value={getAttendanceSelectValue(participant.attendance)}
                                                     disabled={activity.state === 'Completed'}
-                                                    onChange={(e) => {
-                                                        const newVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                                                        setActivity(prev => {
-                                                            if (!prev) return prev;
-                                                            return {
-                                                                ...prev,
-                                                                participants: prev.participants?.map(p =>
-                                                                    p.id === participant.id ? { ...p, attendance: newVal } : p
-                                                                )
-                                                            };
-                                                        });
-                                                    }}
+                                                    onChange={(e) => handleAttendanceChange(participant.id, e.target.value)}
                                                     className={styles['select-input']}
                                                 >
                                                     <option value="">Select attendance</option>
@@ -579,18 +566,7 @@ export default function ManageActivity() {
                                                         step="1"
                                                         value={participant.payAsYouWish ?? 0}
                                                         disabled={!['Leader', 'Guide', 'Observer'].includes(participant.type ?? '')}
-                                                        onChange={(e) => {
-                                                            const newVal = parseFloat(e.target.value) || 0;
-                                                            setActivity(prev => {
-                                                                if (!prev) return prev;
-                                                                return {
-                                                                    ...prev,
-                                                                    participants: prev.participants?.map(p =>
-                                                                        p.id === participant.id ? { ...p, payAsYouWish: newVal } : p
-                                                                    )
-                                                                };
-                                                            });
-                                                        }}
+                                                        onChange={(e) => handlePayAsYouWishChange(participant.id, e.target.value)}
                                                         className={styles['pay-input']}
                                                     />
                                                 </div>
@@ -607,43 +583,23 @@ export default function ManageActivity() {
                         </div>
                     )}
 
-                    {activity.state !== 'Completed' && (
-                        <div className={styles['actions-bar']}>
-                            <button
-                                onClick={handleSave}
-                                disabled={savingActivity}
-                                className={styles['btn-primary']}
-                            >
-                                {savingActivity ? 'Saving...' : 'Save'}
-                            </button>
 
-                            {new Date(activity.endDateTime) < new Date() &&
-                                isLeader && (
-                                    <button
-                                        onClick={handleOpenCloseConfirm}
-                                        disabled={closingActivity}
-                                        className={styles['btn-warning']}
-                                        title="Close this activity"
-                                    >
-                                        <CheckCircle size={16} />
-                                        Close Activity
-                                    </button>
-                                )}
-                        </div>
-                    )}
+
+
                 </section>
 
-                {/* Staff Management - Asymmetric Zigzag */}
                 <section className={styles['staff-section']}>
-                    <div
+                    <button
+                        type="button"
                         className={styles['staff-header']}
                         onClick={() => setIsStaffOpen(!isStaffOpen)}
+                        style={{ background: 'none', border: 'none', borderBottom: '3px solid #000000', width: '100%', textAlign: 'left' }}
                     >
                         <h2 className={styles['staff-title']}>
-                            Staff Management
+                            Organisers
                             {isStaffOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                         </h2>
-                    </div>
+                    </button>
 
                     <div className={`${styles['staff-content']} ${isStaffOpen ? '' : styles['staff-content-collapsed']}`}>
                         <h3 className={styles['workflow-step']}>FACILITATORS</h3>
@@ -668,48 +624,63 @@ export default function ManageActivity() {
                         />
                     </div>
                 </section>
+                <div className={styles['actions-bar']}>
+                    <button
+                        onClick={handleSave}
+                        disabled={savingActivity}
+                        className={styles['btn-primary']}
+                    >
+                        {savingActivity ? 'Saving...' : 'Save'}
+                    </button>
+                </div>
             </main>
 
             {/* Close Confirmation Modal */}
-            {showCloseConfirm && (
-                <div
-                    className={styles['modal-overlay']}
-                    onClick={() => setShowCloseConfirm(false)}
-                >
-                    <div
-                        className={styles.modal}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <p className={styles['modal-warning']}>
-                            Make sure you mark the attendance for participants correctly. It is
-                            important for credit calculations.
-                        </p>
-                        {closeModalMessage && (
-                            <p className={styles['modal-alert']}>
-                                {closeModalMessage}
+            {
+                showCloseConfirm && (
+                    <div className={styles['modal-overlay']}>
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={() => setShowCloseConfirm(false)}
+                            aria-label="Close modal"
+                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', background: 'transparent', border: 'none', cursor: 'default' }}
+                        />
+                        <div
+                            className={styles.modal}
+                            style={{ position: 'relative', zIndex: 1 }}
+                        >
+                            <p className={styles['modal-warning']}>
+                                Make sure you mark the attendance for participants correctly. It is
+                                important for credit calculations.
                             </p>
-                        )}
-                        <div className={styles['modal-actions']}>
-                            <button
-                                className={styles['btn-secondary']}
-                                onClick={() => setShowCloseConfirm(false)}
-                                disabled={closingActivity}
-                            >
-                                Back
-                            </button>
-                            <button
-                                className={styles['btn-warning']}
-                                onClick={performCloseActivity}
-                                disabled={closingActivity}
-                            >
-                                {closingActivity ? 'Closing...' : 'I marked attendance'}
-                            </button>
+                            {closeModalMessage && (
+                                <p className={styles['modal-alert']}>
+                                    {closeModalMessage}
+                                </p>
+                            )}
+                            <div className={styles['modal-actions']}>
+                                <button
+                                    className={styles['btn-secondary']}
+                                    onClick={() => setShowCloseConfirm(false)}
+                                    disabled={closingActivity}
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    className={styles['btn-warning']}
+                                    onClick={performCloseActivity}
+                                    disabled={closingActivity}
+                                >
+                                    {closingActivity ? 'Closing...' : 'I marked attendance'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {showEditModal && <EditActivityModal onClose={() => setShowEditModal(false)} />}
-        </div>
+        </div >
     );
 }

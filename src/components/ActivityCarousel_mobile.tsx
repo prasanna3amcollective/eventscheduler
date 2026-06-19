@@ -1,4 +1,5 @@
 'use client';
+import EmptyState from './EmptyState';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { format, startOfDay, addMonths } from 'date-fns';
@@ -159,10 +160,7 @@ export default function ActivityCarousel_mobile({ refreshTrigger, onActivityClic
               </div>
             ))
           ) : (
-            <div className="carousel-mobile-empty-state">
-              <CalendarDays size={32} />
-              <p>No activities scheduled.</p>
-            </div>
+            <EmptyState message="No upcoming activities" />
           )}
         </div>
       </div>

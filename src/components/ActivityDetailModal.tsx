@@ -17,6 +17,7 @@ import EditActivityModal from '@/components/EditActivityModal';
 interface ActivityData {
   id: string;
   name: string;
+  description?: string;
   startDateTime: string;
   endDateTime?: string;
   duration?: number;
@@ -310,6 +311,11 @@ export default function ActivityDetailModal({
               <div className="detail-category">{activity.category || 'ACTIVITY'}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <h2 className="detail-title" style={{ margin: 0 }}>{activity.name}</h2>
+                {activity.description && (
+                  <p className="detail-description" style={{ marginTop: '8px', marginBottom: '12px', color: 'var(--text-primary)', fontFamily: 'var(--mono-font)' }}>
+                    {activity.description}
+                  </p>
+                )}
                 {activity.state && (
                   <span style={{
                     display: 'inline-flex',

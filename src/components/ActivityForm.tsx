@@ -42,6 +42,7 @@ interface User {
 interface ActivityData {
   id?: string;
   name: string;
+  description?: string;
   leaders?: string[];
   guides?: string[];
   observers?: string[];
@@ -265,6 +266,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
   // Form state for all activity fields
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
+    description: initialData?.description ?? '',
     leader: initialData?.leaders ?? [],
     guide: initialData?.guides ?? [],
     observer: initialData?.observers ?? [],
@@ -459,19 +461,20 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
       const payload: any = {
         name: formData.name,
+        description: formData.description,
         leader: formData.leader,
         guide: formData.guide,
         observer: formData.observer,
         startDateTime: start.toISOString(),
         endDateTime: end.toISOString(),
         duration: formData.duration,
+        category: formData.category,
         isRecurring: formData.isRecurring,
         recurrenceRule: rruleStr,
         recurrenceStart: formData.recurrenceStart?.toISOString?.() ?? null,
         recurrenceUntil: formData.recurrenceUntil?.toISOString?.() ?? null,
         recurrenceWeeks: formData.recurrenceWeeks === '' ? null : Number(formData.recurrenceWeeks),
-        category: formData.category,
-        // When editing entire series, clear per-occurrence lineage (legacy master path); real series 'all' goes to template endpoint instead.
+        // Lineage fields (backend-managed for IDs; detachReason may be shown/edited)
         recurrenceTemplateId: saveMode === 'all' ? null : formData.recurrenceTemplateId,
         generatedFromTemplateId: saveMode === 'all' ? null : formData.generatedFromTemplateId,
         detachReason: formData.detachReason,
@@ -484,6 +487,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           const method = 'PUT';
           const thisOnlyPayload = {
             ...payload,
+            description: formData.description,
             isRecurring: false,
             recurrenceRule: null,
             detachReason: 'edited' as const,
@@ -693,7 +697,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
         <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '16px', marginBottom: '24px' }}>
           <div className="form-group">
-            <label className="neo-label">
+                        <label className="neo-label">
               <Tag size={14} /> Activity Name
             </label>
             <input
@@ -702,6 +706,18 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Project Sync-up"
               className="neo-input"
+            />
+            {/* Description textarea */}
+            <label className="neo-label" style={{ marginTop: '12px' }}>
+              <Tag size={14} /> Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Provide details about the activity..."
+              maxLength={1000}
+              className="neo-input"
+              style={{ height: '80px', resize: 'vertical' }}
             />
           </div>
 

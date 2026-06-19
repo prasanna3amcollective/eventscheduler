@@ -26,6 +26,7 @@ export const userProfileSchema = z.object({
 
 export const activitySchema = z.object({
   name: z.string().min(1, 'Activity name is required').max(200),
+  description: z.string().optional(),
   leader: z.array(z.string()).default([]),
   guide: z.array(z.string()).default([]),
   observer: z.array(z.string()).default([]),

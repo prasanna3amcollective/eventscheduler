@@ -79,10 +79,10 @@ export async function POST(request: Request) {
     console.log("POST /api/activities body:", JSON.stringify(body, null, 2));
     const parsedData = activitySchema.parse(body);
     console.log("POST /api/activities parsedData:", JSON.stringify(parsedData, null, 2));
-    const { name, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, recurrenceTemplateId, generatedFromTemplateId, detachReason, recurrenceWeeks } = parsedData;
+    const { name, description, leader, guide, observer, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, category, recurrenceTemplateId, generatedFromTemplateId, detachReason, recurrenceWeeks } = parsedData;
 
     const securityContext = await getSessionContext();
-
+    // removed duplicate destructuring (already handled above)
     // PHASE 6: new recurring series — always create via RecurrenceTemplate + materialize real children.
     // Staff attached to children. No legacy master row with recurrenceRule is ever created.
     if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
@@ -162,23 +162,24 @@ export async function POST(request: Request) {
 
     // Non-recurring or explicit child of existing template
     const activity = await withAuth(securityContext, () => ({
-  model: 'activity',
-  operation: 'create',
-  args: {
-    data: {
-      name,
-      startDateTime: new Date(startDateTime),
-      endDateTime: new Date(endDateTime),
-      duration: Number(duration),
-      isRecurring: Boolean(isRecurring),
-      recurrenceRule: isRecurring ? recurrenceRule : null,
-      recurrenceTemplateId: recurrenceTemplateId || null,
-      generatedFromTemplateId: generatedFromTemplateId || null,
-      detachReason: detachReason || 'none',
-      category: category || 'General',
-    },
-  },
-})) as unknown as Activity;
+      model: 'activity',
+      operation: 'create',
+      args: {
+        data: {
+          name,
+          description,
+          startDateTime: new Date(startDateTime),
+          endDateTime: new Date(endDateTime),
+          duration: Number(duration),
+          isRecurring: Boolean(isRecurring),
+          recurrenceRule: isRecurring ? recurrenceRule : null,
+          recurrenceTemplateId: recurrenceTemplateId || null,
+          generatedFromTemplateId: generatedFromTemplateId || null,
+          detachReason: detachReason || 'none',
+          category: category || 'General',
+        },
+      },
+    })) as unknown as Activity;
 
 
     // Create staff participants

@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 
 export const responsibilitySchema = z.object({
   name: z.string().min(1, 'Responsibility name is required').max(200),
+  description: z.string().optional().nullable(),
   startDateTime: z.string().datetime({ message: "Invalid start date format" }),
   endDateTime: z.string().datetime({ message: "Invalid end date format" }),
   duration: z.number().positive(),
@@ -24,11 +25,13 @@ export const responsibilitySchema = z.object({
   ownerId: z.string().optional().nullable()
 });
 
+
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = responsibilitySchema.parse(body);
-    const { name, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, recurrenceWeeks, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, description, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, recurrenceWeeks, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
 
     const securityContext = await getSessionContext();
 
@@ -81,6 +84,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         id: firstChild?.id ?? tpl.id,
         name,
+        description,
         startDateTime,
         endDateTime: endDateTime,
         duration: Number(duration),
@@ -101,6 +105,7 @@ export async function POST(request: Request) {
       args: {
         data: {
           name,
+          description: description?.trim() || null,
           startDateTime: new Date(startDateTime),
           endDateTime: new Date(endDateTime),
           duration: Number(duration),

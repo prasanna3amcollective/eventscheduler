@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const { detachReason, state, name, startDateTime, duration, category, owner } = await request.json();
+    const { detachReason, state, name, startDateTime, duration, category, owner, description } = await request.json();
     const securityContext = await getSessionContext();
     if (!securityContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

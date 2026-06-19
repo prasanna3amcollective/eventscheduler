@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, type FormEvent } from 'react';
-import { addMinutes, differenceInMinutes, addWeeks } from 'date-fns';
+import React, { useState, useEffect, useRef } from 'react';
+import { addMinutes, addWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { secureFetch } from '@/lib/fetch';
@@ -42,8 +42,9 @@ interface ResponsibilityData {
   recurrenceRule?: string | null;
   recurrenceTemplateId?: string | null;
   generatedFromTemplateId?: string | null;
-  detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
+  description?: string;
   category?: string;
+  detachReason?: string;
 }
 
 interface ResponsibilityFormProps {
@@ -64,7 +65,7 @@ const DAYS_OF_WEEK = [
 
 const DEFAULT_DURATION_MINUTES = 60;
 
-export default function ResponsibilityForm({ onResponsibilityCreated, initialData, onCancel }: ResponsibilityFormProps) {
+export default function ResponsibilityForm({ onResponsibilityCreated, initialData, onCancel }: Readonly<ResponsibilityFormProps>) {
   const isEditing = !!initialData?.id;
   const isSeriesOccurrence = !!initialData?.recurrenceTemplateId &&
     (initialData?.detachReason ?? 'none') === 'none';
@@ -86,13 +87,22 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
   const defaultRecWeeks = parsedRecurrence.recurrenceInterval || 4;
   const defaultRecUntil = parsedRecurrence.recurrenceUntil || addWeeks(defaultRecStart, defaultRecWeeks);
 
+
+
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [recurrenceWarning, setRecurrenceWarning] = useState<string | null>(null);
+  // Form state for responsibility fields
   const [formData, setFormData] = useState({
     name: initialData?.name ?? '',
+    description: initialData?.description ?? '',
     owner: initialData?.owner ?? '',
     ownerId: initialData?.ownerId ?? '',
     startDateTime: initialStartDate,
-    duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     endDateTime: initialEndDate,
+    duration: initialData?.duration ?? DEFAULT_DURATION_MINUTES,
     isRecurring: initialData?.isRecurring ?? false,
     recurrenceFreq: (parsedRecurrence.recurrenceFreq as 'WEEKLY' | 'MONTHLY') || 'WEEKLY',
     recurrenceDays: parsedRecurrence.recurrenceDays,
@@ -100,17 +110,10 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     recurrenceUntil: defaultRecUntil,
     recurrenceWeeks: defaultRecWeeks,
     category: initialData?.category ?? 'General',
-    // Lineage (forwarded on submit; IDs backend-driven)
+    detachReason: initialData?.detachReason ?? 'none',
     recurrenceTemplateId: initialData?.recurrenceTemplateId ?? null,
     generatedFromTemplateId: initialData?.generatedFromTemplateId ?? null,
-    detachReason: initialData?.detachReason ?? 'none',
   });
-
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [recurrenceWarning, setRecurrenceWarning] = useState<string | null>(null);
 
   // Guard so we fetch the authoritative template data only once on mount for series edits
   const hasLoadedTemplateRef = useRef(false);
@@ -144,7 +147,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     fetch(`/api/recurrence-templates/${tplId}`)
       .then((r) => r.json())
       .then((tpl) => {
-        if (tpl && tpl.recurrenceRule) {
+        if (tpl?.recurrenceRule) {
           const p = parseRecurrenceForForm(tpl.recurrenceRule);
           setFormData((prev) => ({
             ...prev,
@@ -164,13 +167,8 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
     setFormData(prev => ({ ...prev, duration: newDuration, endDateTime: newEnd }));
   };
 
-  const updateDurationFromTimes = (start: Date, end: Date) => {
-    const diffMs = end.getTime() - start.getTime();
-    const diffMin = Math.max(15, Math.round(diffMs / 60000));
-    setFormData(prev => ({ ...prev, duration: diffMin }));
-  };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
@@ -199,8 +197,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         recurrenceStart: formData.recurrenceStart?.toISOString?.() ?? null,
         recurrenceUntil: formData.recurrenceUntil?.toISOString?.() ?? null,
         recurrenceWeeks: formData.recurrenceWeeks,
-        category: formData.category,
-        recurrenceTemplateId: formData.recurrenceTemplateId,
+        description: formData.description.trim(),
         generatedFromTemplateId: formData.generatedFromTemplateId,
         detachReason: formData.detachReason,
       };
@@ -210,16 +207,16 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
 
       if (isEditing) {
         if (isSeriesOccurrence && saveMode === 'this') {
-          url = `/api/responsibilities/${initialData!.id}`;
+          url = `/api/responsibilities/${initialData.id}`;
           method = 'PUT';
           payload.detachReason = 'edited';
           payload.isRecurring = false;
           payload.recurrenceRule = null;
         } else if (isSeriesOccurrence && saveMode === 'all') {
-          url = `/api/recurrence-templates/${initialData!.recurrenceTemplateId}`;
+          url = `/api/recurrence-templates/${initialData.recurrenceTemplateId}`;
           method = 'PUT';
         } else {
-          url = `/api/responsibilities/${initialData!.id}`;
+          url = `/api/responsibilities/${initialData.id}`;
           method = 'PUT';
         }
       }
@@ -334,7 +331,7 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             min="15"
             step="15"
             value={formData.duration}
-            onChange={(e) => updateEndFromDuration(parseInt(e.target.value) || 15)}
+            onChange={(e) => updateEndFromDuration(Number.parseInt(e.target.value) || 15)}
             className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all"
           />
         </div>
@@ -391,8 +388,9 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
         {formData.isRecurring && (
           <div className="recurrence-options space-y-4 mt-4">
             <div className="flex items-center gap-3 mb-2">
-              <label className="text-xs font-medium text-gray-500">Repeat every</label>
+              <label htmlFor="recurrence-freq" className="text-xs font-medium text-gray-500">Repeat every</label>
               <select
+                id="recurrence-freq"
                 value={formData.recurrenceFreq}
                 onChange={(e) => setFormData(prev => ({ ...prev, recurrenceFreq: e.target.value as 'WEEKLY' | 'MONTHLY' }))}
                 className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all w-[100px]"
@@ -423,8 +421,9 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
             <div className="space-y-3">
               <div className="flex items-start gap-4">
                 <div className="flex-1 space-y-1">
-                  <label className="block text-xs font-medium text-gray-500">how many weeks recurrence?</label>
+                  <label htmlFor="recurrence-weeks" className="block text-xs font-medium text-gray-500">how many weeks recurrence?</label>
                   <input
+                    id="recurrence-weeks"
                     type="number"
                     min="1"
                     step="1"

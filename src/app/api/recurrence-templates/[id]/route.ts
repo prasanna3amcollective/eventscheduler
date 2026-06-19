@@ -13,6 +13,7 @@ const updateTemplateSchema = z.object({
   category: z.string().optional(),
   startDate: z.string().datetime().optional(),
   status: z.enum(['active', 'archived', 'draft']).optional(),
+  description: z.string().optional(),
 });
 
 export async function GET(
@@ -64,6 +65,7 @@ export async function PUT(
     if (parsed.category !== undefined) data.category = parsed.category;
     if (parsed.startDate !== undefined) data.startDate = new Date(parsed.startDate);
     if (parsed.status !== undefined) data.status = parsed.status;
+    if (parsed.description !== undefined) data.description = parsed.description;
 
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'No updatable fields provided' }, { status: 400 });
