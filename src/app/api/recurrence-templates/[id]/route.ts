@@ -1,17 +1,17 @@
 
 
 import { NextResponse, NextRequest } from 'next/server';
-import { prisma, withAuth } from '@/lib/prisma';
+import { withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { z } from 'zod';
-import { reconcileFutureOccurrences } from '@/lib/recurrence/generator';
+
 
 const updateTemplateSchema = z.object({
   name: z.string().min(1).optional(),
   recurrenceRule: z.string().optional(),
   duration: z.number().positive().optional(),
   category: z.string().optional(),
-  startDate: z.string().datetime().optional(),
+  startDate: z.iso.datetime().optional(),
   status: z.enum(['active', 'archived', 'draft']).optional(),
   description: z.string().optional(),
 });

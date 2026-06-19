@@ -386,7 +386,7 @@ function HomeContent() {
           )}
 
           {activeSection === 'participate' && (
-            <section id="participate" style={{ textAlign: 'left', padding: '40px 0' }}>
+            <section id="participate" style={{ textAlign: 'left', padding: '40px' }}>
               <p>Join our events, volunteer, or become a member of the community.</p>
 
               {/* Decorative Banner Slideshow */}
@@ -580,6 +580,7 @@ function HomeContent() {
                   onSelectHoliday={handleSelectHoliday}
                   userRoles={userRoles}
                   userPermissions={userPermissions}
+                  currentUser={currentUser}
                 />
               </div>
             )}

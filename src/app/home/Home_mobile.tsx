@@ -561,6 +561,7 @@ export default function Home_mobile() {
                     onSelectHoliday={handleSelectHoliday}
                     userRoles={userRoles}
                     userPermissions={userPermissions}
+                    currentUser={currentUser}
                   />
                 </div>
               )}

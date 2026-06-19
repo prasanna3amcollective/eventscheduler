@@ -3,7 +3,7 @@ import EmptyState from './EmptyState';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { format, startOfDay, addDays } from 'date-fns';
-import { Clock, CalendarDays, Users, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from '@/components/Icons';
+import { Clock, Users, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 
 interface Activity {
@@ -18,10 +18,10 @@ interface Activity {
 }
 
 interface ActivityCarouselProps {
-  refreshTrigger: number;
-  onActivityClick?: (activity: any) => void;
-  isLoggedIn?: boolean;
-  headerRight?: React.ReactNode;
+  readonly refreshTrigger: number;
+  readonly onActivityClick?: (activity: any) => void;
+  readonly isLoggedIn?: boolean;
+  readonly headerRight?: React.ReactNode;
 }
 
 const CARDS_PER_PAGE = 9;
@@ -79,7 +79,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
   );
 
   const categoryList = useMemo(
-    () => [...new Set(activitiesNext12Months.map((a) => a.category).filter(Boolean) as string[])].sort(),
+    () => [...new Set(activitiesNext12Months.map((a) => a.category).filter(Boolean) as string[])].sort((a, b) => a.localeCompare(b)),
     [activitiesNext12Months],
   );
 
@@ -155,18 +155,25 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
     const pos = positions[(idx * 7) % positions.length];
 
     return (
-      <div
+      <button
         key={activity.id}
         className="neo-card clickable"
         style={{ backgroundColor: bg }}
         onClick={() => onActivityClick?.(activity)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onActivityClick?.(activity);
+          }
+        }}
+        type="button"
       >
         <div className="neo-card-bg-shape" style={{
           '--bg-shape-url': `url(${shapeUrl})`,
           transform: `rotate(${rot}deg)`,
           ...pos
         } as any} />
-        
+
         <div className="neo-card-accent" />
         <div className="neo-card-date">
           <span className="neo-card-day">{format(new Date(activity.startDateTime), 'dd')}</span>
@@ -189,7 +196,7 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
             </div>
           )}
         </div>
-      </div>
+      </button>
     );
   };
 

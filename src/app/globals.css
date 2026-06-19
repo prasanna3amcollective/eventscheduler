@@ -70,9 +70,7 @@
   @apply flex items-center justify-center gap-[10px] rounded-[8px] bg-[#EBFF00] px-[28px] py-[15px] text-[16px] font-semibold text-black border border-black transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-[0_6px_16px_#EBFF004D] disabled:opacity-60;
 }
 
-.btn-secondary {
-  @apply flex items-center justify-center gap-[10px] rounded-[8px] border border-black bg-[#EBFF00] px-[28px] py-[14px] text-[16px] font-semibold text-black transition-all hover:opacity-90 disabled:opacity-60;
-}
+
 
 .btn-outline {
   @apply flex items-center justify-center gap-[6px] rounded-[8px] border border-black bg-transparent px-4 py-[10px] text-[13px] font-medium text-white font-mono transition-all hover:bg-[#EBFF00] hover:text-black disabled:opacity-40;
@@ -309,15 +307,13 @@ h4 {
   display: flex;
   justify-content: center;
   gap: 8px;
-  padding: 24px 24px 40px;
+  padding: 24px 24px 24px;
   /* extra bottom space for border */
   overflow: visible;
   background: var(--surface-color);
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 50;
-  border-bottom: none;
-  /* removed white border */
 }
 
 /* Rhombus border below nav container */
@@ -612,12 +608,7 @@ input:not([type="checkbox"]):focus {
   border-left: 1px solid var(--border-color) !important;
 }
 
-.rbc-header {
-  padding: 12px 0 !important;
-  font-weight: 600 !important;
-  color: var(--text-secondary) !important;
-  border-bottom: 2px solid var(--border-color) !important;
-}
+
 
 /* Time view grid lines */
 .rbc-time-view {
@@ -740,6 +731,7 @@ input:not([type="checkbox"]):focus {
   border: 2px solid #000000 !important;
   box-shadow: none !important;
 }
+
 
 /* Modal Styling */
 .modal-overlay {
@@ -909,7 +901,7 @@ input:not([type="checkbox"]):focus {
   font-size: 12px !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
+  letter-spacing: 0.05em;
   color: var(--text-primary) !important;
   cursor: pointer !important;
   user-select: none !important;
@@ -1241,13 +1233,7 @@ input:not([type="checkbox"]):focus {
   }
 }
 
-/* Ensure form fields respect container width */
-.register-modal .activity-form {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-}
+
 
 /* Ensure inputs within register modal respect container width */
 .register-modal .activity-form input,
@@ -1571,6 +1557,7 @@ input:not([type="checkbox"]):focus {
   padding: 12px 0 !important;
   font-weight: 700 !important;
   color: var(--text-secondary) !important;
+  border-bottom: 2px solid var(--border-color) !important;
   text-transform: uppercase;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -1603,7 +1590,7 @@ input:not([type="checkbox"]):focus {
   position: absolute;
   right: 12px;
   color: var(--text-secondary);
-  pointer-activities: none;
+  pointer-events: none;
 }
 
 .typeahead-dropdown {
@@ -1721,6 +1708,7 @@ input:not([type="checkbox"]):focus {
 }
 
 .auth-card {
+  position: relative;
   width: 100%;
   max-width: 480px;
   background: var(--surface-color);
@@ -1758,6 +1746,8 @@ input:not([type="checkbox"]):focus {
 
 /* Auth login/register buttons - aligned to match input widths, styled bold/beautiful like .btn-secondary */
 .auth-card .btn-primary {
+  position: relative;
+  overflow: hidden;
   width: 100%;
   padding: 16px 32px;
   font-size: 17px;
@@ -1788,6 +1778,7 @@ input:not([type="checkbox"]):focus {
 }
 
 .register-modal .activity-form {
+  width: 100%;
   max-width: none;
   margin: 0;
   padding: 0;
@@ -1951,9 +1942,6 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Subtle "3AM" stamp watermark on auth card - CSS only, feels hand-printed */
-.auth-card {
-  position: relative;
-}
 
 .auth-card::after {
   content: "3AM";
@@ -1973,10 +1961,6 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Ink bleed press effect on the bold login button - matches brutalist stamp feel */
-.auth-card .btn-primary {
-  position: relative;
-  overflow: hidden;
-}
 
 .auth-card .btn-primary::after {
   content: "";
@@ -1998,7 +1982,6 @@ input:not([type="checkbox"]):focus {
 
 /* ── Neo-brutalist 3×3 Card Grid (replaces old carousel) ───────────── */
 .carousel-container {
-  padding: 0 40px;
   margin-bottom: 32px;
   max-width: 100%;
   box-sizing: border-box;
@@ -2176,13 +2159,9 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Card content text in black for readability on vibrant backgrounds */
-.neo-card-title {
-  color: #000000;
-}
 
-.neo-meta-item {
-  color: #000000;
-}
+
+/* Duplicate selector removed - merged into later definition */
 
 .neo-card-footer,
 .neo-card-footer span {
@@ -2198,6 +2177,7 @@ input:not([type="checkbox"]):focus {
 }
 
 .neo-card-title {
+  color: #000000;
   font-family: var(--heading-font);
   font-size: 15px;
   font-weight: 800;
@@ -2205,6 +2185,7 @@ input:not([type="checkbox"]):focus {
   letter-spacing: -0.02em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.3;
@@ -2498,7 +2479,6 @@ input:not([type="checkbox"]):focus {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--text-secondary);
   display: inline-block;
   padding: 4px 10px;
   border: 2px solid #000000;
@@ -2673,11 +2653,7 @@ input:not([type="checkbox"]):focus {
 }
 
 /* Register modal specific overrides */
-.register-modal .activity-form {
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-}
+/* Duplicate selector removed – merged into earlier .register-modal .activity-form definition (lines ~1780) */
 
 
 .info-card {
@@ -2762,19 +2738,6 @@ input:not([type="checkbox"]):focus {
 .admin-nav button.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
-}
-
-.admin-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-}
-
-/* Make admin content grid responsive */
-@media (max-width: 768px) {
-  .admin-content {
-    grid-template-columns: 1fr;
-  }
 }
 
 .admin-panel {
@@ -3260,7 +3223,7 @@ input:not([type="checkbox"]):focus {
   color: var(--text-secondary) !important;
   font-size: 11px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
+  letter-spacing: 0.05em;
 }
 
 .agenda-row {
@@ -3411,7 +3374,6 @@ input:not([type="checkbox"]):focus {
 }
 
 .error-message {
-  background: #fee2e2;
   color: #ef4444;
   padding: 12px;
   border-radius: var(--radius-md);
@@ -4108,4 +4070,155 @@ input:not([type="checkbox"]):focus {
 .parallax-shape-reverse {
   transform: translate(calc(var(--mouse-x, 0) * 20px), calc(var(--mouse-y, 0) * 20px));
   transition: transform 0.1s ease-out;
+}
+
+/* ── Global Search Command Palette (Neo-Brutalist ServiceNow Navigator) ────────────────── */
+.global-search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.global-search-modal {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 340px;
+  height: calc(100vh - 40px);
+  background: var(--surface-color);
+  border: 4px solid #000000;
+  box-shadow: 12px 12px 0px #000000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideInLeftBrutal 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInLeftBrutal {
+  from {
+    opacity: 0;
+    transform: translateX(-110%) rotate(-2deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+.global-search-input-wrapper {
+  padding: 16px;
+  border-bottom: 4px solid #000000;
+  background: var(--primary-color);
+  /* Bright yellow header area */
+}
+
+.global-search-input {
+  width: 100%;
+  border: 3px solid #000000;
+  background: #FFFFFF;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-family: var(--heading-font);
+  font-weight: 700;
+  color: #000000;
+  outline: none;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+}
+
+.global-search-input:focus {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.global-search-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.global-search-results {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.global-search-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  cursor: pointer;
+  border: 3px solid #000000;
+  background: #FFFFFF;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.1s ease;
+  position: relative;
+}
+
+.global-search-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.global-search-item.selected {
+  background: var(--primary-color);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.global-search-item:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.global-search-item-phrase {
+  font-size: 16px;
+  font-weight: 800;
+  color: #000000;
+  font-family: var(--heading-font);
+  text-transform: uppercase;
+}
+
+.global-search-item-desc {
+  font-size: 12px;
+  color: #333333;
+  font-family: var(--mono-font);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.global-search-empty {
+  padding: 24px;
+  text-align: center;
+  color: #FFFFFF;
+  font-family: var(--mono-font);
+  font-size: 14px;
+  font-weight: 700;
+  border: 3px dashed #000000;
+  margin: 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.global-search-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px;
+  border-top: 4px solid #000000;
+  background: #000000;
+  color: var(--primary-color);
+  font-family: var(--mono-font);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }

@@ -3,21 +3,21 @@ import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { z } from 'zod';
 import { materializeTemplateWindow } from '@/lib/recurrence/generator';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 
 export const responsibilitySchema = z.object({
   name: z.string().min(1, 'Responsibility name is required').max(200),
   description: z.string().optional().nullable(),
-  startDateTime: z.string().datetime({ message: "Invalid start date format" }),
-  endDateTime: z.string().datetime({ message: "Invalid end date format" }),
+  startDateTime: z.iso.datetime({ message: "Invalid start date format" }),
+  endDateTime: z.iso.datetime({ message: "Invalid end date format" }),
   duration: z.number().positive(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: z.string().nullable().optional(),
-  recurrenceStart: z.string().datetime().optional().nullable(),
-  recurrenceUntil: z.string().datetime().optional().nullable(),
+  recurrenceStart: z.iso.datetime().optional().nullable(),
+  recurrenceUntil: z.iso.datetime().optional().nullable(),
   recurrenceWeeks: z.number().int().positive().optional().nullable(),
-  recurrenceTemplateId: z.string().uuid().nullable().optional(),
-  generatedFromTemplateId: z.string().uuid().nullable().optional(),
+  recurrenceTemplateId: z.uuid().nullable().optional(),
+  generatedFromTemplateId: z.uuid().nullable().optional(),
   detachReason: z.enum(['none', 'edited', 'cancelled', 'rescheduled', 'manually_created']).optional(),
   category: z.string().default('General'),
   state: z.enum(['Scheduled', 'Completed']).default('Scheduled').optional(),
@@ -27,76 +27,84 @@ export const responsibilitySchema = z.object({
 
 
 
+type ResponsibilityInput = z.infer<typeof responsibilitySchema>;
+
+async function createRecurringResponsibilityTemplate(parsedData: ResponsibilityInput, securityContext: any) {
+  const { name, description, startDateTime, endDateTime, duration, recurrenceRule, recurrenceStart, recurrenceUntil, recurrenceWeeks, category, owner, ownerId } = parsedData;
+
+  const tpl = await prisma.recurrenceTemplate.create({
+    data: {
+      templateType: 'responsibility',
+      name,
+      duration: Number(duration),
+      category: category || 'General',
+      recurrenceRule: recurrenceRule!,
+      // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
+      startDate: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
+      endDate: recurrenceUntil ? new Date(recurrenceUntil) : null,
+      versionSeriesId: randomUUID(),
+      version: 1,
+      status: 'active',
+    },
+    ...(securityContext ? { _context: securityContext } : {}),
+  });
+
+  const horizon = recurrenceWeeks ? recurrenceWeeks * 7 + 14 : 365;
+
+  await materializeTemplateWindow(prisma, tpl.id, {
+    asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
+    horizonDays: horizon,
+    context: securityContext,
+  });
+
+  // Backfill owner onto the materialized children (the generator does not set owner/ownerId)
+  if (ownerId || owner) {
+    await prisma.responsibility.updateMany({
+      where: { recurrenceTemplateId: tpl.id },
+      data: {
+        owner: owner || null,
+        ownerId: ownerId || null,
+      },
+      ...(securityContext ? { _context: securityContext } : {}),
+    });
+  }
+
+  // Return a real child id when possible (so client treats it like a normal row)
+  const firstChild = await prisma.responsibility.findFirst({
+    where: { recurrenceTemplateId: tpl.id },
+    orderBy: { startDateTime: 'asc' },
+    select: { id: true },
+  });
+
+  return NextResponse.json({
+    id: firstChild?.id ?? tpl.id,
+    name,
+    description,
+    startDateTime,
+    endDateTime,
+    duration: Number(duration),
+    isRecurring: true,
+    recurrenceRule: null,
+    recurrenceTemplateId: tpl.id,
+    generatedFromTemplateId: tpl.id,
+    detachReason: 'none',
+    category: category || 'General',
+    owner: owner || null,
+    ownerId: ownerId || null,
+  }, { status: 201 });
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsedData = responsibilitySchema.parse(body);
-    const { name, description, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceStart, recurrenceUntil, recurrenceWeeks, category, owner, ownerId, recurrenceTemplateId, generatedFromTemplateId, detachReason } = parsedData;
+    const { name, description, startDateTime, endDateTime, duration, isRecurring, recurrenceRule, recurrenceTemplateId, generatedFromTemplateId, detachReason, category, owner, ownerId } = parsedData;
 
     const securityContext = await getSessionContext();
 
     // PHASE 6: new recurring responsibilities via template + materialize (no legacy master)
     if (isRecurring && recurrenceRule && !recurrenceTemplateId) {
-      const tpl = await prisma.recurrenceTemplate.create({
-        data: {
-          templateType: 'responsibility',
-          name,
-          duration: Number(duration),
-          category: category || 'General',
-          recurrenceRule,
-          // startDate / endDate on the template now come from the dedicated Recurrence Start/Until fields when supplied (they also drive DTSTART/UNTIL inside recurrenceRule)
-          startDate: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
-          endDate: recurrenceUntil ? new Date(recurrenceUntil) : null,
-          versionSeriesId: randomUUID(),
-          version: 1,
-          status: 'active',
-        },
-        ...(securityContext ? { _context: securityContext } : {}),
-      });
-
-      const horizon = recurrenceWeeks ? recurrenceWeeks * 7 + 14 : 365;
-
-      await materializeTemplateWindow(prisma, tpl.id, {
-        asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
-        horizonDays: horizon,
-        context: securityContext,
-      });
-
-      // Backfill owner onto the materialized children (the generator does not set owner/ownerId)
-      if (ownerId || owner) {
-        await prisma.responsibility.updateMany({
-          where: { recurrenceTemplateId: tpl.id },
-          data: {
-            owner: owner || null,
-            ownerId: ownerId || null,
-          },
-          ...(securityContext ? { _context: securityContext } : {}),
-        });
-      }
-
-      // Return a real child id when possible (so client treats it like a normal row)
-      const firstChild = await prisma.responsibility.findFirst({
-        where: { recurrenceTemplateId: tpl.id },
-        orderBy: { startDateTime: 'asc' },
-        select: { id: true },
-      });
-
-      return NextResponse.json({
-        id: firstChild?.id ?? tpl.id,
-        name,
-        description,
-        startDateTime,
-        endDateTime: endDateTime,
-        duration: Number(duration),
-        isRecurring: true,
-        recurrenceRule: null,
-        recurrenceTemplateId: tpl.id,
-        generatedFromTemplateId: tpl.id,
-        detachReason: 'none',
-        category: category || 'General',
-        owner: owner || null,
-        ownerId: ownerId || null,
-      }, { status: 201 });
+      return await createRecurringResponsibilityTemplate(parsedData, securityContext);
     }
 
     const responsibility = await withAuth(securityContext, () => ({

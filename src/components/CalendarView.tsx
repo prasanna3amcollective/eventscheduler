@@ -5,7 +5,7 @@ import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsPro
 import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { type Holiday, getHolidays } from '@/lib/holidays';
-import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash } from '@/components/Icons';
+import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash, CheckCircle } from '@/components/Icons';
 import EmptyState from './EmptyState';
 
 // ---------------------------------------------------------------------------
@@ -175,9 +175,11 @@ interface CustomAgendaProps {
   activities: CalendarActivity[];
   /** Called when an activity row is clicked */
   onSelectActivity: (activity: CalendarActivity) => void;
+  /** Current user profile data */
+  currentUser?: any;
 }
 
-function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.Element {
+function CustomAgenda({ activities, onSelectActivity, currentUser }: CustomAgendaProps): JSX.Element {
   const [currentPage, setCurrentPage] = useState(0);
 
   const now = useMemo(() => startOfDay(new Date()), []);
@@ -294,45 +296,60 @@ function CustomAgenda({ activities, onSelectActivity }: CustomAgendaProps): JSX.
                 </td>
             </tr>
           ) : (
-            paginatedActivities.map((activity) => (
-              <tr
-                key={activity.id}
-                className="agenda-row clickable-row"
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelectActivity(activity)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectActivity(activity);
-                  }
-                }}
-                aria-label={`${activity.title} from ${format(activity.start, 'hh:mm aa')} to ${format(activity.end, 'hh:mm aa')}`}
-                style={{
-                  background: 'var(--surface-color)',
-                  borderRadius: '8px',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                }}
-              >
-                <td style={{ padding: '8px', borderRadius: '8px' }}>
-                  <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
-                    {activity.title}
-                  </div>
-                </td>
-                <td style={{ padding: '8px' }}>
-                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
-                    {format(activity.start, 'hh:mm aa')} - {format(activity.end, 'hh:mm aa')}
-                  </div>
-                </td>
-                <td style={{ padding: '8px' }}>
-                  <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
-                    {isToday(activity.start) ? 'Today' : format(activity.start, 'MMM dd, yyyy')}
-                  </div>
-                </td>
-              </tr>
-            ))
+            paginatedActivities.map((activity) => {
+              const isRegistered = currentUser && activity.participants?.some(p => p.userId === currentUser.id) && !activity.isResponsibility;
+              return (
+                <tr
+                  key={activity.id}
+                  className="agenda-row clickable-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectActivity(activity)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectActivity(activity);
+                    }
+                  }}
+                  aria-label={`${activity.title} from ${format(activity.start, 'hh:mm aa')} to ${format(activity.end, 'hh:mm aa')}`}
+                  style={{
+                    background: 'var(--surface-color)',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                >
+                  <td style={{ padding: '8px', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {isRegistered && (
+                        <span style={{
+                          display: 'inline-block',
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          backgroundColor: '#4CE819',
+                          flexShrink: 0
+                        }} title="Registered" />
+                      )}
+                      <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
+                        {activity.title}
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                      {format(activity.start, 'hh:mm aa')} - {format(activity.end, 'hh:mm aa')}
+                    </div>
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-primary)' }}>
+                      {isToday(activity.start) ? 'Today' : format(activity.start, 'MMM dd, yyyy')}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
@@ -353,6 +370,7 @@ interface CalendarViewProps {
   onSelectHoliday?: (holiday: { id: string; name: string; date: string }) => void;
   userRoles: string[];
   userPermissions?: { canCreateActivity: boolean; canCreateResponsibility: boolean };
+  currentUser?: any;
 }
 
 /**
@@ -369,6 +387,7 @@ export default function CalendarView({
    onSelectHoliday,
    userRoles = [],
    userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
+   currentUser,
  }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
@@ -512,6 +531,7 @@ export default function CalendarView({
         className: 'rbc-responsibility',
       };
     }
+    const isRegistered = currentUser && activity.participants?.some(p => p.userId === currentUser.id);
     return {
       style: {
         backgroundColor: 'var(--primary-color)',
@@ -520,7 +540,7 @@ export default function CalendarView({
       } as const,
       className: 'rbc-event',
     };
-  }, []);
+  }, [currentUser]);
 
 
 
@@ -554,8 +574,17 @@ export default function CalendarView({
         </div>
       );
     }
+    const isRegistered = currentUser && event.participants?.some(p => p.userId === currentUser.id);
+    if (isRegistered && !event.isResponsibility) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4CE819', flexShrink: 0 }} title="Registered" />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+        </div>
+      );
+    }
     return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
-  }, []);
+  }, [currentUser]);
 
   // Custom components override for toolbar and event rendering
   const components = useMemo(
@@ -614,6 +643,7 @@ export default function CalendarView({
         <CustomAgenda
           activities={calendarActivities.filter((e) => !e.isHoliday && (showResponsibilities || !e.isResponsibility))}
           onSelectActivity={onSelectActivity}
+          currentUser={currentUser}
         />
       </div>
     </div>

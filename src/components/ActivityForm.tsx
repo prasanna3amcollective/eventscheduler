@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, type FormEvent, useCallback } from 'react';
-import { X as XIcon } from '@/components/Icons';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { FormEvent } from 'react';
+
 import { addMinutes, differenceInMinutes, format, addWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,13 +13,10 @@ import {
   Users,
   Eye,
   CalendarFill as Calendar,
-  Clock,
   Repeat,
   AlertTriangle,
-  Check,
-  Trash,
   Tag,
-  X,
+  X as XIcon,
 } from '@/components/Icons';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import {
@@ -436,7 +434,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
    * and excludes the current occurrence from the original series.
    */
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       if (!formData.leader || formData.leader.length === 0) {
@@ -490,7 +488,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             description: formData.description,
             isRecurring: false,
             recurrenceRule: null,
-            detachReason: 'edited' as const,
+            detachReason: 'edited',
             recurrenceTemplateId: initialData!.recurrenceTemplateId,
             generatedFromTemplateId: initialData!.generatedFromTemplateId,
           };
@@ -588,7 +586,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     const isThisOnly = isSeriesOccurrence && saveMode === 'this';
     // Ensure we have a recurrenceTemplateId when archiving the whole series
     let templateId = initialData?.recurrenceTemplateId ?? formData.recurrenceTemplateId;
-    
+
     setConfirmMessage(`Are you sure you want to archive ${isThisOnly ? 'this specific occurrence' : (isSeriesOccurrence && saveMode === 'all' ? 'the entire series' : 'this activity')}?`);
     setConfirmAction(() => async () => {
       try {
@@ -609,7 +607,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
           // Delete/Archive the entire template using PUT to set status to archived
           if (!templateId) {
             setConfirmMessage('Unable to archive: missing recurrence template ID.');
-            setConfirmAction(() => () => {});
+            setConfirmAction(() => () => { });
             return;
           }
           const res = await secureFetch(`/api/recurrence-templates/${templateId}`, {
@@ -622,7 +620,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             try {
               const errorData = await res.json();
               errMsg = errorData.error || errMsg;
-            } catch {}
+            } catch { }
             throw new Error(errMsg);
           }
         } else {
@@ -648,7 +646,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             generatedFromTemplateId: initialData?.generatedFromTemplateId ?? formData.generatedFromTemplateId,
             detachReason: 'cancelled',
           };
-          
+
           const res = await secureFetch(`/api/activities/${initialData!.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -659,7 +657,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             try {
               const errorData = await res.json();
               errMsg = errorData.error || errMsg;
-            } catch {}
+            } catch { }
             throw new Error(errMsg);
           }
         }
@@ -697,7 +695,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
 
         <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '16px', marginBottom: '24px' }}>
           <div className="form-group">
-                        <label className="neo-label">
+            <label className="neo-label">
               <Tag size={14} /> Activity Name
             </label>
             <input
