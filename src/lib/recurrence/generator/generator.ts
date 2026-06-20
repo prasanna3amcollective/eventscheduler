@@ -13,7 +13,7 @@ import {
 // Stable recurrence library (read-only reuse — never modify during PHASE 4)
 import { generateOccurrenceDates } from '../expander';
 import { computeEndDateTime } from '../utils';
-import type { RecurrenceTemplateType } from '@/generated/prisma/client';
+
 
 /**
  * PHASE 4 — Isolated Recurrence Generator Service
@@ -164,7 +164,11 @@ export async function materializeTemplateWindow(
 
     let created = 0;
 
-    if (!dryRun) {
+    if (dryRun) {
+      // Dry run — just count how many would have been new
+      // We can't easily know without querying, so we report the full desired set size
+      created = desiredDates.length;
+    } else {
       // We perform the write inside a transaction for atomicity with the horizon update
       await prisma.$transaction(async (tx) => {
         if (template.templateType === 'activity') {
@@ -192,10 +196,6 @@ export async function materializeTemplateWindow(
           ...(ctx ? { _context: ctx } : {}),
         } as any);
       });
-    } else {
-      // Dry run — just count how many would have been new
-      // We can't easily know without querying, so we report the full desired set size
-      created = desiredDates.length;
     }
 
     return {
@@ -222,6 +222,87 @@ export async function materializeTemplateWindow(
 /* -------------------------------------------------------------------------- */
 /*                           RECONCILE FUTURE                                 */
 /* -------------------------------------------------------------------------- */
+
+async function handleCancelObsolete(
+  prismaAny: any,
+  model: string,
+  toCancel: any[],
+  dryRun: boolean,
+  ctx?: GeneratorContext
+): Promise<number> {
+  if (toCancel.length === 0) return 0;
+  if (dryRun) return toCancel.length;
+
+  const ids = toCancel.map((r) => r.id);
+  const result = await prismaAny[model].updateMany({
+    where: { id: { in: ids } },
+    data: { state: 'Cancelled', detachReason: 'cancelled' },
+    ...(ctx ? { _context: ctx } : {}),
+  });
+  return result.count;
+}
+
+async function handleCreateMissing(
+  prismaAny: any,
+  model: string,
+  toCreateDates: Date[],
+  template: TemplateSnapshot,
+  newVersionId: string,
+  dryRun: boolean,
+  ctx?: GeneratorContext
+): Promise<number> {
+  if (toCreateDates.length === 0) return 0;
+  if (dryRun) return toCreateDates.length;
+
+  const payloads = toCreateDates.map((start) =>
+    buildOccurrenceCreatePayload(template, start, newVersionId)
+  );
+
+  const result = await prismaAny[model].createMany({
+    data: payloads,
+    skipDuplicates: true,
+    ...(ctx ? { _context: ctx } : {}),
+  });
+  return result.count;
+}
+
+async function handleUpdateDrifting(
+  prismaAny: any,
+  model: string,
+  driftCandidates: any[],
+  template: TemplateSnapshot,
+  newVersionId: string,
+  dryRun: boolean,
+  ctx?: GeneratorContext
+): Promise<number> {
+  const needsUpdate: string[] = [];
+  for (const row of driftCandidates) {
+    if (
+      row.name !== (template.name ?? 'Untitled') ||
+      row.duration !== template.duration ||
+      row.category !== template.category
+    ) {
+      needsUpdate.push(row.id);
+    }
+  }
+
+  if (needsUpdate.length === 0) return 0;
+  if (dryRun) return needsUpdate.length;
+
+  for (const id of needsUpdate) {
+    await prismaAny[model].update({
+      where: { id },
+      data: {
+        name: template.name ?? 'Untitled',
+        duration: template.duration,
+        category: template.category,
+        generatedFromTemplateId: newVersionId,
+      },
+      ...(ctx ? { _context: ctx } : {}),
+    });
+  }
+  return needsUpdate.length;
+}
 
 export async function reconcileFutureOccurrences(
   prisma: PrismaClient,
@@ -293,72 +374,15 @@ export async function reconcileFutureOccurrences(
 
     // 1. Cancel obsolete dates (present in existing but not in desired)
     const toCancel = existing.filter((row) => !desiredByTime.has(row.startDateTime.toISOString()));
-
-    if (toCancel.length > 0 && !dryRun) {
-      const ids = toCancel.map((r) => r.id);
-      const result = await prismaAny[model].updateMany({
-        where: { id: { in: ids } },
-        data: { state: 'Cancelled', detachReason: 'cancelled' },
-        ...(ctx ? { _context: ctx } : {}),
-      });
-      cancelled = result.count;
-    } else {
-      cancelled = toCancel.length;
-    }
+    cancelled = await handleCancelObsolete(prismaAny, model, toCancel, dryRun, ctx);
 
     // 2. Create missing dates
-    const toCreateDates: Date[] = desiredDates.filter(
-      (d) => !existingByTime.has(d.toISOString())
-    );
+    const toCreateDates: Date[] = desiredDates.filter((d) => !existingByTime.has(d.toISOString()));
+    created = await handleCreateMissing(prismaAny, model, toCreateDates, template, newVersionId, dryRun, ctx);
 
-    if (toCreateDates.length > 0 && !dryRun) {
-      const payloads = toCreateDates.map((start) =>
-        buildOccurrenceCreatePayload(template, start, newVersionId)
-      );
-
-      const result = await prismaAny[model].createMany({
-        data: payloads,
-        skipDuplicates: true,
-        ...(ctx ? { _context: ctx } : {}),
-      });
-      created = result.count;
-    } else {
-      created = toCreateDates.length;
-    }
-
-    // 3. Update data drift on existing rows (name / duration / category changed on template)
-    // Only for rows that are still desired.
+    // 3. Update data drift on existing rows
     const driftCandidates = existing.filter((row) => desiredByTime.has(row.startDateTime.toISOString()));
-
-    const needsUpdate: string[] = [];
-    for (const row of driftCandidates) {
-      if (
-        row.name !== (template.name ?? 'Untitled') ||
-        row.duration !== template.duration ||
-        row.category !== template.category
-      ) {
-        needsUpdate.push(row.id);
-      }
-    }
-
-    if (needsUpdate.length > 0 && !dryRun) {
-      // We update one by one because different models; acceptable for small sets
-      for (const id of needsUpdate) {
-        await prismaAny[model].update({
-          where: { id },
-          data: {
-            name: template.name ?? 'Untitled',
-            duration: template.duration,
-            category: template.category,
-            generatedFromTemplateId: newVersionId,
-          },
-          ...(ctx ? { _context: ctx } : {}),
-        });
-      }
-      updated = needsUpdate.length;
-    } else {
-      updated = needsUpdate.length;
-    }
+    updated = await handleUpdateDrifting(prismaAny, model, driftCandidates, template, newVersionId, dryRun, ctx);
 
     // Count detached rows we saw (for reporting)
     const allFutureForTemplate: any[] = await prismaAny[model].findMany({

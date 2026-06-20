@@ -14,7 +14,7 @@ export interface EditActivityModalProps {
 export default function EditActivityModal({ onClose, activityId }: EditActivityModalProps) {
   const { id: paramId } = useParams() as { id: string };
   const resolvedId = activityId ?? paramId;
-  const [activity, setActivity] = useState<any | null>(null);
+  const [activity, setActivity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,8 +89,17 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
   }
 
   return (
-    <div className="modal-overlay" style={{ zIndex: 1050, alignItems: 'flex-start', paddingTop: '5vh' }} onClick={onClose}>
-      <div style={{ position: 'relative', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+    <div 
+      className="modal-overlay" 
+      style={{ zIndex: 1050, alignItems: 'flex-start', paddingTop: '5vh' }} 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div style={{ position: 'relative', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto' }}>
         <ActivityForm
           initialData={activity}
           onActivityCreated={() => {

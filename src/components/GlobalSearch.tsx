@@ -49,8 +49,8 @@ export default function GlobalSearch() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    globalThis.addEventListener('keydown', handleKeyDown);
+    return () => globalThis.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
   useEffect(() => {
@@ -62,10 +62,7 @@ export default function GlobalSearch() {
     }
   }, [isOpen]);
 
-  // Reset selected index when query changes
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
+
 
   const handleSelect = (path: string) => {
     setIsOpen(false);
@@ -90,10 +87,15 @@ export default function GlobalSearch() {
   if (!isOpen) return null;
 
   return (
-    <div className="global-search-overlay" onClick={() => setIsOpen(false)}>
-      <div 
-        className="global-search-modal" 
-        onClick={(e) => e.stopPropagation()}
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+    <div 
+      className="global-search-overlay" 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setIsOpen(false);
+      }}
+    >
+      <div
+        className="global-search-modal"
       >
         <div className="global-search-input-wrapper">
           <input
@@ -102,7 +104,10 @@ export default function GlobalSearch() {
             className="global-search-input"
             placeholder="Filter navigator..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
             onKeyDown={handleModalKeyDown}
             autoComplete="off"
             spellCheck="false"
@@ -111,6 +116,7 @@ export default function GlobalSearch() {
         <div className="global-search-results">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, index) => (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
               <div
                 key={option.path}
                 className={`global-search-item ${index === selectedIndex ? 'selected' : ''}`}

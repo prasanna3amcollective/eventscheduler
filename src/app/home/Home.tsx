@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import HeaderPanel from '@/components/HeaderPanel';
 import AboutUs from '@/components/AboutUs';
@@ -39,10 +39,10 @@ function HomeContent() {
   useEffect(() => {
     if (isLoggedIn) {
       // If user is logged in, ensure we don't default to testimonials
-      const hash = window.location.hash.replace('#', '') || 'participate';
+      const hash = globalThis.location.hash.replace('#', '') || 'participate';
       if (hash === 'testimonials') {
         setActiveSection('participate');
-        window.history.replaceState(null, '', '/home');
+        globalThis.history.replaceState(null, '', '/home');
         return;
       }
     }
@@ -51,7 +51,7 @@ function HomeContent() {
     } else if (pathname === '/home/testimonials') {
       setActiveSection('testimonials');
     } else {
-      const hash = window.location.hash.replace('#', '') || 'participate';
+      const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
     }
   }, [pathname, isLoggedIn]);
@@ -138,7 +138,7 @@ function HomeContent() {
           }
         }
       } catch (e) {
-        console.error("Session check failed");
+        console.error("Session check failed: " + e);
       } finally {
         setIsLoadingSession(false);
       }
@@ -150,12 +150,12 @@ function HomeContent() {
 
   const handleTransitionMidpoint = () => {
     setActiveSection('about-us');
-    window.history.pushState(null, '', '/home/aboutus');
+    globalThis.history.pushState(null, '', '/home/aboutus');
   };
 
   const handleBackwardMidpoint = () => {
     setActiveSection('participate');
-    window.history.pushState(null, '', '/home');
+    globalThis.history.pushState(null, '', '/home');
   };
 
   const handleLoginSuccess = async (user: any) => {
@@ -169,7 +169,9 @@ function HomeContent() {
         setUserRoles(data.roles || []);
         setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      console.error("Failed to fetch user roles:", e);
+    }
     setPendingEventId(null);
   };
 
@@ -196,7 +198,8 @@ function HomeContent() {
       } else {
         setSigninError(data.error || 'Login failed');
       }
-    } catch (_err) {
+    } catch (err) {
+      console.error("Login exception:", err);
       setSigninError('An unexpected error occurred');
     } finally {
       setSigninSubmitting(false);
@@ -295,9 +298,9 @@ function HomeContent() {
             startDateTime: data.startDateTime,
             endDateTime: data.endDateTime,
             duration: data.duration,
-            leader: data.leaders || (data as any).leader || [],
-            guide: data.guides || (data as any).guide || [],
-            observer: data.observers || (data as any).observer || [],
+            leader: data.leaders || data.leader || [],
+            guide: data.guides || data.guide || [],
+            observer: data.observers || data.observer || [],
             participants: data.participants,
             participantCount: data.participantCount,
             category: data.category,
@@ -428,9 +431,9 @@ function HomeContent() {
             </section>
           )}
 
-          {activeSection === 'testimonials' && !isLoggedIn && (
+          {activeSection === 'testimonials' && (
             <div style={{ width: '100%', minHeight: '100vh' }}>
-              <Testimonials onBackClick={() => { window.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
+              <Testimonials onBackClick={() => { globalThis.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
             </div>
           )}
 
@@ -470,15 +473,19 @@ function HomeContent() {
           {/* Register popup modal */}
           {
             showRegisterModal && (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
               <div
                 className="modal-overlay"
-                onClick={() => setShowRegisterModal(false)}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setShowRegisterModal(false);
+                  }
+                }}
                 style={{ zIndex: 2000 }}
               >
                 <div
                   className="modal-content register-modal"
                   style={{ maxWidth: '560px', padding: '32px' }}
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
                     <button
@@ -530,6 +537,7 @@ function HomeContent() {
                     <ChevronDown size={14} />
                   </button>
                   {showProfileDropdown && (
+                    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
                     <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
                       <button
                         className="dropdown-item"
@@ -638,7 +646,7 @@ function HomeContent() {
           isOpen={isResponsibilityDetailOpen}
           onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
           onStateChange={(id, newState) => {
-            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
+            setResponsibilityDetail((prev: any) => prev?.id === id ? { ...prev, state: newState } : prev);
           }}
         />
 

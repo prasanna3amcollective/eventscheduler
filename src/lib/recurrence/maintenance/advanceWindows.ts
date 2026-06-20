@@ -47,6 +47,100 @@ export interface MaintenanceResult {
  * - The HTTP cron endpoint (with a real system-cron security context)
  * - The standalone CLI script (same)
  */
+type TemplateToProcess = {
+  id: string;
+  name: string | null;
+  needsHorizon: boolean;
+  needsReconcile: boolean;
+};
+
+async function getTemplatesToProcess(
+  prisma: PrismaClient,
+  asOf: Date,
+  horizonDays: number,
+  gapThresholdDays: number
+): Promise<TemplateToProcess[]> {
+  const horizonCutoff = new Date(asOf.getTime() + (horizonDays - 5) * 24 * 60 * 60 * 1000);
+  const gapCutoff = new Date(asOf.getTime() - gapThresholdDays * 24 * 60 * 60 * 1000);
+
+  const [horizonCandidates, staleCandidates] = await Promise.all([
+    prisma.recurrenceTemplate.findMany({
+      where: {
+        status: 'active',
+        OR: [{ generatedUntil: null }, { generatedUntil: { lt: horizonCutoff } }],
+      },
+      select: { id: true, name: true },
+      orderBy: { sys_created_at: 'asc' },
+    }),
+    prisma.recurrenceTemplate.findMany({
+      where: {
+        status: 'active',
+        OR: [{ lastGeneratedAt: null }, { lastGeneratedAt: { lt: gapCutoff } }],
+      },
+      select: { id: true, name: true },
+      orderBy: { sys_created_at: 'asc' },
+    }),
+  ]);
+
+  const templateMap = new Map<string, TemplateToProcess>();
+
+  for (const t of horizonCandidates) {
+    templateMap.set(t.id, { id: t.id, name: t.name, needsHorizon: true, needsReconcile: false });
+  }
+
+  for (const t of staleCandidates) {
+    if (templateMap.has(t.id)) {
+      templateMap.get(t.id)!.needsReconcile = true;
+    } else {
+      templateMap.set(t.id, { id: t.id, name: t.name, needsHorizon: false, needsReconcile: true });
+    }
+  }
+
+  return Array.from(templateMap.values());
+}
+
+async function processTemplate(
+  prisma: PrismaClient,
+  tpl: TemplateToProcess,
+  options: { horizonDays: number; asOf: Date; context: GeneratorContext },
+  result: MaintenanceResult
+): Promise<TemplateActionDetail> {
+  const detail: TemplateActionDetail = {
+    templateId: tpl.id,
+    templateName: tpl.name,
+    action: 'skipped',
+  };
+
+  try {
+    if (tpl.needsHorizon) {
+      const matRes = await materializeTemplateWindow(prisma, tpl.id, options);
+      detail.action = tpl.needsReconcile ? 'both' : 'horizon';
+      detail.materializeResult = matRes;
+      result.horizonAdvanced += 1;
+      result.totalCreated += matRes.created;
+      console.log(`[Maintenance] [Horizon] ${tpl.name || tpl.id} → created=${matRes.created}, skipped=${matRes.skipped}, until=${matRes.newGeneratedUntil}`);
+    }
+
+    if (tpl.needsReconcile) {
+      const recRes = await reconcileFutureOccurrences(prisma, tpl.id, options);
+      if (detail.action === 'horizon') detail.action = 'both';
+      else if (detail.action === 'skipped') detail.action = 'reconcile';
+      
+      detail.reconcileResult = recRes;
+      result.gapsClosed += 1;
+      result.totalReconciled += recRes.created + recRes.updated + recRes.cancelled;
+      console.log(`[Maintenance] [Reconcile] ${tpl.name || tpl.id} → created=${recRes.created}, updated=${recRes.updated}, cancelled=${recRes.cancelled}`);
+    }
+  } catch (err: any) {
+    const msg = err?.message ?? String(err);
+    detail.error = msg;
+    result.errors.push(`${tpl.id}: ${msg}`);
+    console.error(`[Maintenance] Error processing ${tpl.name || tpl.id}:`, msg);
+  }
+
+  return detail;
+}
+
 export async function runDailyMaterializationMaintenance(
   prisma: PrismaClient,
   context: GeneratorContext,
@@ -71,136 +165,17 @@ export async function runDailyMaterializationMaintenance(
 
   console.log(`[Maintenance] Starting daily run — asOf=${result.asOf}, horizon=${horizonDays}d, gapThreshold=${gapThresholdDays}d`);
 
-  // ------------------------------------------------------------------
-  // 1. Find templates that need horizon advancement
-  // ------------------------------------------------------------------
-  const horizonCutoff = new Date(asOf.getTime() + (horizonDays - 5) * 24 * 60 * 60 * 1000);
-
-  const horizonCandidates = await prisma.recurrenceTemplate.findMany({
-    where: {
-      status: 'active',
-      OR: [
-        { generatedUntil: null },
-        { generatedUntil: { lt: horizonCutoff } },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: { sys_created_at: 'asc' },
-  });
-
-  // ------------------------------------------------------------------
-  // 2. Find templates that are very stale (need gap closing / reconciliation)
-  // ------------------------------------------------------------------
-  const gapCutoff = new Date(asOf.getTime() - gapThresholdDays * 24 * 60 * 60 * 1000);
-
-  const staleCandidates = await prisma.recurrenceTemplate.findMany({
-    where: {
-      status: 'active',
-      OR: [
-        { lastGeneratedAt: null },
-        { lastGeneratedAt: { lt: gapCutoff } },
-      ],
-    },
-    select: {
-      id: true,
-      name: true,
-    },
-    orderBy: { sys_created_at: 'asc' },
-  });
-
-  // Combine and dedupe
-  const templateMap = new Map<string, { id: string; name: string | null; needsHorizon: boolean; needsReconcile: boolean }>();
-
-  for (const t of horizonCandidates) {
-    templateMap.set(t.id, {
-      id: t.id,
-      name: t.name,
-      needsHorizon: true,
-      needsReconcile: false,
-    });
-  }
-
-  for (const t of staleCandidates) {
-    if (templateMap.has(t.id)) {
-      templateMap.get(t.id)!.needsReconcile = true;
-    } else {
-      templateMap.set(t.id, {
-        id: t.id,
-        name: t.name,
-        needsHorizon: false,
-        needsReconcile: true,
-      });
-    }
-  }
-
-  const allTemplates = Array.from(templateMap.values());
+  const allTemplates = await getTemplatesToProcess(prisma, asOf, horizonDays, gapThresholdDays);
   result.templatesProcessed = allTemplates.length;
 
   console.log(`[Maintenance] Found ${allTemplates.length} template(s) requiring work`);
 
-  // ------------------------------------------------------------------
-  // 3. Process each template
-  // ------------------------------------------------------------------
   for (const tpl of allTemplates) {
-    const detail: TemplateActionDetail = {
-      templateId: tpl.id,
-      templateName: tpl.name,
-      action: 'skipped',
-    };
-
-    try {
-      if (tpl.needsHorizon) {
-        const matRes = await materializeTemplateWindow(prisma, tpl.id, {
-          horizonDays,
-          asOf,
-          context,
-        });
-
-        detail.action = tpl.needsReconcile ? 'both' : 'horizon';
-        detail.materializeResult = matRes;
-
-        result.horizonAdvanced += 1;
-        result.totalCreated += matRes.created;
-
-        console.log(
-          `[Maintenance] [Horizon] ${tpl.name || tpl.id} → created=${matRes.created}, skipped=${matRes.skipped}, until=${matRes.newGeneratedUntil}`
-        );
-      }
-
-      if (tpl.needsReconcile) {
-        const recRes = await reconcileFutureOccurrences(prisma, tpl.id, {
-          asOf,
-          context,
-        });
-
-        if (detail.action === 'horizon') detail.action = 'both';
-        else if (detail.action === 'skipped') detail.action = 'reconcile';
-
-        detail.reconcileResult = recRes;
-
-        result.gapsClosed += 1;
-        result.totalReconciled += recRes.created + recRes.updated + recRes.cancelled;
-
-        console.log(
-          `[Maintenance] [Reconcile] ${tpl.name || tpl.id} → created=${recRes.created}, updated=${recRes.updated}, cancelled=${recRes.cancelled}`
-        );
-      }
-    } catch (err: any) {
-      const msg = err?.message ?? String(err);
-      detail.error = msg;
-      result.errors.push(`${tpl.id}: ${msg}`);
-      console.error(`[Maintenance] Error processing ${tpl.name || tpl.id}:`, msg);
-    }
-
+    const detail = await processTemplate(prisma, tpl, { horizonDays, asOf, context }, result);
     result.details.push(detail);
   }
 
-  console.log(
-    `[Maintenance] Completed. horizonAdvanced=${result.horizonAdvanced}, gapsClosed=${result.gapsClosed}, totalCreated=${result.totalCreated}, errors=${result.errors.length}`
-  );
+  console.log(`[Maintenance] Completed. horizonAdvanced=${result.horizonAdvanced}, gapsClosed=${result.gapsClosed}, totalCreated=${result.totalCreated}, errors=${result.errors.length}`);
 
   return result;
 }
