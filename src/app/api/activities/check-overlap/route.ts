@@ -8,12 +8,21 @@ import { generateOccurrenceDates } from '@/lib/recurrence';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { startDateTime, endDateTime, isRecurring, recurrenceRule, duration } = checkOverlapSchema.parse(body);
+    const { startDateTime, endDateTime, isRecurring, recurrenceRule, duration, excludeActivityId, recurrenceTemplateId } = checkOverlapSchema.parse(body);
 
     const newStart = new Date(startDateTime);
     const newEnd = new Date(endDateTime);
 
-    const dbActivities = await prisma.activity.findMany();
+    const dbActivities = await prisma.activity.findMany({
+      where: {
+        detachReason: { not: 'cancelled' },
+        state: { not: 'Cancelled' },
+        // Exclude the activity being edited so it doesn't overlap with itself
+        ...(excludeActivityId ? { id: { not: excludeActivityId } } : {}),
+        // Exclude sibling occurrences of the same recurring series
+        ...(recurrenceTemplateId ? { recurrenceTemplateId: { not: recurrenceTemplateId } } : {}),
+      }
+    });
     const overlaps = [];
 
     let newInstances: { start: Date, end: Date }[] = [];

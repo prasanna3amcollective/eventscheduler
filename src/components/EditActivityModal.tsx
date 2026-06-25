@@ -90,9 +90,9 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-    <div 
-      className="modal-overlay" 
-      style={{ zIndex: 1050, alignItems: 'flex-start', paddingTop: '5vh' }} 
+    <div
+      className="modal-overlay"
+      style={{ zIndex: 1050, alignItems: 'flex-start', paddingTop: '5vh' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -105,7 +105,7 @@ export default function EditActivityModal({ onClose, activityId }: EditActivityM
           onActivityCreated={() => {
             onClose();
             // Option to reload to show changes in the parent component
-            window.location.reload();
+            globalThis.location.reload();
           }}
           onCancel={onClose}
         />

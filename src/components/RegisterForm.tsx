@@ -122,7 +122,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
         if (typeof data === 'object' && data !== null && typeof data.token === 'string') {
           setMcaptchaToken(data.token);
         }
-      } catch {}
+      } catch { }
     };
 
     const container = document.getElementById('mcaptcha__widget-container') as HTMLDivElement | null;
@@ -148,7 +148,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
       container.appendChild(iframe);
     };
 
-    window.addEventListener('message', messageHandler);
+    globalThis.addEventListener('message', messageHandler);
     initWidget();
 
     if (!scriptLoaded) {
@@ -156,7 +156,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
     }
 
     return () => {
-      window.removeEventListener('message', messageHandler);
+      globalThis.removeEventListener('message', messageHandler);
     };
   }, []);
 
@@ -266,7 +266,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
     });
   };
 
-    return (
+  return (
     <form className="activity-form" onSubmit={handleSubmit}>
       {!hideTitle && (
         <div className="form-header">

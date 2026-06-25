@@ -44,7 +44,7 @@ export default function Home_mobile() {
     } else if (pathname === '/home/testimonials') {
       setActiveSection('testimonials');
     } else {
-      const hash = window.location.hash.replace('#', '') || 'participate';
+      const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
     }
   }, [pathname]);
@@ -155,12 +155,12 @@ export default function Home_mobile() {
 
   const handleTransitionMidpoint = () => {
     setActiveSection('about-us');
-    window.history.pushState(null, '', '/home/aboutus');
+    globalThis.history.pushState(null, '', '/home/aboutus');
   };
 
   const handleBackwardMidpoint = () => {
     setActiveSection('participate');
-    window.history.pushState(null, '', '/home');
+    globalThis.history.pushState(null, '', '/home');
   };
 
   const handleLoginSuccess = async (user: any) => {
@@ -374,7 +374,7 @@ export default function Home_mobile() {
 
           {activeSection === 'testimonials' && (
             <div style={{ width: '100%', minHeight: '100vh' }}>
-              <Testimonials onBackClick={() => { window.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
+              <Testimonials onBackClick={() => { globalThis.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
             </div>
           )}
 

@@ -55,9 +55,9 @@ function StaffMiniList({
     names,
     onUpdate
 }: {
-    label: string,
-    names: string[],
-    onUpdate: (names: string[]) => void
+    readonly label: string,
+    readonly names: readonly string[],
+    readonly onUpdate: (names: readonly string[]) => void
 }) {
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [inputValue, setInputValue] = useState('');
@@ -129,7 +129,7 @@ export default function ManageActivity() {
     const [activity, setActivity] = useState<Activity | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [closingActivity, setClosingActivity] = useState(false);
     const [isStaffOpen, setIsStaffOpen] = useState(false);
@@ -152,11 +152,11 @@ export default function ManageActivity() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const userRes = await secureFetch('/api/auth/me');
-                if (userRes.ok) {
-                    const userData = await userRes.json();
-                    setCurrentUser(userData.user);
-                }
+                // const userRes = await secureFetch('/api/auth/me');
+                // if (userRes.ok) {
+                //     const userData = await userRes.json();
+
+                // }
 
                 const activityRes = await secureFetch(`/api/activities/${activityId}`);
                 if (activityRes.ok) {
@@ -321,7 +321,7 @@ export default function ManageActivity() {
         }
     };
 
-    const handleUpdateStaff = async (type: 'leader' | 'guide' | 'observer', names: string[]) => {
+    const handleUpdateStaff = async (type: 'leader' | 'guide' | 'observer', names: readonly string[]) => {
         if (!activity) return;
 
         const payload = {

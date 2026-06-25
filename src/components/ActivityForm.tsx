@@ -382,6 +382,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             duration: differenceInMinutes(end, start),
             isRecurring: formData.isRecurring,
             recurrenceRule: rruleStr,
+            excludeActivityId: isEditing ? initialData.id : undefined,
+            recurrenceTemplateId: formData.recurrenceTemplateId ?? undefined,
           }),
         });
         if (!res.ok) return;
@@ -389,12 +391,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         const data = await res.json();
         if (!data.overlap) return;
 
-        const otherActivities = isEditing
-          ? data.activities.filter((e: ActivityData) => e.id !== initialData.id)
-          : data.activities;
-
-        if (otherActivities.length > 0) {
-          const names = (otherActivities as ActivityData[]).map((e) => e.name).join(', ');
+        if (data.activities.length > 0) {
+          const names = (data.activities as ActivityData[]).map((e) => e.name).join(', ');
           setOverlapWarning(`Warning: This schedule overlaps with: ${names}`);
         }
       } catch (e) {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { addWeeks } from 'date-fns';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 import { startOfDay as startOfDayFn } from 'date-fns';
@@ -104,10 +105,10 @@ export async function POST(request: Request) {
           ...(securityContext ? { _context: securityContext } : {}),
         });
 
-        // Use a fixed horizon of 45 days for materialization, matching the cron job
+        // Use horizon based on recurrenceWeeks if provided, otherwise default to 45 days
         await materializeTemplateWindow(prisma, tpl.id, {
           asOf: recurrenceStart ? new Date(recurrenceStart) : new Date(startDateTime),
-          horizonDays: 45,
+          horizonDays: recurrenceWeeks ? recurrenceWeeks * 7 : 45,
           context: securityContext,
         });
 
@@ -140,9 +141,10 @@ export async function POST(request: Request) {
           }
         }
 
-        const firstChild = children[0];
+        // Return all materialized child activities for the new recurring series
         return NextResponse.json({
-          id: firstChild ? firstChild.id : tpl.id,
+          activities: children.map((c) => ({ id: c.id })),
+          templateId: tpl.id,
           name,
           startDateTime,
           endDateTime: endDateTime,

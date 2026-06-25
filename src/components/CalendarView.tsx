@@ -5,7 +5,7 @@ import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsPro
 import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { type Holiday, getHolidays } from '@/lib/holidays';
-import { Umbrella, CalendarFill as CalendarIcon, ChevronLeft, ChevronRight, PlusCircle, Eye, EyeSlash, CheckCircle } from '@/components/Icons';
+import { Umbrella, CalendarFill as ChevronLeft, ChevronRight, Eye, EyeSlash } from '@/components/Icons';
 import EmptyState from './EmptyState';
 
 // ---------------------------------------------------------------------------
@@ -292,8 +292,8 @@ function CustomAgenda({ activities, onSelectActivity, currentUser }: CustomAgend
           {paginatedActivities.length === 0 ? (
             <tr>
               <td colSpan={6}>
-                  <EmptyState message="No upcoming activities found within the next 6 months" />
-                </td>
+                <EmptyState message="No upcoming activities found within the next 6 months" />
+              </td>
             </tr>
           ) : (
             paginatedActivities.map((activity) => {
@@ -302,17 +302,10 @@ function CustomAgenda({ activities, onSelectActivity, currentUser }: CustomAgend
                 <tr
                   key={activity.id}
                   className="agenda-row clickable-row"
-                  role="button"
-                  tabIndex={0}
                   onClick={() => onSelectActivity(activity)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSelectActivity(activity);
-                    }
-                  }}
-                  aria-label={`${activity.title} from ${format(activity.start, 'hh:mm aa')} to ${format(activity.end, 'hh:mm aa')}`}
                   style={{
+                    display: 'table-row',
+                    width: '100%',
                     background: 'var(--surface-color)',
                     borderRadius: '8px',
                     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
@@ -320,17 +313,20 @@ function CustomAgenda({ activities, onSelectActivity, currentUser }: CustomAgend
                     transition: 'transform 0.2s, box-shadow 0.2s',
                   }}
                 >
-                  <td style={{ padding: '8px', borderRadius: '8px' }}>
+                  <td style={{ padding: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {isRegistered && (
-                        <span style={{
-                          display: 'inline-block',
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          backgroundColor: '#4CE819',
-                          flexShrink: 0
-                        }} title="Registered" />
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: '#4CE819',
+                            flexShrink: 0,
+                          }}
+                          title="Registered"
+                        />
                       )}
                       <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
                         {activity.title}
@@ -379,22 +375,26 @@ interface CalendarViewProps {
  * and handles activity selection, slot creation, and navigation.
  */
 export default function CalendarView({
-   refreshTrigger,
-   onSelectActivity,
-   onSelectSlot,
-   onCreateActivity,
-   onOwnResponsibility,
-   onSelectHoliday,
-   userRoles = [],
-   userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
-   currentUser,
- }: CalendarViewProps) {
+  refreshTrigger,
+  onSelectActivity,
+  onSelectSlot,
+  onCreateActivity,
+  onOwnResponsibility,
+  onSelectHoliday,
+  userRoles = [],
+  userPermissions = { canCreateActivity: false, canCreateResponsibility: false },
+  currentUser,
+}: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showResponsibilities, setShowResponsibilities] = useState<boolean>(true);
   const [view, setView] = useState<View>(Views.MONTH);
   const [date, setDate] = useState(() => new Date());
+  // Toggle responsibility visibility handler (extracted to reduce nesting)
+  const handleToggleResponsibilities = useCallback(() => {
+    setShowResponsibilities((prev) => !prev);
+  }, []);
 
   // Fetch activities and responsibilities together
   useEffect(() => {
@@ -531,7 +531,6 @@ export default function CalendarView({
         className: 'rbc-responsibility',
       };
     }
-    const isRegistered = currentUser && activity.participants?.some(p => p.userId === currentUser.id);
     return {
       style: {
         backgroundColor: 'var(--primary-color)',
@@ -587,22 +586,25 @@ export default function CalendarView({
   }, [currentUser]);
 
   // Custom components override for toolbar and event rendering
+  // Extracted Toolbar component to avoid deep nesting in useMemo
+  const Toolbar = (props: any) => (
+    <CustomToolbar
+      {...props}
+      onCreate={onCreateActivity}
+      onOwnResponsibility={onOwnResponsibility}
+      onToggleResponsibilities={handleToggleResponsibilities}
+      showResponsibilities={showResponsibilities}
+      canCreateActivity={canCreateActivity}
+      canCreateResponsibility={canCreateResponsibility}
+    />
+  );
+
   const components = useMemo(
     () => ({
-      toolbar: (props: any) => (
-        <CustomToolbar
-          {...props}
-          onCreate={onCreateActivity}
-          onOwnResponsibility={onOwnResponsibility}
-          onToggleResponsibilities={() => setShowResponsibilities((prev) => !prev)}
-          showResponsibilities={showResponsibilities}
-          canCreateActivity={canCreateActivity}
-          canCreateResponsibility={canCreateResponsibility}
-        />
-      ),
+      toolbar: Toolbar,
       event: CalendarEventRenderer,
     }),
-    [onCreateActivity, canCreateActivity, canCreateResponsibility, CalendarEventRenderer, onOwnResponsibility, showResponsibilities],
+    [onCreateActivity, onOwnResponsibility, handleToggleResponsibilities, showResponsibilities, canCreateActivity, canCreateResponsibility, CalendarEventRenderer]
   );
 
   const handleSelectEvent = useCallback((event: CalendarActivity) => {
@@ -618,24 +620,24 @@ export default function CalendarView({
     <div className="calendar-page-layout">
       <div className="calendar-main-column">
         <div className="calendar-wrapper">
-<Calendar<CalendarActivity>
-             localizer={localizer}
-             events={calendarActivities}
-             startAccessor="start"
-             endAccessor="end"
-             selectable
-             onSelectSlot={onSelectSlot}
-             onSelectEvent={handleSelectEvent}
-             view={view}
-             onView={onView}
-             date={date}
-             onNavigate={onNavigate}
-             onDrillDown={handleDrillDown}
-             views={views}
-             components={components}
-             dayPropGetter={dayPropGetter}
-             eventPropGetter={eventPropGetter}
-           />
+          <Calendar<CalendarActivity>
+            localizer={localizer}
+            events={calendarActivities}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            onSelectSlot={onSelectSlot}
+            onSelectEvent={handleSelectEvent}
+            view={view}
+            onView={onView}
+            date={date}
+            onNavigate={onNavigate}
+            onDrillDown={handleDrillDown}
+            views={views}
+            components={components}
+            dayPropGetter={dayPropGetter}
+            eventPropGetter={eventPropGetter}
+          />
         </div>
       </div>
 

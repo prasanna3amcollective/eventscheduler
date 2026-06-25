@@ -20,7 +20,7 @@ export function useMouseMove() {
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!ticking) {
-        window.requestAnimationFrame(() => {
+        globalThis.requestAnimationFrame(() => {
           // Normalize coordinates between -1 and 1
           const x = (e.clientX / window.innerWidth) * 2 - 1;
           const y = (e.clientY / window.innerHeight) * 2 - 1;
@@ -36,10 +36,10 @@ export function useMouseMove() {
       }
     };
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    globalThis.addEventListener("mousemove", handleMouseMove, { passive: true });
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      globalThis.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 

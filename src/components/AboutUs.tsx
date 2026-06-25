@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import './AboutUs.css';
 
-export default function AboutUs({ onBackClick }: { onBackClick?: () => void }) {
+export default function AboutUs({ onBackClick }: { readonly onBackClick?: () => void }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorRingRef = useRef<HTMLDivElement>(null);
 
@@ -99,8 +99,7 @@ export default function AboutUs({ onBackClick }: { onBackClick?: () => void }) {
         <div className="hero-content">
           <p className="hero-eyebrow">An Indie Cult House · 2026</p>
           <h1 className="hero-title">
-            3AM
-            <span>tea cigaz.</span>
+            3AM <span>tea cigaz.</span>
           </h1>
           <p className="hero-tagline">'The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.'</p>
         </div>

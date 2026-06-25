@@ -40,7 +40,7 @@ export default function ResponsibilityDetailModal({
 
   const handleCancel = async () => {
     if (!responsibility) return;
-    const confirm = window.confirm('Are you sure you want to cancel this responsibility?');
+    const confirm = globalThis.confirm('Are you sure you want to cancel this responsibility?');
     if (!confirm) return;
     try {
       const res = await secureFetch(`/api/responsibilities/${responsibility.id}`, {
@@ -91,7 +91,7 @@ export default function ResponsibilityDetailModal({
 
   const handleSyncCalendar = useCallback(() => {
     if (googleCalendarUrl) {
-      window.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');
+      globalThis.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');
     }
   }, [googleCalendarUrl]);
 

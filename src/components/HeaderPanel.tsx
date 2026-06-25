@@ -88,7 +88,7 @@ export default function HeaderPanel({
               className={`nav-link-btn ${activeSection === 'participate' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                window.history.pushState(null, '', window.location.pathname);
+                globalThis.history.pushState(null, '', globalThis.location.pathname);
                 setActiveSection('participate');
               }}
             >
@@ -102,7 +102,7 @@ export default function HeaderPanel({
                 if (onAboutUsClick) {
                   onAboutUsClick();
                 } else {
-                  window.history.pushState(null, '', '/home/aboutus');
+                  globalThis.history.pushState(null, '', '/home/aboutus');
                   setActiveSection('about-us');
                 }
               }}
@@ -114,7 +114,7 @@ export default function HeaderPanel({
               className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.hash = '#gallery';
+                globalThis.location.hash = '#gallery';
                 setActiveSection('gallery');
               }}
             >
@@ -125,7 +125,7 @@ export default function HeaderPanel({
               className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.hash = '#explore';
+                globalThis.location.hash = '#explore';
                 setActiveSection('explore');
               }}
             >
@@ -137,7 +137,7 @@ export default function HeaderPanel({
                 className={`nav-link-btn ${activeSection === 'testimonials' ? 'active text-black' : ''}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  window.location.hash = '#testimonials';
+                  globalThis.location.hash = '#testimonials';
                   setActiveSection('testimonials');
                 }}
               >
@@ -248,8 +248,7 @@ export default function HeaderPanel({
                           cursor: 'pointer',
                           flexShrink: 0,
                         }}
-                      />
-                      Remember me
+                      /> Remember me
                     </label>
 
                     <button

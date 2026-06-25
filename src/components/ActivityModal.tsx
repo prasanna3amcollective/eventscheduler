@@ -17,11 +17,11 @@ export default function ActivityModal({ isOpen, onClose, children, title }: Acti
     };
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleEsc);
+      globalThis.addEventListener('keydown', handleEsc);
     }
     return () => {
       document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleEsc);
+      globalThis.removeEventListener('keydown', handleEsc);
     };
   }, [isOpen, onClose]);
 

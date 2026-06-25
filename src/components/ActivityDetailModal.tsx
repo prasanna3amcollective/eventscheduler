@@ -285,7 +285,7 @@ export default function ActivityDetailModal({
   /** Opens the Google Calendar URL in a new tab */
   const handleSyncCalendar = useCallback(() => {
     if (googleCalendarUrl) {
-      window.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');
+      globalThis.open(googleCalendarUrl, '_blank', 'noopener,noreferrer');
     }
   }, [googleCalendarUrl]);
 

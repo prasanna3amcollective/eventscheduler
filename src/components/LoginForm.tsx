@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, type FormEvent } from 'react';
+import React, { useState, useCallback } from 'react';
 import { User, Lock, LogIn, AlertCircle } from '@/components/Icons';
 
 // ---------------------------------------------------------------------------
@@ -18,9 +18,9 @@ interface UserData {
 /** Props for the login form */
 interface LoginFormProps {
   /** Called with user data on successful login */
-  onLoginSuccess: (user: UserData) => void;
+  readonly onLoginSuccess: (user: UserData) => void;
   /** Called when the user clicks "register as a new user?" */
-  onSwitchToRegister: () => void;
+  readonly onSwitchToRegister: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -45,8 +45,8 @@ function ErrorBanner({
   error,
   onSwitchToRegister,
 }: {
-  error: string;
-  onSwitchToRegister: () => void;
+  readonly error: string;
+  readonly onSwitchToRegister: () => void;
 }) {
   const isUserNotFound = error === ERROR_MESSAGES.USER_NOT_FOUND;
 
@@ -86,7 +86,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
 
   /** Submits the credentials via POST and forwards the user data on success */
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
+    async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
       setIsSubmitting(true);
       setError(null);

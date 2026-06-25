@@ -1,17 +1,18 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { PlusCircle, User } from '@/components/Icons';
+import { User } from '@/components/Icons';
 import './MarqueeBanner_mobile.css';
 import { logoFiles } from '../lib/logos';
 
 interface MarqueeBannerMobileProps {
-  activeSection?: string;
-  setActiveSection?: (section: string) => void;
-  onLoginClick?: () => void;
-  onAboutUsClick?: () => void;
+  readonly activeSection?: string;
+  readonly setActiveSection?: (section: string) => void;
+  readonly onLoginClick?: () => void;
+  readonly onAboutUsClick?: () => void;
 }
 
-export default function MarqueeBanner_mobile({ activeSection, setActiveSection, onLoginClick, onAboutUsClick }: MarqueeBannerMobileProps) {
+export default function MarqueeBanner_mobile(props: Readonly<MarqueeBannerMobileProps>) {
+  const { activeSection, setActiveSection, onLoginClick, onAboutUsClick } = props;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState<string>('');
   useEffect(() => {
@@ -36,13 +37,13 @@ export default function MarqueeBanner_mobile({ activeSection, setActiveSection, 
     if (setActiveSection) {
       setActiveSection(id);
       if (id === 'participate') {
-        window.history.pushState(null, '', window.location.pathname);
+        globalThis.history.pushState(null, '', globalThis.location.pathname);
       } else if (id === 'about-us') {
-        window.history.pushState(null, '', '/home/aboutus');
+        globalThis.history.pushState(null, '', '/home/aboutus');
       } else if (id === 'testimonials') {
-        window.history.pushState(null, '', '/home/testimonials');
+        globalThis.history.pushState(null, '', '/home/testimonials');
       } else {
-        window.location.hash = id;
+        globalThis.location.hash = id;
       }
     }
     setIsMenuOpen(false);
