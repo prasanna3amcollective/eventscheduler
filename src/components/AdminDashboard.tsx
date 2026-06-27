@@ -6,6 +6,7 @@ import { secureFetch } from '@/lib/fetch';
 import {
   Shield, Users, Target, Plus, Check, Layers, UserPlus, Trash, Link, Key, Filter, ChevronLeft, ChevronRight, User
 } from '@/components/Icons';
+import Gallery from '@/components/Gallery';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -69,7 +70,7 @@ interface ParticipantRecord {
   sys_created_at: string;
 }
 
-type AdminTab = 'roles' | 'groups' | 'group-members' | 'acls' | 'participants';
+type AdminTab = 'roles' | 'groups' | 'group-members' | 'acls' | 'participants' | 'gallery';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -1261,6 +1262,8 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         return aclsTab;
       case 'participants':
         return participantsTab;
+      case 'gallery':
+        return <Gallery />;
       default:
         return null;
     }
@@ -1302,6 +1305,12 @@ export default function AdminDashboard({ currentUser }: { currentUser: User }) {
         >
           <Users size={16} /> Participants
         </button> */}
+        <button
+          className={activeTab === 'gallery' ? 'active' : ''}
+          onClick={() => handleTabChange('gallery')}
+        >
+          <User size={16} /> Gallery
+        </button>
       </div>
 
       <SuccessBanner message={success} />

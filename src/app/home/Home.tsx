@@ -19,7 +19,8 @@ import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
-import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown } from '@/components/Icons';
+import Gallery from '@/components/Gallery';
+import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown, Home as HomeIcon } from '@/components/Icons';
 import './Home.css';
 
 function HomeContent() {
@@ -33,7 +34,7 @@ function HomeContent() {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   const [activeSection, setActiveSection] = useState('participate');
-  const [activeTab, setActiveTab] = useState('calendar');
+  const [activeTab, setActiveTab] = useState('home');
 
   // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
@@ -114,28 +115,6 @@ function HomeContent() {
           setUserRoles(data.roles || []);
           setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
           setIsLoggedIn(true);
-
-          // Check if we need to open scheduler tab with edit activity
-          const tabParam = searchParams.get('tab');
-          const editEventId = sessionStorage.getItem('editEventId');
-
-          if (tabParam === 'scheduler' && editEventId) {
-            sessionStorage.removeItem('editEventId');
-            setActiveTab('scheduler');
-            // Set up the activity form to load the activity for editing
-            try {
-              const activityRes = await fetch(`/api/activities/${editEventId}`);
-              if (activityRes.ok) {
-                const activityData = await activityRes.json();
-                setSelectedActivity(activityData);
-                setIsModalOpen(true);
-              }
-            } catch (e) {
-              console.error('Failed to load activity for editing:', e);
-            }
-            // Clean up URL
-            router.replace('/');
-          }
         }
       } catch (e) {
         console.error("Session check failed: " + e);
@@ -144,7 +123,7 @@ function HomeContent() {
       }
     };
     checkSession();
-  }, [searchParams, router]);
+  }, []);
 
   const transitionRef = useRef<StaggeredTransitionRef>(null);
 
@@ -217,7 +196,6 @@ function HomeContent() {
     setRefreshTrigger(prev => prev + 1);
     setIsModalOpen(false);
     setSelectedActivity(null);
-    if (activeTab === 'scheduler') setActiveTab('calendar');
   };
 
   const handleSelectActivity = (activity: any) => {
@@ -257,25 +235,6 @@ function HomeContent() {
   const handleSelectHoliday = (holiday: { id: string; name: string; date: string }) => {
     setSelectedHoliday(holiday);
     setIsHolidayModalOpen(true);
-  };
-
-  const handleSelectSlot = (slotInfo: any) => {
-    if (!userPermissions.canCreateActivity) return;
-
-    // Check for double click or selection
-    if (slotInfo.action === 'select' || slotInfo.action === 'doubleClick') {
-      const newActivity = {
-        startDateTime: slotInfo.start,
-        endDateTime: slotInfo.end || new Date(slotInfo.start.getTime() + 60 * 60 * 1000),
-        name: '',
-        leader: [],
-        guide: [],
-        observer: [],
-        duration: 60
-      };
-      setSelectedActivity(newActivity);
-      setIsModalOpen(true);
-    }
   };
 
   const handleCarouselClick = (activity: any) => {
@@ -318,33 +277,6 @@ function HomeContent() {
     fetchDetail();
     return () => { cancelled = true; };
   }, [isDetailOpen, isLoggedIn, detailActivity?.id]);
-
-  const onCreateActivity = () => {
-    const newActivity = {
-      startDateTime: new Date(),
-      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-      name: '',
-      leader: [],
-      guide: [],
-      observer: [],
-      duration: 60
-    };
-    setSelectedActivity(newActivity);
-    setIsModalOpen(true);
-  };
-
-  const onOwnResponsibility = () => {
-    const newResponsibility = {
-      startDateTime: new Date(),
-      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-      name: '',
-      owner: currentUser?.name || '',
-      ownerId: currentUser?.id || '',
-      duration: 60
-    };
-    setSelectedResponsibility(newResponsibility);
-    setIsResponsibilityModalOpen(true);
-  };
 
   if (isLoadingSession) {
     return (
@@ -405,9 +337,8 @@ function HomeContent() {
           )}
 
           {activeSection === 'gallery' && (
-            <section id="gallery" style={{ textAlign: 'center', padding: '40px 0' }}>
-              <h2>Gallery</h2>
-              <p>Explore photos and videos from past activities.</p>
+            <section id="gallery">
+              <Gallery />
             </section>
           )}
 
@@ -437,25 +368,6 @@ function HomeContent() {
             </div>
           )}
 
-
-
-
-
-          {/* <div className="landing-content">
-          <div className="info-section">
-            <div className="info-card">
-              <Info size={32} color="var(--primary-color)" />
-              <h2>Explore Activities</h2>
-              <p>Welcome to the 3AM COLLECTIVE MOVEMENT . Browse upcoming workshops, sync with your calendar, and register for sessions.</p>
-              <ul className="feature-list">
-                <li>Click on any carousel item above to view details</li>
-                <li>Register to participate in upcoming activities</li>
-                <li>Manage your schedule with our interactive calendar</li>
-              </ul>
-            </div>
-          </div>
-        </div>
- */}
           <ActivityDetailModal
             activity={detailActivity}
             isOpen={isDetailOpen}
@@ -515,120 +427,76 @@ function HomeContent() {
 
   return (
     <>
-      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
       <div className="dashboard-layout fade-in">
-        {activeSection !== 'about-us' && (
-          <div className="dashboard-header-row">
-            <MarqueeBanner />
-            <header className="dashboard-header">
-              <div className="header-user">
-                <div className="user-menu-container">
-                  <button
-                    className="user-trigger"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowProfileDropdown(!showProfileDropdown);
-                    }}
-                  >
-                    <div className="user-avatar">
-                      <User size={20} />
-                    </div>
-
-                    <ChevronDown size={14} />
-                  </button>
-                  {showProfileDropdown && (
-                    // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-                    <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => {
-                          setShowProfileDropdown(false);
-                          setIsProfileOpen(true);
-                        }}
-                      >
-                        <span>{currentUser?.name}</span>
-                        <br />
-                        <br />
-                        Edit Profile
-                      </button>
-                    </div>
-                  )}
-                </div>
-                <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
-              </div>
-            </header>
-          </div>
-        )}
+        <MarqueeBanner />
 
         <nav className="nav-container">
-          <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
-            <CalendarDays size={18} /> Calendar View
-          </button>
-          {userRoles.includes('developer') && (
-            <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
-              <ShieldCheck size={18} /> Developer Panel
+          <div className="nav-left-spacer"></div>
+          <div className="nav-buttons">
+            <button className={`nav-link-btn ${activeTab === 'home' ? 'active text-black' : ''}`} onClick={() => setActiveTab('home')}>
+              <HomeIcon size={18} /> Home
             </button>
-          )}
+            <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
+              <CalendarDays size={18} /> Calendar View
+            </button>
+            {userRoles.includes('developer') && (
+              <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
+                <ShieldCheck size={18} /> Developer Panel
+              </button>
+            )}
+          </div>
+          <div className="nav-right">
+            <div className="user-menu-container">
+              <button
+                className="user-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileDropdown(!showProfileDropdown);
+                }}
+              >
+                <div className="user-avatar">
+                  <User size={20} />
+                </div>
+                <ChevronDown size={14} />
+              </button>
+              {showProfileDropdown && (
+                // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setIsProfileOpen(true);
+                    }}
+                  >
+                    <span>{currentUser?.name}</span>
+                    <br />
+                    <br />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
+            </div>
+            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
+          </div>
         </nav>
 
-        {activeSection === 'about-us' ? (
-          <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
-            <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
-          </div>
-        ) : (
-          <main className="app-container">
-            {activeTab === 'calendar' && (
-              <div className="content-section">
-                <CalendarView
-                  refreshTrigger={refreshTrigger}
-                  onSelectActivity={handleSelectActivity}
-                  onSelectSlot={handleSelectSlot}
-                  onCreateActivity={onCreateActivity}
-                  onOwnResponsibility={onOwnResponsibility}
-                  onSelectHoliday={handleSelectHoliday}
-                  userRoles={userRoles}
-                  userPermissions={userPermissions}
-                  currentUser={currentUser}
-                />
-              </div>
-            )}
-            {activeTab === 'admin' && (
-              <AdminDashboard currentUser={currentUser} />
-            )}
-          </main>
-        )}
-
-        <ActivityModal
-          isOpen={isModalOpen}
-          onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-          title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
-        >
-          {selectedActivity && (
-            <ActivityForm
-              initialData={selectedActivity}
-              onActivityCreated={handleActivityCreated}
-              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-            />
+        <main className="app-container">
+          {activeTab === 'home' && (
+            <section style={{ textAlign: 'left' }}>
+              <BannerSlideshow />
+              <ActivityCarousel
+                refreshTrigger={refreshTrigger}
+                onActivityClick={handleCarouselClick}
+                isLoggedIn={isLoggedIn}
+                headerRight={null}
+              />
+            </section>
           )}
-        </ActivityModal>
-
-        <ActivityModal
-          isOpen={isResponsibilityModalOpen}
-          onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-          title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
-        >
-          {selectedResponsibility && (
-            <ResponsibilityForm
-              initialData={selectedResponsibility}
-              onResponsibilityCreated={() => {
-                setRefreshTrigger(prev => prev + 1);
-                setIsResponsibilityModalOpen(false);
-                setSelectedResponsibility(null);
-              }}
-              onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-            />
+          {activeTab === 'admin' && (
+            <AdminDashboard currentUser={currentUser} />
           )}
-        </ActivityModal>
+        </main>
 
         <ActivityDetailModal
           activity={detailActivity}
@@ -639,21 +507,6 @@ function HomeContent() {
           userRoles={userRoles}
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
           onSwitchToRegister={() => { }}
-        />
-
-        <ResponsibilityDetailModal
-          responsibility={responsibilityDetail}
-          isOpen={isResponsibilityDetailOpen}
-          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
-          onStateChange={(id, newState) => {
-            setResponsibilityDetail((prev: any) => prev?.id === id ? { ...prev, state: newState } : prev);
-          }}
-        />
-
-        <HolidayDetailModal
-          holiday={selectedHoliday}
-          isOpen={isHolidayModalOpen}
-          onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
         />
 
         <ProfileModal

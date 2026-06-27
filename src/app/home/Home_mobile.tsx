@@ -17,10 +17,9 @@ import HolidayDetailModal from '@/components/HolidayDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner_mobile from '@/components/MarqueeBanner_mobile';
-import InstagramEmbed from '@/components/InstagramEmbed';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
-import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown } from '@/components/Icons';
+import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown, Home as HomeIcon } from '@/components/Icons';
 
 import './Home_mobile.css';
 
@@ -35,7 +34,7 @@ export default function Home_mobile() {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   const [activeSection, setActiveSection] = useState('participate');
-  const [activeTab, setActiveTab] = useState('calendar');
+  const [activeTab, setActiveTab] = useState('home');
 
   // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
@@ -119,28 +118,6 @@ export default function Home_mobile() {
           setUserRoles(data.roles || []);
           setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
           setIsLoggedIn(true);
-
-          // Check if we need to open scheduler tab with edit activity
-          const tabParam = searchParams.get('tab');
-          const editEventId = sessionStorage.getItem('editEventId');
-
-          if (tabParam === 'scheduler' && editEventId) {
-            sessionStorage.removeItem('editEventId');
-            setActiveTab('scheduler');
-            // Set up the activity form to load the activity for editing
-            try {
-              const activityRes = await fetch(`/api/activities/${editEventId}`);
-              if (activityRes.ok) {
-                const activityData = await activityRes.json();
-                setSelectedActivity(activityData);
-                setIsModalOpen(true);
-              }
-            } catch (e) {
-              console.error('Failed to load activity for editing:', e);
-            }
-            // Clean up URL
-            router.replace('/');
-          }
         }
       } catch (e) {
         console.error("Session check failed");
@@ -149,7 +126,7 @@ export default function Home_mobile() {
       }
     };
     checkSession();
-  }, [searchParams, router]);
+  }, []);
 
   const transitionRef = useRef<StaggeredTransitionRef>(null);
 
@@ -219,7 +196,6 @@ export default function Home_mobile() {
     setRefreshTrigger(prev => prev + 1);
     setIsModalOpen(false);
     setSelectedActivity(null);
-    if (activeTab === 'scheduler') setActiveTab('calendar');
   };
 
   const handleSelectActivity = (activity: any) => {
@@ -256,24 +232,6 @@ export default function Home_mobile() {
   const handleSelectHoliday = (holiday: { id: string; name: string; date: string }) => {
     setSelectedHoliday(holiday);
     setIsHolidayModalOpen(true);
-  };
-
-  const handleSelectSlot = (slotInfo: any) => {
-    if (!userPermissions.canCreateActivity) return;
-
-    if (slotInfo.action === 'select' || slotInfo.action === 'doubleClick') {
-      const newActivity = {
-        startDateTime: slotInfo.start,
-        endDateTime: slotInfo.end || new Date(slotInfo.start.getTime() + 60 * 60 * 1000),
-        name: '',
-        leader: [],
-        guide: [],
-        observer: [],
-        duration: 60
-      };
-      setSelectedActivity(newActivity);
-      setIsModalOpen(true);
-    }
   };
 
   const handleCarouselClick = (activity: any) => {
@@ -316,33 +274,6 @@ export default function Home_mobile() {
     fetchDetail();
     return () => { cancelled = true; };
   }, [isDetailOpen, isLoggedIn, detailActivity?.id]);
-
-  const onCreateActivity = () => {
-    const newActivity = {
-      startDateTime: new Date(),
-      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-      name: '',
-      leader: [],
-      guide: [],
-      observer: [],
-      duration: 60
-    };
-    setSelectedActivity(newActivity);
-    setIsModalOpen(true);
-  };
-
-  const onOwnResponsibility = () => {
-    const newResponsibility = {
-      startDateTime: new Date(),
-      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-      name: '',
-      owner: currentUser?.name || '',
-      ownerId: currentUser?.id || '',
-      duration: 60
-    };
-    setSelectedResponsibility(newResponsibility);
-    setIsResponsibilityModalOpen(true);
-  };
 
   if (isLoadingSession) {
     return (
@@ -488,17 +419,14 @@ export default function Home_mobile() {
 
   return (
     <>
-      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
       <div className="mobile-app-container dashboard-layout fade-in">
-        {activeSection !== 'about-us' && (
-          <MarqueeBanner_mobile
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            onAboutUsClick={() => transitionRef.current?.trigger()}
-          />
-        )}
+        <MarqueeBanner_mobile
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          onAboutUsClick={() => transitionRef.current?.trigger()}
+        />
 
-        <header className="dashboard-header" style={{ display: activeSection === 'about-us' ? 'none' : 'flex' }}>
+        <header className="dashboard-header" style={{ display: 'flex' }}>
           <div className="header-user">
             <div className="user-menu-container">
               <button
@@ -534,43 +462,32 @@ export default function Home_mobile() {
         </header >
 
         <nav className="nav-container">
-          <button className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`} onClick={() => setActiveTab('calendar')}>
+          <button className={`nav-link-btn ${activeTab === 'home' ? 'active text-black' : ''}`} onClick={() => setActiveTab('home')}>
+            <HomeIcon size={18} /> Home
+          </button>
+          <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
             <CalendarDays size={18} /> Calendar View
           </button>
           {userRoles.includes('developer') && (
-            <button className={`nav-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
+            <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
               <ShieldCheck size={18} /> Developer Panel
             </button>
           )}
         </nav>
 
-        {
-          activeSection === 'about-us' ? (
-            <div style={{ width: '100%', minHeight: '100vh', marginTop: '-60px' }}>
-              <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
-            </div>
-          ) : (
-            <main className="app-container">
-              {activeTab === 'calendar' && (
-                <div className="content-section">
-                  <CalendarView
-                    onSelectActivity={handleSelectActivity}
-                    onSelectSlot={handleSelectSlot}
-                    onCreateActivity={onCreateActivity}
-                    onOwnResponsibility={onOwnResponsibility}
-                    onSelectHoliday={handleSelectHoliday}
-                    userRoles={userRoles}
-                    userPermissions={userPermissions}
-                    currentUser={currentUser}
-                  />
-                </div>
-              )}
-              {activeTab === 'admin' && (
-                <AdminDashboard currentUser={currentUser} />
-              )}
-            </main>
-          )
-        }
+        <main className="app-container">
+          {activeTab === 'home' && (
+            <>
+              <BannerSlideshow_mobile />
+              <div style={{ marginTop: '24px', padding: '0 8px', paddingBottom: '60px' }}>
+                <ActivityCarousel_mobile refreshTrigger={refreshTrigger} />
+              </div>
+            </>
+          )}
+          {activeTab === 'admin' && (
+            <AdminDashboard currentUser={currentUser} />
+          )}
+        </main>
 
         <ActivityModal
           isOpen={isModalOpen}

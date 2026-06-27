@@ -495,14 +495,14 @@ export default function ResponsibilityForm({ onResponsibilityCreated, initialDat
           <div className="edit-choice-buttons flex gap-3">
             <button
               type="button"
-              className={`nav-tab flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'this' ? 'bg-primary text-white' : ''}`}
+              className={`nav-link-btn flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'this' ? 'active text-black bg-primary' : ''}`}
               onClick={() => setSaveMode('this')}
             >
               This occurrence only
             </button>
             <button
               type="button"
-              className={`nav-tab flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'all' ? 'bg-primary text-white' : ''}`}
+              className={`nav-link-btn flex-1 items-center justify-center px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white hover:bg-gray-100 transition-all ${saveMode === 'all' ? 'active text-black bg-primary' : ''}`}
               onClick={() => setSaveMode('all')}
             >
               All in series

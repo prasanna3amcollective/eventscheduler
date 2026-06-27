@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { AsyncLocalStorage } from 'async_hooks';
 import 'dotenv/config';
 
-const globalForPrisma = global as unknown as { prisma: any; userContextStorage: AsyncLocalStorage<any> };
+const globalForPrisma = globalThis as unknown as { prisma: any; userContextStorage: AsyncLocalStorage<any> };
 
 // AsyncLocalStorage gives us request-scoped context without polluting Prisma args
 export const userContextStorage = globalForPrisma.userContextStorage || new AsyncLocalStorage<{ id: string; roles: string[] }>();

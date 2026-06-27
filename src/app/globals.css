@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap');
 @import "react-big-calendar/lib/css/react-big-calendar.css";
 @import "tailwindcss";
 @source "../";
@@ -47,6 +47,7 @@
   --heading-font: 'Space Mono', monospace;
   --body-font: 'Space Grotesk', sans-serif;
   --mono-font: 'JetBrains Mono', monospace;
+  --handwriting-font: 'Caveat', cursive;
 }
 
 /* Light theme */
@@ -305,10 +306,11 @@ h4 {
 /* Tab Navigation */
 .nav-container {
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px 24px 24px;
-  /* extra bottom space for border */
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  min-width: 0;
+  padding: 24px 40px;
   overflow: visible;
   background: var(--surface-color);
   position: relative;
@@ -316,43 +318,22 @@ h4 {
   z-index: 50;
 }
 
-/* Rhombus border below nav container */
-.nav-container::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -20px;
-  height: 14px;
-  background: url('/shapes/rhombus.svg') repeat-x center;
-  background-size: contain;
-  z-index: 1;
+.nav-left-spacer {
+  flex: 1;
 }
 
-.nav-tab {
-  padding: 10px 24px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.nav-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
 }
 
-.nav-tab:hover {
-  background: var(--hover-color);
-  color: var(--text-primary);
-}
-
-.nav-tab.active {
-  background: var(--surface-color);
-  color: var(--primary-color);
-  box-shadow: var(--shadow-md);
+.nav-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
 }
 
 /* Main Layout */
@@ -1178,25 +1159,6 @@ input:not([type="checkbox"]):focus {
   box-shadow: 2px 2px 0 #000000;
 }
 
-/* Instagram grid layout */
-.instagram-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  justify-content: center;
-}
-
-.instagram-section {
-  flex: 1 1 calc(50% - 12px);
-  max-width: 500px;
-}
-
-@media (max-width: 768px) {
-  .instagram-section {
-    flex-basis: 100%;
-  }
-}
-
 /* Latest Posts grid */
 .latest-posts-section .post-card {
   flex: 1 1 calc(50% - 12px);
@@ -1788,72 +1750,7 @@ input:not([type="checkbox"]):focus {
   gap: 16px;
 }
 
-/* Dashboard Header Row — places marquee-banner and header controls side by side */
-.dashboard-header-row {
-  display: flex;
-  align-items: center;
-  padding: 0 40px 15px 40px;
-  background: var(--surface-color);
-  position: relative;
-}
-
-.dashboard-header-row::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 15px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 50' width='80' height='50'%3E%3Cpath d='M -40 25 Q -20 45, 0 25 Q 20 5, 40 25 T 80 25 T 120 25' fill='none' stroke='%23FFFFFF' stroke-width='6' /%3E%3Ccircle cx='20' cy='38' r='4' fill='%23FFFFFF' /%3E%3Ccircle cx='60' cy='12' r='4' fill='%23FFFFFF' /%3E%3C/svg%3E");
-  background-repeat: repeat-x;
-  /* Hardcoding the exact 24px calculated width (80 * 15/50) to prevent browser subpixel rounding gaps */
-  background-size: 24px 15px;
-  background-position: left bottom;
-  background-color: transparent;
-  z-index: 10;
-}
-
-.dashboard-header-row .marquee-banner {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 0;
-  text-align: center;
-  border-bottom: none;
-}
-
-.dashboard-header-row .banner-content {
-  font-size: 70px;
-  gap: 8px;
-  justify-content: center;
-}
-
-.dashboard-header-row .banner-content .center-fist {
-  width: 27px;
-  height: 27px;
-}
-
-/* Dashboard Header */
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 16px 0 16px 24px;
-  flex-shrink: 0;
-}
-
-.header-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--primary-color);
-}
-
-.header-brand h1 {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0;
-}
+/* Dashboard Header Row — now removed; MarqueeBanner is standalone above nav-container */
 
 .header-user {
   display: flex;
