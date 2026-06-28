@@ -78,21 +78,22 @@ export default function AboutUs({ onBackClick }: { readonly onBackClick?: () => 
       <div className="cursor-ring" ref={cursorRingRef}></div>
       
       <nav>
-        <a href="#hero" className="nav-logo" onClick={(e) => { e.preventDefault(); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }); }}>3AM ✦ COLLECTIVE</a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          {onBackClick && (
+            <button 
+              onClick={onBackClick}
+              className="z-[1001] p-3 bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/10 rounded-full text-white transition-all duration-300"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={24} />
+            </button>
+          )}
+          <a href="#hero" className="nav-logo" onClick={(e) => { e.preventDefault(); document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' }); }}>3AM ✦ COLLECTIVE</a>
+        </div>
         <ul className="nav-menu">
           <li><a href="#cta" onClick={(e) => { e.preventDefault(); document.getElementById('cta')?.scrollIntoView({ behavior: 'smooth' }); }}>Join</a></li>
         </ul>
       </nav>
-
-      {onBackClick && (
-        <button 
-          onClick={onBackClick}
-          className="fixed top-8 left-8 z-50 p-3 bg-black/40 hover:bg-black/80 backdrop-blur-md border border-white/10 rounded-full text-white transition-all duration-300"
-          aria-label="Go back"
-        >
-          <ArrowLeft size={24} />
-        </button>
-      )}
       <section id="hero" className="about-section">
         <div className="hero-bg"></div>
         <div className="hero-grid"></div>

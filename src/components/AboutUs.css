@@ -81,7 +81,7 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 1000;
-  padding: 20px 40px;
+  padding: 24px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -95,12 +95,12 @@ html { scroll-behavior: smooth; overflow-x: hidden; }
   pointer-events: none;
 }
 .about-us-wrapper .nav-logo {
+  position: relative;
   font-family: 'Bebas Neue', sans-serif;
   font-size: 1.4rem;
   letter-spacing: 0.3em;
   color: var(--accent);
   text-decoration: none;
-  position: relative;
 }
 .about-us-wrapper .nav-menu {
   display: flex;
