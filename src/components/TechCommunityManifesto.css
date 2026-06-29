@@ -1,0 +1,1005 @@
+/* ============================================
+   Tech Community Manifesto — Neo-Brutalist
+   ============================================ */
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+.manifesto-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background: #FAF9F4;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ---- Back Button ---- */
+.manifesto-back {
+    position: fixed;
+    top: 24px;
+    left: 24px;
+    z-index: 1000;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: #fff;
+    border: 3px solid #000;
+    box-shadow: 5px 5px 0 0 #000;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    border-radius: 0;
+}
+
+.manifesto-back:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 0 #000;
+}
+
+.manifesto-back:active {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 0 #000;
+}
+
+.manifesto-back svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ---- Section Base ---- */
+.m-section {
+    padding: clamp(60px, 10vh, 120px) 80px;
+    position: relative;
+    border-bottom: 4px solid #000;
+}
+
+@media (max-width: 1024px) {
+    .m-section {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
+
+@media (max-width: 640px) {
+    .m-section {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+.m-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.m-label {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 6px 14px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+}
+
+.m-title {
+    font-size: clamp(40px, 5vw, 72px);
+    line-height: 1;
+    color: #000;
+    margin-bottom: 32px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+}
+
+.m-body {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    max-width: 760px;
+    font-weight: 500;
+}
+
+.m-body+.m-body {
+    margin-top: 20px;
+}
+
+/* === REVEAL ANIMATIONS === */
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.reveal-right {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.stagger>* {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.stagger.visible>*:nth-child(1) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.1s;
+}
+
+.stagger.visible>*:nth-child(2) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.2s;
+}
+
+.stagger.visible>*:nth-child(3) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.3s;
+}
+
+.stagger.visible>*:nth-child(4) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.4s;
+}
+
+.stagger.visible>*:nth-child(5) {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.5s;
+}
+
+/* ---- Brutalist Box Mixin ---- */
+.brutal-box {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+}
+
+.brutal-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 4px 14px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    letter-spacing: 0.02em;
+}
+
+/* ============================================
+   HERO
+   ============================================ */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(80px, 15vh, 160px) 80px;
+    position: relative;
+    border-bottom: 4px solid #000;
+}
+
+@media (max-width: 1024px) {
+    .hero-section {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-section {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+.hero-content {
+    max-width: 900px;
+}
+
+.hero-badge {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 8px 20px;
+    border: 3px solid #000;
+    box-shadow: 6px 6px 0 0 #000;
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+}
+
+.hero-title {
+    font-size: clamp(48px, 8vw, 120px);
+    line-height: 0.95;
+    color: #000;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    margin-bottom: 12px;
+}
+
+.hero-title .highlight {
+    display: block;
+    font-size: 0.35em;
+    color: #F24D3D;
+    font-weight: 700;
+    margin-top: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.hero-subtitle {
+    font-size: clamp(16px, 1.5vw, 22px);
+    color: #000;
+    max-width: 600px;
+    line-height: 1.5;
+    margin: 24px auto 0;
+    font-weight: 500;
+}
+
+.hero-meta {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.hero-meta .dot {
+    width: 8px;
+    height: 8px;
+    background: #F24D3D;
+    border: 2px solid #000;
+    transform: rotate(45deg);
+}
+
+.hero-illustration {
+    max-width: 300px;
+    margin: 40px auto 0;
+}
+
+.hero-illustration img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.hero-scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-scroll-indicator span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hero-scroll-indicator .line {
+    width: 2px;
+    height: 40px;
+    background: #000;
+    animation: scrollPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   VISION & INTENT
+   ============================================ */
+.vision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .vision-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+.vision-block {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    padding: 40px;
+}
+
+.vision-block h3 {
+    display: inline-block;
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 4px 16px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+}
+
+.vision-block p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    font-weight: 500;
+}
+
+.vision-graphic {
+    margin-top: 40px;
+    max-width: 500px;
+}
+
+.vision-graphic img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   WHAT
+   ============================================ */
+.what-content {
+    max-width: 760px;
+}
+
+.what-content p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.what-images {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 48px;
+}
+
+@media (max-width: 768px) {
+    .what-images {
+        grid-template-columns: 1fr;
+    }
+}
+
+.what-images .brutal-box {
+    padding: 16px;
+}
+
+.what-images img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   WORKER QUESTIONS
+   ============================================ */
+.questions-section {
+    background: #F24D3D;
+}
+
+.questions-section .m-label {
+    background: #fff;
+    color: #000;
+}
+
+.questions-section .m-title {
+    color: #fff;
+}
+
+.questions-header p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #fff;
+    max-width: 760px;
+    font-weight: 500;
+}
+
+.questions-list {
+    max-width: 760px;
+}
+
+.question-item {
+    padding: 28px 0;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.question-item:first-child {
+    border-top: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.question-item p {
+    font-size: 36px;
+    line-height: 1.2;
+    color: #fff;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+}
+
+.questions-graphics {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.questions-graphics img {
+    width: 60px;
+    height: auto;
+    filter: brightness(10);
+    opacity: 0.3;
+}
+
+/* ============================================
+   CORE PROBLEM
+   ============================================ */
+.problem-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    margin-top: 40px;
+}
+
+@media (max-width: 900px) {
+    .problem-layout {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+}
+
+.problem-text p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    margin-bottom: 24px;
+    max-width: 760px;
+    font-weight: 500;
+}
+
+.problem-text .highlight-block {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    padding: 28px 32px;
+    margin-top: 32px;
+}
+
+.problem-text .highlight-block h4 {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 4px 14px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+}
+
+.problem-text .highlight-block p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #000;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.problem-image {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.problem-image .brutal-box {
+    padding: 24px;
+}
+
+.problem-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   DEEP TRENCH
+   ============================================ */
+.trench-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+}
+
+.trench-item {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    padding: 28px;
+}
+
+.trench-item .trench-number {
+    font-size: 48px;
+    font-weight: 900;
+    color: #F24D3D;
+    line-height: 1;
+    margin-bottom: 8px;
+    letter-spacing: -0.03em;
+}
+
+.trench-item h4 {
+    font-size: 22px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+}
+
+.trench-item p {
+    font-size: 17px;
+    line-height: 1.5;
+    color: #000;
+    font-weight: 500;
+}
+
+.trench-item img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    margin-bottom: 16px;
+    border: 2px solid #000;
+}
+
+/* ============================================
+   WHY / FOR WHOM
+   ============================================ */
+.why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .why-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+}
+
+.why-block {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    padding: 40px;
+}
+
+.why-block h3 {
+    display: inline-block;
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 4px 16px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    margin-bottom: 24px;
+    letter-spacing: 0.02em;
+}
+
+.why-block p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    font-weight: 500;
+}
+
+.why-graphic {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.why-graphic .brutal-box {
+    padding: 16px;
+}
+
+.why-graphic img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   HOW EXISTING SPACES FAIL
+   ============================================ */
+.fail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+}
+
+.fail-card {
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0 0 #000;
+    padding: 28px;
+}
+
+.fail-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain;
+    margin-bottom: 16px;
+    border: 2px solid #000;
+    background: #FAF9F4;
+    padding: 12px;
+}
+
+.fail-card h4 {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: #fff;
+    background: #F24D3D;
+    padding: 4px 14px;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 0 #000;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+}
+
+.fail-card p {
+    font-size: 17px;
+    line-height: 1.5;
+    color: #000;
+    font-weight: 500;
+}
+
+/* ============================================
+   HOW (Timeline)
+   ============================================ */
+.timeline {
+    position: relative;
+    max-width: 760px;
+    padding-left: 48px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: #000;
+}
+
+.timeline-item {
+    position: relative;
+    padding: 0 0 48px 40px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -40px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    background: #F24D3D;
+    border: 4px solid #000;
+}
+
+.timeline-item .step {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #fff;
+    background: #000;
+    padding: 4px 12px;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+}
+
+.timeline-item p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #000;
+    font-weight: 500;
+}
+
+.timeline-images {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 600px;
+}
+
+.timeline-images .brutal-box {
+    padding: 12px;
+}
+
+.timeline-images img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   ELIGIBILITY
+   ============================================ */
+.eligibility-section {
+    background: #F24D3D;
+    text-align: center;
+    border-bottom: 4px solid #000;
+}
+
+.eligibility-section .m-label {
+    background: #fff;
+    color: #000;
+}
+
+.eligibility-callout {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(48px, 6vw, 80px) 0;
+}
+
+.eligibility-callout h2 {
+    font-size: clamp(48px, 6vw, 96px);
+    line-height: 1;
+    color: #fff;
+    margin-bottom: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+}
+
+.eligibility-callout p {
+    font-size: 22px;
+    line-height: 1.5;
+    color: #fff;
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 500;
+}
+
+.eligibility-images {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+}
+
+.eligibility-images .brutal-box {
+    padding: 12px;
+    max-width: 300px;
+}
+
+.eligibility-images img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   ENDING
+   ============================================ */
+.ending-section {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(80px, 12vh, 140px) 80px;
+    background: #FAF9F4;
+    border-bottom: 4px solid #000;
+}
+
+@media (max-width: 1024px) {
+    .ending-section {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
+
+@media (max-width: 640px) {
+    .ending-section {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+.ending-content {
+    max-width: 900px;
+}
+
+.ending-content .hero-badge {
+    margin-bottom: 32px;
+}
+
+.ending-content h2 {
+    font-size: clamp(36px, 5vw, 72px);
+    line-height: 1.05;
+    color: #000;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    margin-bottom: 40px;
+}
+
+.ending-divider {
+    width: 80px;
+    height: 4px;
+    background: #F24D3D;
+    margin: 0 auto 40px;
+}
+
+.ending-content .closing {
+    font-size: 36px;
+    line-height: 1.3;
+    color: #F24D3D;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.ending-images {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+}
+
+.ending-images .brutal-box {
+    padding: 16px;
+}
+
+.ending-images .brutal-box.big {
+    max-width: 500px;
+    flex: 1;
+}
+
+.ending-images .brutal-box.small {
+    max-width: 200px;
+}
+
+.ending-images img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.manifesto-footer {
+    padding: 32px 80px;
+    text-align: center;
+    background: #000;
+}
+
+@media (max-width: 1024px) {
+    .manifesto-footer {
+        padding-left: 56px;
+        padding-right: 56px;
+    }
+}
+
+@media (max-width: 640px) {
+    .manifesto-footer {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+}
+
+.manifesto-footer p {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}

@@ -30,12 +30,10 @@ function rotationForFilename(filename: string): number {
     return ((hashStr(filename + '_r') % 70) - 25) / 10; // -2.5 to +4.4
 }
 
-const PHOTOS_PER_ROW = 6;
-
-function buildRows(photos: string[]) {
+function buildRows(photos: string[], photosPerRow: number) {
     const rows: { filename: string; variant: Variant; size: Size; rotation: number }[][] = [];
     photos.forEach((filename, index) => {
-        const rowIndex = Math.floor(index / PHOTOS_PER_ROW);
+        const rowIndex = Math.floor(index / photosPerRow);
         if (!rows[rowIndex]) rows[rowIndex] = [];
         rows[rowIndex].push({
             filename,
@@ -56,6 +54,23 @@ export default function Gallery() {
     const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
     const [editDesc, setEditDesc] = useState('');
     const [saving, setSaving] = useState(false);
+    const [photosPerRow, setPhotosPerRow] = useState(6);
+    const [currentPage, setCurrentPage] = useState(1);
+    const PHOTOS_PER_PAGE = 30;
+
+    useEffect(() => {
+        const getPhotosPerRow = () => {
+            if (typeof window === 'undefined') return 6;
+            if (window.innerWidth <= 480) return 2;
+            if (window.innerWidth <= 768) return 3;
+            if (window.innerWidth <= 1024) return 4;
+            return 6;
+        };
+        const handleResize = () => setPhotosPerRow(getPhotosPerRow());
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchPhotos = async () => {
@@ -117,7 +132,14 @@ export default function Gallery() {
         }
     };
 
-    const rows = useMemo(() => buildRows(photos), [photos]);
+    const paginatedPhotos = useMemo(() => {
+        const startIndex = (currentPage - 1) * PHOTOS_PER_PAGE;
+        return photos.slice(startIndex, startIndex + PHOTOS_PER_PAGE);
+    }, [photos, currentPage]);
+
+    const totalPages = Math.ceil(photos.length / PHOTOS_PER_PAGE);
+
+    const rows = useMemo(() => buildRows(paginatedPhotos, photosPerRow), [paginatedPhotos, photosPerRow]);
 
     if (loading) {
         return (
@@ -178,12 +200,40 @@ export default function Gallery() {
                                     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(item.filename); }
                                 }}
                             >
-                                <img src={`/api/photos/${encodeURIComponent(item.filename)}`} alt={item.filename} loading="lazy" />
+                                <img src={`/api/photos/${encodeURIComponent(item.filename)}`} alt={item.filename} />
                             </div>
                         ))}
                     </div>
                 ))}
             </div>
+
+            {totalPages > 1 && (
+                <div className="gallery-pagination">
+                    <button
+                        className="gallery-pagination-btn"
+                        disabled={currentPage === 1}
+                        onClick={() => {
+                            setCurrentPage(p => Math.max(1, p - 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                    >
+                        Previous
+                    </button>
+                    <span className="gallery-pagination-info">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        className="gallery-pagination-btn"
+                        disabled={currentPage === totalPages}
+                        onClick={() => {
+                            setCurrentPage(p => Math.min(totalPages, p + 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
 
             {/* Lightbox */}
             {selectedPhoto && (

@@ -31,7 +31,6 @@
     width: 100%;
     min-height: 6000px;
     padding: 60px 20px;
-    overflow: hidden;
 }
 
 /* ─── Row-based layout — no overlap guaranteed ───────── */
@@ -496,6 +495,46 @@
     opacity: 0.6;
 }
 
+/* ─── Pagination ─────────────────────────────────────── */
+.gallery-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 40px;
+    padding-bottom: 60px;
+}
+
+.gallery-pagination-info {
+    font-family: var(--heading-font, monospace);
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.gallery-pagination-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 2px solid var(--text-primary, #000);
+    color: var(--text-primary, #000);
+    font-family: var(--heading-font, monospace);
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.gallery-pagination-btn:hover:not(:disabled) {
+    background: var(--text-primary, #000);
+    color: var(--bg-color, #fff);
+}
+
+.gallery-pagination-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: #ccc;
+    color: #999;
+}
+
 @media (max-width: 768px) {
     .gallery-wall {
         min-height: 10000px;
@@ -532,13 +571,24 @@
         height: 170px;
     }
 
+    .gallery-lightbox-content {
+        max-width: 96vw;
+        display: flex;
+        justify-content: center;
+    }
+
     .gallery-lightbox-polaroid {
         padding: 10px 10px 50px 10px;
+        max-width: 92vw;
+        box-sizing: border-box;
+        width: 100%;
     }
 
     .gallery-lightbox-polaroid img {
-        max-width: 92vw;
+        max-width: 100%;
+        height: auto;
         max-height: 65vh;
+        margin: 0 auto;
     }
 
     .gallery-lightbox-close {

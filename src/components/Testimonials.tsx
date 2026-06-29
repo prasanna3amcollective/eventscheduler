@@ -62,7 +62,7 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
     const [testimonials, setTestimonials] = useState<Array<{ id: string; description: string; name?: string }>>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 6;
+    const pageSize = 9;
 
     const fetchTestimonials = async (page: number) => {
         try {
@@ -88,8 +88,8 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
         <div className="testimonials-page">
             <div className="testimonials-container">
                 <div className="testimonials-header">
-                    <h1>TESTIMONIALS.</h1>
-                    <p>Share your experience with the collective.</p>
+                    <h1>Guest book</h1>
+                    <p>Share your experience with the collective. May be write a nice message or a long essay, or maybe just a few words... </p>
                 </div>
 
                 <div className="testimonials-input-area">
@@ -105,32 +105,69 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
                         }}
                     >
                         <span className="testimonials-input-placeholder">
-                            + Add your testimonial
+                            + Share your experience
                         </span>
                     </div>
                 </div>
 
                 {/* Testimonials list */}
                 <div className="testimonials-list">
-                    {testimonials.map((t) => {
+                    {testimonials.map((t, idx) => {
                         const plainText = stripHtml(t.description);
                         const previewText = plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+
+                        const SHAPES = [
+                            '/shapes/star-burst.svg',
+                            '/shapes/pill.svg',
+                            '/shapes/polygon.svg',
+                            '/shapes/circle.svg',
+                            '/shapes/squiggle.svg',
+                            '/shapes/pink-circle.svg',
+                            '/shapes/yellow-star.svg',
+                            '/shapes/white-star.svg',
+                        ];
+                        const shapeUrl = SHAPES[(idx * 5) % SHAPES.length];
+                        const rot = [-15, 25, -45, 60, -10, 180, 120, -30][(idx * 3) % 8];
+                        const positions = [
+                            { top: '-30px', right: '-30px' },
+                            { bottom: '-20px', left: '-20px' },
+                            { top: '30%', right: '-40px' },
+                            { bottom: '-40px', right: '-10px' },
+                            { top: '-10px', left: '-20px' },
+                        ];
+                        const pos = positions[(idx * 7) % positions.length];
+
+                        const CARD_COLORS = [
+                            '#FF00C8', '#00FFFF', '#FF6B00', '#7B00FF',
+                            '#00FF41', '#BFFF00', '#FF0055', '#00FF9F',
+                            '#FF3000', '#CCFF00', '#FF0080',
+                        ];
+                        const bg = CARD_COLORS[(idx * 7) % CARD_COLORS.length];
+
                         return (
-                            <div
+                            <button
                                 key={t.id}
-                                className="testimonial-card"
+                                className="neo-card clickable"
+                                style={{ backgroundColor: bg }}
                                 onClick={() => setSelectedTestimonial(t)}
-                                role="button"
-                                tabIndex={0}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
                                         setSelectedTestimonial(t);
                                     }
                                 }}
+                                type="button"
                             >
+                                <div className="neo-card-bg-shape" style={{
+                                    '--bg-shape-url': `url(${shapeUrl})`,
+                                    transform: `rotate(${rot}deg)`,
+                                    ...pos
+                                } as any} />
+
+                                <div className="neo-card-accent" />
                                 <p className="testimonial-card-name">{t.name || 'Anonymous'}</p>
                                 <p className="testimonial-card-preview">{previewText}</p>
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
@@ -152,7 +189,7 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="testimonials-modal-header">
-                            <h2>WRITE YOUR TESTIMONIAL</h2>
+                            {/* <h2>WRITE YOUR TESTIMONIAL</h2> */}
                             <button
                                 className="testimonials-modal-close"
                                 onClick={handleCloseModal}
@@ -210,7 +247,7 @@ export default function Testimonials({ onBackClick }: { onBackClick?: () => void
                                 ref={editorRef}
                                 className="testimonials-editor"
                                 contentEditable
-                                data-placeholder="Write your testimonial here..."
+                                data-placeholder="Share your experience here..."
                                 onInput={(e) => {
                                     setTestimonialText((e.target as HTMLDivElement).innerHTML);
                                 }}

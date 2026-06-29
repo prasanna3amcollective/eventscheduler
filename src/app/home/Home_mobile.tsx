@@ -19,6 +19,7 @@ import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner_mobile from '@/components/MarqueeBanner_mobile';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
+import Gallery from '@/components/Gallery';
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown, Home as HomeIcon } from '@/components/Icons';
 
 import './Home_mobile.css';
@@ -336,6 +337,12 @@ export default function Home_mobile() {
                 <ActivityCarousel_mobile refreshTrigger={refreshTrigger} />
               </div>
             </>
+          )}
+
+          {activeSection === 'gallery' && (
+            <div style={{ width: '100%', minHeight: '100vh', paddingBottom: '80px' }}>
+              <Gallery />
+            </div>
           )}
 
           {/* Top Login Banner */}

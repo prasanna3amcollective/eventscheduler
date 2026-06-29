@@ -17,6 +17,7 @@ node_modules/
 # Testing
 # =============================================================================
 /coverage
+/src/components/__tests__
 
 # =============================================================================
 # Next.js
@@ -123,3 +124,5 @@ graphify-out/
 
 # Other planning files 
 DATA_ARCHITECTURE_REVIEW.md
+
+#sample media

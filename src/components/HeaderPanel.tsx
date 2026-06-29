@@ -141,7 +141,7 @@ export default function HeaderPanel({
                   setActiveSection('testimonials');
                 }}
               >
-                Testimonials
+                Guest Book
               </Link>
             )}
           </>

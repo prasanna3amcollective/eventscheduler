@@ -356,7 +356,7 @@ function HomeContent() {
                   <div className="post-card">Writer's Community</div>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <div className="post-card">Tech Community</div>
+                  <div className="post-card" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                 </div>
               </section>
             </section>
