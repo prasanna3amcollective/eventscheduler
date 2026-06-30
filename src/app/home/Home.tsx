@@ -20,7 +20,7 @@ import MarqueeBanner from '@/components/MarqueeBanner';
 import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
 import Gallery from '@/components/Gallery';
-import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown, Home as HomeIcon } from '@/components/Icons';
+import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown, Search, Home as HomeIcon } from '@/components/Icons';
 import './Home.css';
 
 function HomeContent() {
@@ -140,6 +140,15 @@ function HomeContent() {
   const handleLoginSuccess = async (user: any) => {
     setCurrentUser(user);
     setIsLoggedIn(true);
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('joinTechCommunity') === 'true') {
+      fetch('/api/groups/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupName: 'tech community' })
+      }).then(() => {
+        localStorage.removeItem('joinTechCommunity');
+      }).catch(console.error);
+    }
     // Fetch roles after login
     try {
       const res = await fetch('/api/auth/me');
@@ -344,19 +353,21 @@ function HomeContent() {
 
           {activeSection === 'explore' && (
             <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
-              <h2>Explore</h2>
-              <p>Discover new projects and community initiatives.</p>
+              {/* <h2>Explore</h2>
+              <p>Discover new projects and community initiatives.</p> */}
               {/* Latest Posts Section */}
               <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-                <h2 className="section-title">Explore our Communities</h2>
-                <p className="section-description">
+                <h2 className="section-title">Nested Communities</h2>
+                {/* <p className="section-description">
                   Stay updated with the newest activities and community highlights.
-                </p>
+                </p> */}
                 <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <div className="post-card">Writer's Community</div>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <div className="post-card" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
                 </div>
               </section>
             </section>
@@ -439,6 +450,9 @@ function HomeContent() {
             <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
               <CalendarDays size={18} /> Calendar View
             </button>
+            <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => setActiveTab('explore')}>
+              <Search size={18} /> Explore
+            </button>
             {userRoles.includes('developer') && (
               <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
                 <ShieldCheck size={18} /> Developer Panel
@@ -491,6 +505,26 @@ function HomeContent() {
                 isLoggedIn={isLoggedIn}
                 headerRight={null}
               />
+            </section>
+          )}
+          {activeTab === 'explore' && (
+            <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
+              {/* <h2>Explore</h2>
+              <p>Discover new projects and community initiatives.</p> */}
+              <section className="latest-posts-section" style={{ marginTop: '48px' }}>
+                <h2 className="section-title">Explore our Communities</h2>
+                {/* <p className="section-description">
+                  Stay updated with the newest activities and community highlights.
+                </p> */}
+                <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
+                  <div className="post-card">Cinemat Community</div>
+                  <div className="post-card">Music Community</div>
+                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
+                </div>
+              </section>
             </section>
           )}
           {activeTab === 'admin' && (

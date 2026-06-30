@@ -79,7 +79,7 @@ function ErrorBanner({
  * Shows an inline error banner on failure and a "register" link for unknown users.
  */
 export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps) {
-  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +95,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify({ phone, password }),
         });
 
         const data = await res.json();
@@ -111,7 +111,7 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
         setIsSubmitting(false);
       }
     },
-    [username, password, onLoginSuccess],
+    [phone, password, onLoginSuccess],
   );
 
   return (
@@ -125,13 +125,14 @@ export default function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginF
 
       <div className="form-group">
         <label>
-          <User size={16} /> Username
+          <User size={16} /> Phone Number
         </label>
         <input
+          type="tel"
           required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter your username"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="Enter your phone number"
         />
       </div>
 

@@ -1171,6 +1171,119 @@ input:not([type="checkbox"]):focus {
   font-weight: 600;
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* Actors Community card — dark stage vibe */
+.latest-posts-section .post-card--actors {
+  background: #0a0a0a;
+  color: #DC143C;
+  border: 2px solid #DC143C;
+  box-shadow: 0 0 20px rgba(220, 20, 60, 0.15);
+  font-family: 'Georgia', serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-posts-section .post-card--actors::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  width: 90px;
+  height: 90px;
+  background-image: url('/shapes/star-burst.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.25;
+  transform: rotate(15deg);
+  pointer-events: none;
+}
+
+/* Writers Community card — notebook / paper vibe */
+.latest-posts-section .post-card--writers {
+  background: #f5f0e8;
+  color: #2c1810;
+  border: 2px solid #2c1810;
+  box-shadow: 4px 4px 0 rgba(44, 24, 16, 0.08);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-posts-section .post-card--writers::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  width: 80px;
+  height: 80px;
+  background-image: url('/shapes/squiggle.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+/* Tech Community card — minimal brutalist */
+.latest-posts-section .post-card--tech {
+  background: #111;
+  color: #FDE800;
+  border: 3px solid #111;
+  box-shadow: 8px 8px 0 #FDE800;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-posts-section .post-card--tech::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 85px;
+  height: 85px;
+  background-image: url('/shapes/polygon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  transform: rotate(-20deg);
+  pointer-events: none;
+}
+
+/* Podcast Community card — retro tape vibe */
+.latest-posts-section .post-card--podcast {
+  background: #FFF8DC;
+  color: #2c1810;
+  border: 3px solid #2c1810;
+  box-shadow: 6px 6px 0 #d4a574;
+  font-family: 'Georgia', serif;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-posts-section .post-card--podcast::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 75px;
+  height: 75px;
+  background-image: url('/shapes/yellow-circle.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.25;
+  transform: rotate(12deg);
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {

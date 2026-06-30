@@ -144,6 +144,17 @@ export default function Home_mobile() {
   const handleLoginSuccess = async (user: any) => {
     setCurrentUser(user);
     setIsLoggedIn(true);
+
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('joinTechCommunity') === 'true') {
+      fetch('/api/groups/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupName: 'tech community' })
+      }).then(() => {
+        localStorage.removeItem('joinTechCommunity');
+      }).catch(console.error);
+    }
+
     // Fetch roles after login
     try {
       const res = await fetch('/api/auth/me');

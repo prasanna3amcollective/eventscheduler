@@ -1,0 +1,386 @@
+/* ==========================================================
+   PodcastCommunity — Retro / Old-Web Aesthetic
+   Inspired by GeoCities, early 2000s web, zines
+   ========================================================== */
+
+.podcast-wrapper {
+    background: #FFF8DC;
+    /* cornsilk — warm paper tone */
+    min-height: 100vh;
+    font-family: 'Courier New', Courier, 'Times New Roman', serif;
+    color: #2c1810;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Background texture — subtle dot grid like old paper */
+.podcast-wrapper::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(circle, #d4a574 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.podcast-wrapper>* {
+    position: relative;
+    z-index: 1;
+}
+
+/* Back button */
+.podcast-back {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    background: #2c1810;
+    color: #FFF8DC;
+    border: 3px solid #2c1810;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.podcast-back:hover {
+    background: #FFF8DC;
+    color: #2c1810;
+}
+
+.podcast-container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+/* Header tape reel mark */
+.retro-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border: 4px double #2c1810;
+    padding: 2rem 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    position: relative;
+}
+
+.retro-header::before {
+    content: '⏺';
+    display: block;
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.7;
+}
+
+.retro-header h1 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 2.5rem;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    margin: 0.5rem 0;
+    color: #2c1810;
+    text-shadow: 2px 2px 0 #d4a574;
+}
+
+.retro-header .tagline {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+/* Section boxes — retro card style */
+.retro-section {
+    border: 3px solid #2c1810;
+    background: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    position: relative;
+    box-shadow: 6px 6px 0 #d4a574;
+}
+
+.retro-section.section-alt {
+    background: rgba(44, 24, 16, 0.05);
+    border-style: dashed;
+}
+
+.retro-section h2 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #2c1810;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.retro-section h2::before {
+    content: '▶';
+    font-size: 0.8rem;
+    color: #d4a574;
+}
+
+/* Static tagline — readable, no animation */
+.static-tagline {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+    border-top: 1px solid #2c1810;
+    border-bottom: 1px solid #2c1810;
+    padding: 0.6rem 0;
+    text-align: center;
+    line-height: 1.6;
+}
+
+/* Show grid - 2 column */
+.show-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .show-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.show-card {
+    border: 2px solid #2c1810;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.6);
+    transition: all 0.2s;
+}
+
+.show-card:hover {
+    background: rgba(212, 165, 116, 0.15);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 #2c1810;
+}
+
+.show-card h3 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.show-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #444;
+}
+
+/* Theme tags */
+.theme-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.theme-tag {
+    border: 2px solid #2c1810;
+    padding: 0.3rem 0.7rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.theme-tag.tag-alt {
+    background: #2c1810;
+    color: #FFF8DC;
+    border-color: #2c1810;
+}
+
+/* Horizontal rule divider — retro */
+.retro-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    color: #d4a574;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.retro-divider::before,
+.retro-divider::after {
+    content: '';
+    flex: 1;
+    height: 0;
+    border-top: 3px dotted #d4a574;
+}
+
+/* Quote block */
+.quote-block {
+    border-left: 6px solid #2c1810;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    background: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.quote-block cite {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    text-align: right;
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* List styles — retro bullets */
+.retro-list {
+    list-style: none;
+    padding: 0;
+}
+
+.retro-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed #d4a574;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.retro-list li::before {
+    content: '♪ ';
+    font-size: 0.8rem;
+    color: #d4a574;
+}
+
+/* Audience section */
+.audience-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+@media (max-width: 600px) {
+    .audience-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.audience-item {
+    border: 2px solid #2c1810;
+    padding: 1rem;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 3px 3px 0 #d4a574;
+}
+
+/* Production schedule */
+.schedule-block {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.schedule-item {
+    border: 2px solid #2c1810;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 140px;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.schedule-item .day {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.schedule-item .action {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-top: 0.3rem;
+}
+
+/* Call to action */
+.cta-section {
+    text-align: center;
+    border: 4px double #2c1810;
+    padding: 2rem;
+    margin-top: 2rem;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.cta-section h2 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 1rem;
+}
+
+.cta-button {
+    display: inline-block;
+    border: 3px solid #2c1810;
+    padding: 0.8rem 2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    background: #2c1810;
+    color: #FFF8DC;
+    transition: all 0.2s;
+    margin-top: 1rem;
+    text-decoration: none;
+}
+
+.cta-button:hover {
+    background: #FFF8DC;
+    color: #2c1810;
+}
+
+/* Blinking cursor effect */
+.blink {
+    animation: blink-anim 1s step-end infinite;
+}
+
+@keyframes blink-anim {
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Visitor counter */
+.visitor-counter {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 2px dashed #d4a574;
+    font-family: 'Courier New', monospace;
+}
