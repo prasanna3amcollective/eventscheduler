@@ -3,6 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import './ActorsCommunity.css';
+import {
+    FaceRed, FaceBlue, FaceYellow, FaceGreen, FacePurple,
+    PersonOrange, PersonBlue, PersonYellow, PersonPurple
+} from './ActorsIcons';
 
 const rasas = [
     { name: 'Shringara', meaning: 'Love, Beauty' },
@@ -91,22 +95,6 @@ export default function ActorsCommunity() {
 
     return (
         <div className="actors-wrapper">
-            {/* Glittering stars */}
-            <div className="glitter-stars">
-                {stars.map((star) => (
-                    <div
-                        key={star.id}
-                        className="glitter-star"
-                        style={{
-                            left: `${star.left}%`,
-                            top: `${star.top}%`,
-                            width: `${star.size}px`,
-                            height: `${star.size}px`,
-                            animation: `twinkle-rand ${star.duration}s ease-in-out ${star.delay}s infinite`,
-                        }}
-                    />
-                ))}
-            </div>
 
             <button className="actors-back" onClick={handleBack} aria-label="Go back">
                 ← BACK
@@ -115,6 +103,8 @@ export default function ActorsCommunity() {
             <div className="actors-container">
                 {/* HEADER */}
                 <header className="actors-header">
+                    <PersonOrange className="header-illustration-1" />
+                    <FacePurple className="header-illustration-2" />
                     <h1>3AM ACTORS<br />COMMUNITY</h1>
                     <div className="tagline">
                         A Space for Expression and Growth
@@ -231,15 +221,19 @@ export default function ActorsCommunity() {
                     </ul>
 
                     <h3>Expression Practice (Rasa)</h3>
-                    <div className="rasa-grid">
-                        {rasas.map((rasa) => (
-                            <div key={rasa.name} className="rasa-tag">
-                                {rasa.name}
-                                <span className="rasa-sans">{rasa.meaning}</span>
-                            </div>
-                        ))}
+                    <div className="rasa-section-container">
+                        <FaceRed className="rasa-illustration-1" />
+                        <FaceGreen className="rasa-illustration-2" />
+                        <div className="rasa-grid">
+                            {rasas.map((rasa) => (
+                                <div key={rasa.name} className="rasa-tag">
+                                    {rasa.name}
+                                    <span className="rasa-sans">{rasa.meaning}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#777', maxWidth: '550px' }}>
+                    <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#777', maxWidth: '550px', zIndex: 3, position: 'relative' }}>
                         Expressing and understanding these &ldquo;Rasa&rdquo; through reading, understanding, singing, writing.
                     </p>
 
@@ -314,6 +308,8 @@ export default function ActorsCommunity() {
 
                 {/* CTA */}
                 <div className="actors-cta">
+                    <PersonBlue className="cta-illustration-1" />
+                    <PersonYellow className="cta-illustration-2" />
                     <h2>JOIN THE CIRCLE</h2>
                     <p>Art is for everyone. Come, express, and grow with us.</p>
                 </div>

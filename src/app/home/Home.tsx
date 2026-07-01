@@ -207,6 +207,33 @@ function HomeContent() {
     setSelectedActivity(null);
   };
 
+  const onCreateActivity = () => {
+    const newActivity = {
+        startDateTime: new Date(),
+        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+        name: '',
+        leader: [],
+        guide: [],
+        observer: [],
+        duration: 60
+    };
+    setSelectedActivity(newActivity);
+    setIsModalOpen(true);
+  };
+
+  const onOwnResponsibility = () => {
+    const newResponsibility = {
+        startDateTime: new Date(),
+        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+        name: '',
+        owner: currentUser?.name || '',
+        ownerId: currentUser?.id || '',
+        duration: 60
+    };
+    setSelectedResponsibility(newResponsibility);
+    setIsResponsibilityModalOpen(true);
+  };
+
   const handleSelectActivity = (activity: any) => {
     if (activity.isResponsibility) {
       setResponsibilityDetail({
@@ -340,7 +367,30 @@ function HomeContent() {
                 refreshTrigger={refreshTrigger}
                 onActivityClick={handleCarouselClick}
                 isLoggedIn={isLoggedIn}
-                headerRight={null}
+                headerRight={
+                  isLoggedIn ? (
+                    <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                      {userPermissions.canCreateResponsibility && (
+                        <button
+                          onClick={onOwnResponsibility}
+                          className="pink-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Own Responsibility
+                        </button>
+                      )}
+                      {userPermissions.canCreateActivity && (
+                        <button
+                          className="yellow-btn"
+                          onClick={onCreateActivity}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Create Activity
+                        </button>
+                      )}
+                    </div>
+                  ) : null
+                }
               />
             </section>
           )}
@@ -503,7 +553,30 @@ function HomeContent() {
                 refreshTrigger={refreshTrigger}
                 onActivityClick={handleCarouselClick}
                 isLoggedIn={isLoggedIn}
-                headerRight={null}
+                headerRight={
+                  isLoggedIn ? (
+                    <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                      {userPermissions.canCreateResponsibility && (
+                        <button
+                          onClick={onOwnResponsibility}
+                          className="pink-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Own Responsibility
+                        </button>
+                      )}
+                      {userPermissions.canCreateActivity && (
+                        <button
+                          className="yellow-btn"
+                          onClick={onCreateActivity}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Create Activity
+                        </button>
+                      )}
+                    </div>
+                  ) : null
+                }
               />
             </section>
           )}
@@ -542,6 +615,38 @@ function HomeContent() {
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
           onSwitchToRegister={() => { }}
         />
+
+        <ActivityModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
+        >
+          {selectedActivity && (
+            <ActivityForm
+              initialData={selectedActivity}
+              onActivityCreated={handleActivityCreated}
+              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+            />
+          )}
+        </ActivityModal>
+
+        <ActivityModal
+          isOpen={isResponsibilityModalOpen}
+          onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+          title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
+        >
+          {selectedResponsibility && (
+            <ResponsibilityForm
+              initialData={selectedResponsibility}
+              onResponsibilityCreated={() => {
+                setRefreshTrigger(prev => prev + 1);
+                setIsResponsibilityModalOpen(false);
+                setSelectedResponsibility(null);
+              }}
+              onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+            />
+          )}
+        </ActivityModal>
 
         <ProfileModal
           isOpen={isProfileOpen}

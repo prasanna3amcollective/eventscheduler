@@ -210,6 +210,33 @@ export default function Home_mobile() {
     setSelectedActivity(null);
   };
 
+  const onCreateActivity = () => {
+    const newActivity = {
+        startDateTime: new Date(),
+        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+        name: '',
+        leader: [],
+        guide: [],
+        observer: [],
+        duration: 60
+    };
+    setSelectedActivity(newActivity);
+    setIsModalOpen(true);
+  };
+
+  const onOwnResponsibility = () => {
+    const newResponsibility = {
+        startDateTime: new Date(),
+        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+        name: '',
+        owner: currentUser?.name || '',
+        ownerId: currentUser?.id || '',
+        duration: 60
+    };
+    setSelectedResponsibility(newResponsibility);
+    setIsResponsibilityModalOpen(true);
+  };
+
   const handleSelectActivity = (activity: any) => {
     if (activity.isResponsibility) {
       setResponsibilityDetail({
@@ -345,7 +372,35 @@ export default function Home_mobile() {
 
               {/* Upcoming Activities */}
               <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
-                <ActivityCarousel_mobile refreshTrigger={refreshTrigger} />
+                <ActivityCarousel_mobile 
+                  refreshTrigger={refreshTrigger}
+                  onActivityClick={handleCarouselClick}
+                  isLoggedIn={isLoggedIn}
+                  headerRight={
+                    isLoggedIn ? (
+                      <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                        {userPermissions.canCreateResponsibility && (
+                          <button
+                            onClick={onOwnResponsibility}
+                            className="pink-btn"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            Own Responsibility
+                          </button>
+                        )}
+                        {userPermissions.canCreateActivity && (
+                          <button
+                            className="yellow-btn"
+                            onClick={onCreateActivity}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            Create Activity
+                          </button>
+                        )}
+                      </div>
+                    ) : null
+                  }
+                />
               </div>
             </>
           )}
@@ -498,7 +553,35 @@ export default function Home_mobile() {
             <>
               <BannerSlideshow_mobile />
               <div style={{ marginTop: '24px', padding: '0 8px', paddingBottom: '60px' }}>
-                <ActivityCarousel_mobile refreshTrigger={refreshTrigger} />
+                <ActivityCarousel_mobile 
+                  refreshTrigger={refreshTrigger}
+                  onActivityClick={handleCarouselClick}
+                  isLoggedIn={isLoggedIn}
+                  headerRight={
+                    isLoggedIn ? (
+                      <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                        {userPermissions.canCreateResponsibility && (
+                          <button
+                            onClick={onOwnResponsibility}
+                            className="pink-btn"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            Own Responsibility
+                          </button>
+                        )}
+                        {userPermissions.canCreateActivity && (
+                          <button
+                            className="yellow-btn"
+                            onClick={onCreateActivity}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                          >
+                            Create Activity
+                          </button>
+                        )}
+                      </div>
+                    ) : null
+                  }
+                />
               </div>
             </>
           )}

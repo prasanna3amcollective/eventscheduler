@@ -1175,32 +1175,24 @@ input:not([type="checkbox"]):focus {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Actors Community card — dark stage vibe */
+/* Actors Community card — Playful pop-art vibe */
 .latest-posts-section .post-card--actors {
-  background: #0a0a0a;
-  color: #DC143C;
-  border: 2px solid #DC143C;
-  box-shadow: 0 0 20px rgba(220, 20, 60, 0.15);
-  font-family: 'Georgia', serif;
+  background: #ff5a5a;
+  color: #fff;
+  border: 3px solid #1a1a1a;
+  box-shadow: 5px 5px 0 #1a1a1a;
+  font-family: 'Fredoka', 'Comic Sans MS', sans-serif;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   position: relative;
   overflow: hidden;
+  text-shadow: 1px 1px 0 #1a1a1a;
 }
 
-.latest-posts-section .post-card--actors::before {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  right: -10px;
-  width: 90px;
-  height: 90px;
-  background-image: url('/shapes/star-burst.svg');
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0.25;
-  transform: rotate(15deg);
-  pointer-events: none;
+.latest-posts-section .post-card--actors:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 #1a1a1a;
 }
 
 /* Writers Community card — notebook / paper vibe */
