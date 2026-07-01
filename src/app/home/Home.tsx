@@ -14,9 +14,6 @@ import BannerSlideshow from '@/components/BannerSlideshow';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import HolidayDetailModal from '@/components/HolidayDetailModal';
-import EventDetailModal from '@/components/EventDetailModal';
-import EventForm from '@/components/EventForm';
-import FooterPanel from '@/components/FooterPanel';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
@@ -54,12 +51,6 @@ function HomeContent() {
       setActiveSection('about-us');
     } else if (pathname === '/home/testimonials') {
       setActiveSection('testimonials');
-    } else if (pathname === '/home/explore') {
-      setActiveSection('explore');
-    } else if (pathname === '/home/gallery') {
-      setActiveSection('gallery');
-    } else if (pathname === '/home/admin') {
-      setActiveSection('admin');
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -113,29 +104,6 @@ function HomeContent() {
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-
-  // New Event creation states
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const [isEventDetailOpen, setIsEventDetailOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-
-  const onCreateEvent = () => {
-    setIsEventModalOpen(true);
-  };
-
-  const refreshEventDetails = async () => {
-    if (!selectedEvent?.id) return;
-    try {
-      const res = await fetch('/api/events');
-      if (res.ok) {
-        const events = await res.json();
-        const updated = events.find((e: any) => e.id === selectedEvent.id);
-        if (updated) setSelectedEvent(updated);
-      }
-    } catch(e) {
-      console.error("Failed to refresh event", e);
-    }
-  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -354,37 +322,32 @@ function HomeContent() {
     );
   }
 
-  return (
-    <>
-      <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
-      <div className="landing-page fade-in">
-        {activeSection !== 'about-us' && <MarqueeBanner />}
-        {activeSection !== 'about-us' && (
-          <HeaderPanel
-            isLoggedIn={isLoggedIn}
-            currentUser={currentUser}
-            userRoles={userRoles}
-            handleLogout={handleLogout}
-            showProfileDropdown={showProfileDropdown}
-            setShowProfileDropdown={setShowProfileDropdown}
-            setIsProfileOpen={setIsProfileOpen}
-            showSignInPanel={showSignInPanel}
-            setShowSignInPanel={setShowSignInPanel}
-            setShowRegisterModal={setShowRegisterModal}
-            signinUsername={signinPhone}
-            setSigninUsername={setSigninPhone}
-            signinPassword={signinPassword}
-            setSigninPassword={setSigninPassword}
-            signinSubmitting={signinSubmitting}
-            setSigninSubmitting={setSigninSubmitting}
-            signinError={signinError}
-            setSigninError={setSigninError}
-            activeSection={activeSection}
-            setActiveSection={setActiveSection}
-            handlePanelSignIn={handlePanelSignIn}
-            onAboutUsClick={() => transitionRef.current?.trigger()}
-          />
-        )}
+  if (!isLoggedIn) {
+    return (
+      <>
+        <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
+        <div className="landing-page fade-in">
+          {activeSection !== 'about-us' && <MarqueeBanner />}
+          {activeSection !== 'about-us' && (
+            <HeaderPanel
+              isLoggedIn={isLoggedIn}
+              showSignInPanel={showSignInPanel}
+              setShowSignInPanel={setShowSignInPanel}
+              setShowRegisterModal={setShowRegisterModal}
+              signinUsername={signinPhone}
+              setSigninUsername={setSigninPhone}
+              signinPassword={signinPassword}
+              setSigninPassword={setSigninPassword}
+              signinSubmitting={signinSubmitting}
+              setSigninSubmitting={setSigninSubmitting}
+              signinError={signinError}
+              setSigninError={setSigninError}
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              handlePanelSignIn={handlePanelSignIn}
+              onAboutUsClick={() => transitionRef.current?.trigger()}
+            />
+          )}
 
 
           {activeSection === 'about-us' && (
@@ -395,7 +358,7 @@ function HomeContent() {
 
           {activeSection === 'participate' && (
             <section id="participate" style={{ textAlign: 'left', padding: '40px' }}>
-
+              <p>Join our events, volunteer, or become a member of the community.</p>
 
               {/* Decorative Banner Slideshow */}
               <BannerSlideshow />
@@ -425,13 +388,6 @@ function HomeContent() {
                           Create Activity
                         </button>
                       )}
-                      <button
-                        className="neo-btn-primary"
-                        onClick={onCreateEvent}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        Create Event
-                      </button>
                     </div>
                   ) : null
                 }
@@ -462,6 +418,7 @@ function HomeContent() {
                   <div className="post-card">Music Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
                 </div>
               </section>
             </section>
@@ -473,17 +430,12 @@ function HomeContent() {
             </div>
           )}
 
-          {activeSection === 'admin' && isLoggedIn && userRoles.includes('developer') && (
-            <AdminDashboard currentUser={currentUser} />
-          )}
-
           <ActivityDetailModal
             activity={detailActivity}
             isOpen={isDetailOpen}
             onClose={() => setIsDetailOpen(false)}
-            isLoggedIn={isLoggedIn}
-            currentUser={currentUser}
-            userRoles={userRoles}
+            isLoggedIn={false}
+            currentUser={null}
             onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
             onSwitchToRegister={() => {
               setPendingEventId(detailActivity.id);
@@ -493,117 +445,220 @@ function HomeContent() {
           />
 
           {/* Register popup modal */}
-          {showRegisterModal && (
-            // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-            <div
-              className="modal-overlay"
-              onClick={(e) => {
-                if (e.target === e.currentTarget) {
-                  setShowRegisterModal(false);
-                }
-              }}
-              style={{ zIndex: 2000 }}
-            >
+          {
+            showRegisterModal && (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
               <div
-                className="modal-content register-modal"
-                style={{ maxWidth: '560px', padding: '32px' }}
-              >
-                <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
-                  <button
-                    onClick={() => setShowRegisterModal(false)}
-                    style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
-                  >
-                    ×
-                  </button>
-                </div>
-                <RegisterForm
-                  onSuccess={(user) => {
-                    handleLoginSuccess(user);
+                className="modal-overlay"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
                     setShowRegisterModal(false);
-                  }}
-                  pendingEventId={pendingEventId}
-                  hideTitle
-                  submitText="Join"
-                />
-              </div>
-            </div>
-          )}
-
-          <ActivityModal
-            isOpen={isModalOpen}
-            onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-            title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
-          >
-            {selectedActivity && (
-              <ActivityForm
-                initialData={selectedActivity}
-                onActivityCreated={handleActivityCreated}
-                onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-              />
-            )}
-          </ActivityModal>
-
-          <ActivityModal
-            isOpen={isResponsibilityModalOpen}
-            onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-            title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
-          >
-            {selectedResponsibility && (
-              <ResponsibilityForm
-                initialData={selectedResponsibility}
-                onResponsibilityCreated={() => {
-                  setRefreshTrigger(prev => prev + 1);
-                  setIsResponsibilityModalOpen(false);
-                  setSelectedResponsibility(null);
+                  }
                 }}
-                onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
-              />
-            )}
-          </ActivityModal>
-
-          <ProfileModal
-            isOpen={isProfileOpen}
-            onClose={() => setIsProfileOpen(false)}
-            currentUser={currentUser}
-            onProfileUpdate={setCurrentUser}
-          />
-
-          {/* Create Event Modal */}
-          <ActivityModal
-            isOpen={isEventModalOpen}
-            onClose={() => setIsEventModalOpen(false)}
-            title="Create New Event"
-          >
-            <EventForm
-              onSuccess={(newEvent) => {
-                setIsEventModalOpen(false);
-                setSelectedEvent(newEvent);
-                setIsEventDetailOpen(true);
-              }}
-              onCancel={() => setIsEventModalOpen(false)}
-            />
-          </ActivityModal>
-
-          {/* Event Detail Modal (for managing activities/responsibilities inside the event) */}
-          <EventDetailModal 
-            isOpen={isEventDetailOpen}
-            event={selectedEvent}
-            onClose={() => setIsEventDetailOpen(false)}
-            currentUser={currentUser}
-            onRefresh={refreshEventDetails}
-          />
-        </div>
-
-        <FooterPanel
-          isLoggedIn={isLoggedIn}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          setShowSignInPanel={setShowSignInPanel}
-          setShowRegisterModal={setShowRegisterModal}
-          onAboutUsClick={() => transitionRef.current?.trigger()}
-        />
+                style={{ zIndex: 2000 }}
+              >
+                <div
+                  className="modal-content register-modal"
+                  style={{ maxWidth: '560px', padding: '32px' }}
+                >
+                  <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
+                    <button
+                      onClick={() => setShowRegisterModal(false)}
+                      style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <RegisterForm
+                    onSuccess={(user) => {
+                      handleLoginSuccess(user);
+                      setShowRegisterModal(false);
+                    }}
+                    pendingEventId={pendingEventId}
+                    hideTitle
+                    submitText="Join"
+                  />
+                </div>
+              </div>
+            )
+          }
+        </div >
       </>
     );
+  }
+
+  return (
+    <>
+      <div className="dashboard-layout fade-in">
+        <MarqueeBanner />
+
+        <nav className="nav-container">
+          <div className="nav-left-spacer"></div>
+          <div className="nav-buttons">
+            <button className={`nav-link-btn ${activeTab === 'home' ? 'active text-black' : ''}`} onClick={() => setActiveTab('home')}>
+              <HomeIcon size={18} /> Home
+            </button>
+            <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
+              <CalendarDays size={18} /> Calendar View
+            </button>
+            <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => setActiveTab('explore')}>
+              <Search size={18} /> Explore
+            </button>
+            {userRoles.includes('developer') && (
+              <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
+                <ShieldCheck size={18} /> Developer Panel
+              </button>
+            )}
+          </div>
+          <div className="nav-right">
+            <div className="user-menu-container">
+              <button
+                className="user-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileDropdown(!showProfileDropdown);
+                }}
+              >
+                <div className="user-avatar">
+                  <User size={20} />
+                </div>
+                <ChevronDown size={14} />
+              </button>
+              {showProfileDropdown && (
+                // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
+                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setIsProfileOpen(true);
+                    }}
+                  >
+                    <span>{currentUser?.name}</span>
+                    <br />
+                    <br />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
+            </div>
+            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
+          </div>
+        </nav>
+
+        <main className="app-container">
+          {activeTab === 'home' && (
+            <section style={{ textAlign: 'left' }}>
+              <BannerSlideshow />
+              <ActivityCarousel
+                refreshTrigger={refreshTrigger}
+                onActivityClick={handleCarouselClick}
+                isLoggedIn={isLoggedIn}
+                headerRight={
+                  isLoggedIn ? (
+                    <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                      {userPermissions.canCreateResponsibility && (
+                        <button
+                          onClick={onOwnResponsibility}
+                          className="pink-btn"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Own Responsibility
+                        </button>
+                      )}
+                      {userPermissions.canCreateActivity && (
+                        <button
+                          className="yellow-btn"
+                          onClick={onCreateActivity}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          Create Activity
+                        </button>
+                      )}
+                    </div>
+                  ) : null
+                }
+              />
+            </section>
+          )}
+          {activeTab === 'explore' && (
+            <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
+              {/* <h2>Explore</h2>
+              <p>Discover new projects and community initiatives.</p> */}
+              <section className="latest-posts-section" style={{ marginTop: '48px' }}>
+                <h2 className="section-title">Explore our Communities</h2>
+                {/* <p className="section-description">
+                  Stay updated with the newest activities and community highlights.
+                </p> */}
+                <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
+                  <div className="post-card">Cinemat Community</div>
+                  <div className="post-card">Music Community</div>
+                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                </div>
+              </section>
+            </section>
+          )}
+          {activeTab === 'admin' && (
+            <AdminDashboard currentUser={currentUser} />
+          )}
+        </main>
+
+        <ActivityDetailModal
+          activity={detailActivity}
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          isLoggedIn={isLoggedIn}
+          currentUser={currentUser}
+          userRoles={userRoles}
+          onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
+          onSwitchToRegister={() => { }}
+        />
+
+        <ActivityModal
+          isOpen={isModalOpen}
+          onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
+        >
+          {selectedActivity && (
+            <ActivityForm
+              initialData={selectedActivity}
+              onActivityCreated={handleActivityCreated}
+              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+            />
+          )}
+        </ActivityModal>
+
+        <ActivityModal
+          isOpen={isResponsibilityModalOpen}
+          onClose={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+          title={selectedResponsibility?.id ? "Edit Responsibility" : "Own Responsibility"}
+        >
+          {selectedResponsibility && (
+            <ResponsibilityForm
+              initialData={selectedResponsibility}
+              onResponsibilityCreated={() => {
+                setRefreshTrigger(prev => prev + 1);
+                setIsResponsibilityModalOpen(false);
+                setSelectedResponsibility(null);
+              }}
+              onCancel={() => { setIsResponsibilityModalOpen(false); setSelectedResponsibility(null); }}
+            />
+          )}
+        </ActivityModal>
+
+        <ProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          currentUser={currentUser}
+          onProfileUpdate={setCurrentUser}
+        />
+      </div >
+    </>
+  );
 }
 
 export default function Home() {

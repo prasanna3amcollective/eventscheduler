@@ -62,6 +62,8 @@
   height: 28px;
   width: auto;
   opacity: 0.95;
+  transform-origin: center;
+  animation: spin 20s linear infinite;
 }
 
 .mobile-menu-dot {

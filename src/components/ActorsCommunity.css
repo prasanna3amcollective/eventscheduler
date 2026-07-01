@@ -530,3 +530,24 @@
     right: 5%;
     transform: rotate(-10deg);
 }
+
+/* ===== RESPONSIVE — hide side illustrations on mobile ===== */
+@media (max-width: 640px) {
+    .header-illustration-1,
+    .header-illustration-2 {
+        display: none;
+    }
+
+    .actors-header {
+        padding: 5rem 1.25rem 3rem;
+    }
+
+    .actors-header h1 {
+        font-size: 2.8rem;
+    }
+
+    .cta-illustration-1,
+    .cta-illustration-2 {
+        display: none;
+    }
+}

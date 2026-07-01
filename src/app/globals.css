@@ -1278,6 +1278,68 @@ input:not([type="checkbox"]):focus {
   pointer-events: none;
 }
 
+/* Storytelling Community card — midnight firelight, matches destination page */
+.latest-posts-section .post-card--storytelling {
+  background: radial-gradient(ellipse at 60% 70%, #4A1E00 0%, #1C0E00 65%, #0E0600 100%);
+  color: #FDEBD0;
+  border: 2px solid #E8860A;
+  box-shadow: 0 0 0 1px rgba(232, 134, 10, 0.3), 6px 6px 0 rgba(232, 134, 10, 0.25);
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-style: italic;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
+}
+
+/* Amber glow at bottom — campfire warmth */
+.latest-posts-section .post-card--storytelling::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(232, 134, 10, 0.5) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Crescent moon + silhouette text overlay */
+.latest-posts-section .post-card--storytelling::before {
+  content: '☽';
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 2.2rem;
+  color: #F2A832;
+  opacity: 0.55;
+  pointer-events: none;
+  line-height: 1;
+  font-style: normal;
+  z-index: 1;
+  filter: drop-shadow(0 0 6px rgba(242, 168, 50, 0.6));
+}
+
+.latest-posts-section .post-card--storytelling span,
+.latest-posts-section .post-card--storytelling {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 8px rgba(232, 134, 10, 0.5);
+}
+
+.latest-posts-section .post-card--storytelling:hover {
+  transform: translate(-3px, -3px);
+  box-shadow:
+    0 0 0 1px rgba(232, 134, 10, 0.5),
+    8px 8px 0 rgba(232, 134, 10, 0.35),
+    0 0 40px rgba(232, 134, 10, 0.2);
+  background: radial-gradient(ellipse at 60% 70%, #5C2700 0%, #2D1600 65%, #1C0A00 100%);
+}
+
+
 @media (max-width: 768px) {
   .latest-posts-section .post-card {
     flex-basis: 100%;
