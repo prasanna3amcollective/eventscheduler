@@ -57,7 +57,7 @@ export default function ActorsCommunity() {
     );
 
     const handleBack = () => {
-        router.back();
+        router.push('/home#explore');
     };
 
     useEffect(() => {
@@ -70,7 +70,7 @@ export default function ActorsCommunity() {
             }
         `;
         document.head.appendChild(style);
-        return () => { document.head.removeChild(style); };
+        return () => { style.remove(); };
     }, []);
 
     if (!mounted) {
@@ -232,8 +232,8 @@ export default function ActorsCommunity() {
 
                     <h3>Expression Practice (Rasa)</h3>
                     <div className="rasa-grid">
-                        {rasas.map((rasa, i) => (
-                            <div key={i} className="rasa-tag">
+                        {rasas.map((rasa) => (
+                            <div key={rasa.name} className="rasa-tag">
                                 {rasa.name}
                                 <span className="rasa-sans">{rasa.meaning}</span>
                             </div>
@@ -297,8 +297,8 @@ export default function ActorsCommunity() {
                 <section className="actors-section">
                     <h2>Other Activities</h2>
                     <ol className="numbered-list">
-                        {otherActivities1.map((item, i) => (
-                            <li key={i}>{item}</li>
+                        {otherActivities1.map((item) => (
+                            <li key={item}>{item}</li>
                         ))}
                     </ol>
                 </section>
@@ -306,8 +306,8 @@ export default function ActorsCommunity() {
                 <section className="actors-section">
                     <h2>More Practice Ideas</h2>
                     <ol className="numbered-list" start={11}>
-                        {otherActivities2.map((item, i) => (
-                            <li key={i}>{item}</li>
+                        {otherActivities2.map((item) => (
+                            <li key={item}>{item}</li>
                         ))}
                     </ol>
                 </section>
