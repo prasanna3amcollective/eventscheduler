@@ -39,7 +39,7 @@
   z-index: 0;
 }
 
-.story-wrapper > * {
+.story-wrapper>* {
   position: relative;
   z-index: 1;
 }
@@ -277,7 +277,6 @@
 
 .story-subsection h3 {
   font-family: 'Playfair Display', serif;
-  font-size: 1rem;
   font-weight: 600;
   color: var(--story-mid);
   margin-bottom: 0.5rem;

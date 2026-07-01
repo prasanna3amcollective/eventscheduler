@@ -212,13 +212,13 @@ export default function Home_mobile() {
 
   const onCreateActivity = () => {
     const newActivity = {
-        startDateTime: new Date(),
-        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-        name: '',
-        leader: [],
-        guide: [],
-        observer: [],
-        duration: 60
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      leader: [],
+      guide: [],
+      observer: [],
+      duration: 60
     };
     setSelectedActivity(newActivity);
     setIsModalOpen(true);
@@ -226,12 +226,12 @@ export default function Home_mobile() {
 
   const onOwnResponsibility = () => {
     const newResponsibility = {
-        startDateTime: new Date(),
-        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-        name: '',
-        owner: currentUser?.name || '',
-        ownerId: currentUser?.id || '',
-        duration: 60
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      owner: currentUser?.name || '',
+      ownerId: currentUser?.id || '',
+      duration: 60
     };
     setSelectedResponsibility(newResponsibility);
     setIsResponsibilityModalOpen(true);
@@ -372,7 +372,7 @@ export default function Home_mobile() {
 
               {/* Upcoming Activities */}
               <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
-                <ActivityCarousel_mobile 
+                <ActivityCarousel_mobile
                   refreshTrigger={refreshTrigger}
                   onActivityClick={handleCarouselClick}
                   isLoggedIn={isLoggedIn}
@@ -573,7 +573,7 @@ export default function Home_mobile() {
             <>
               <BannerSlideshow_mobile />
               <div style={{ marginTop: '24px', padding: '0 8px', paddingBottom: '60px' }}>
-                <ActivityCarousel_mobile 
+                <ActivityCarousel_mobile
                   refreshTrigger={refreshTrigger}
                   onActivityClick={handleCarouselClick}
                   isLoggedIn={isLoggedIn}
@@ -608,7 +608,7 @@ export default function Home_mobile() {
           {activeTab === 'explore' && (
             <section id="explore" style={{ textAlign: 'center', padding: '40px 16px 80px' }}>
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
-                <h2 className="section-title">Explore our Communities</h2>
+                <h2 className="section-title">Explore our Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
                   <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
                   <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>

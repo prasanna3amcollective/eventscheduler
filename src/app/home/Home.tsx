@@ -209,13 +209,13 @@ function HomeContent() {
 
   const onCreateActivity = () => {
     const newActivity = {
-        startDateTime: new Date(),
-        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-        name: '',
-        leader: [],
-        guide: [],
-        observer: [],
-        duration: 60
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      leader: [],
+      guide: [],
+      observer: [],
+      duration: 60
     };
     setSelectedActivity(newActivity);
     setIsModalOpen(true);
@@ -223,12 +223,12 @@ function HomeContent() {
 
   const onOwnResponsibility = () => {
     const newResponsibility = {
-        startDateTime: new Date(),
-        endDateTime: new Date(Date.now() + 60 * 60 * 1000),
-        name: '',
-        owner: currentUser?.name || '',
-        ownerId: currentUser?.id || '',
-        duration: 60
+      startDateTime: new Date(),
+      endDateTime: new Date(Date.now() + 60 * 60 * 1000),
+      name: '',
+      owner: currentUser?.name || '',
+      ownerId: currentUser?.id || '',
+      duration: 60
     };
     setSelectedResponsibility(newResponsibility);
     setIsResponsibilityModalOpen(true);
@@ -412,13 +412,13 @@ function HomeContent() {
                   Stay updated with the newest activities and community highlights.
                 </p> */}
                 <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
-                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
+                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
-                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
+                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
+                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
                 </div>
               </section>
             </section>
@@ -488,7 +488,7 @@ function HomeContent() {
   }
 
   return (
-    <>
+
       <div className="dashboard-layout fade-in">
         <MarqueeBanner />
 
@@ -586,18 +586,18 @@ function HomeContent() {
               {/* <h2>Explore</h2>
               <p>Discover new projects and community initiatives.</p> */}
               <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-                <h2 className="section-title">Explore our Communities</h2>
+                <h2 className="section-title">Explore our Nested Communities</h2>
                 {/* <p className="section-description">
                   Stay updated with the newest activities and community highlights.
                 </p> */}
                 <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
-                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
-                  <div className="post-card">Cinemat Community</div>
-                  <div className="post-card">Music Community</div>
-                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
-                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
+                  <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Cinemat Community</button>
+                  <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Music Community</button>
+                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
+                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
+                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
                 </div>
               </section>
             </section>
@@ -657,7 +657,7 @@ function HomeContent() {
           onProfileUpdate={setCurrentUser}
         />
       </div >
-    </>
+
   );
 }
 

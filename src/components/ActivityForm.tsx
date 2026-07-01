@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import type { FormEvent } from 'react';
+import React, { useState, useEffect, useRef, useCallback, FormEvent } from 'react';
+
 
 import { addMinutes, differenceInMinutes, format, addWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
@@ -253,7 +253,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       const diffDays = Math.max(1, Math.round((initialUntil.getTime() - defaultRecStart.getTime()) / (1000 * 3600 * 24)));
       initialWeeks = Math.round(diffDays / 7);
     } else {
-      initialUntil = null;
+
       initialWeeks = '';
     }
   } else {
@@ -333,7 +333,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
     fetch(`/api/recurrence-templates/${tplId}`)
       .then((r) => r.json())
       .then((tpl) => {
-        if (tpl && tpl.recurrenceRule) {
+        if (tpl?.recurrenceRule) {
           const p = parseRecurrenceForForm(tpl.recurrenceRule);
           setFormData((prev) => {
             const tplStart = p.recurrenceStart || (tpl.startDate ? new Date(tpl.startDate) : prev.recurrenceStart);
@@ -432,7 +432,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
    * and excludes the current occurrence from the original series.
    */
   const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
       if (!formData.leader || formData.leader.length === 0) {
@@ -477,9 +477,9 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
       };
 
       try {
-        if (isSeriesOccurrence && saveMode === 'this') {
+        if (isSeriesOccurrence && saveMode === 'this' && initialData?.id) {
           // PHASE 6 "this only": PUT the real persisted row, mark as edited (no EXDATE, no new row)
-          const url = `/api/activities/${initialData!.id}`;
+          const url = `/api/activities/${initialData.id}`;
           const method = 'PUT';
           const thisOnlyPayload = {
             ...payload,
@@ -487,8 +487,8 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             isRecurring: false,
             recurrenceRule: null,
             detachReason: 'edited',
-            recurrenceTemplateId: initialData!.recurrenceTemplateId,
-            generatedFromTemplateId: initialData!.generatedFromTemplateId,
+            recurrenceTemplateId: initialData.recurrenceTemplateId,
+            generatedFromTemplateId: initialData.generatedFromTemplateId,
           };
           const res = await secureFetch(url, {
             method,
@@ -510,11 +510,11 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             templateUpdate.detachReason = formData.detachReason;
           }
 
-          if (formData.name !== (initialData!.name || '')) templateUpdate.name = formData.name;
-          if (formData.duration !== initialData!.duration) templateUpdate.duration = formData.duration;
-          if (formData.category !== (initialData!.category || 'General')) templateUpdate.category = formData.category;
+          if (formData.name !== (initialData.name || '')) templateUpdate.name = formData.name;
+          if (formData.duration !== initialData?.duration) templateUpdate.duration = formData.duration;
+          if (formData.category !== (initialData?.category || 'General')) templateUpdate.category = formData.category;
 
-          if (rruleStr !== (initialData!.recurrenceRule || '')) templateUpdate.recurrenceRule = rruleStr;
+          if (rruleStr !== (initialData?.recurrenceRule || '')) templateUpdate.recurrenceRule = rruleStr;
 
           const newStartIso = formData.recurrenceStart?.toISOString();
           const initialStartIso = parsedRecurrence.recurrenceStart?.toISOString();
@@ -529,7 +529,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             setIsSubmitting(false);
             return;
           }
-          const url = `/api/recurrence-templates/${initialData!.recurrenceTemplateId}`;
+          const url = `/api/recurrence-templates/${initialData?.recurrenceTemplateId}`;
           const method = 'PUT';
           const res = await secureFetch(url, {
             method,
@@ -546,7 +546,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
         } else {
           // Normal create or edit of non-series (or already-detached) item
           const url = isEditing
-            ? `/api/activities/${initialData!.id}`
+            ? `/api/activities/${initialData?.id}`
             : '/api/activities';
           const method = isEditing ? 'PUT' : 'POST';
 
@@ -645,7 +645,7 @@ export default function ActivityForm({ onActivityCreated, initialData, onCancel 
             detachReason: 'cancelled',
           };
 
-          const res = await secureFetch(`/api/activities/${initialData!.id}`, {
+          const res = await secureFetch(`/api/activities/${initialData?.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(archivePayload),
