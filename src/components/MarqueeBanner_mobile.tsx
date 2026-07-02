@@ -37,11 +37,15 @@ export default function MarqueeBanner_mobile(props: Readonly<MarqueeBannerMobile
     if (setActiveSection) {
       setActiveSection(id);
       if (id === 'participate') {
-        globalThis.history.pushState(null, '', globalThis.location.pathname);
+        globalThis.history.pushState(null, '', '/home');
       } else if (id === 'about-us') {
         globalThis.history.pushState(null, '', '/home/aboutus');
       } else if (id === 'testimonials') {
         globalThis.history.pushState(null, '', '/home/testimonials');
+      } else if (id === 'explore') {
+        globalThis.history.pushState(null, '', '/home/explore');
+      } else if (id === 'gallery') {
+        globalThis.history.pushState(null, '', '/home/gallery');
       } else {
         globalThis.location.hash = id;
       }

@@ -110,22 +110,22 @@ export default function HeaderPanel({
               About Us
             </Link>
             <Link
-              href="#gallery"
+              href="/home/gallery"
               className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                globalThis.location.hash = '#gallery';
+                globalThis.history.pushState(null, '', '/home/gallery');
                 setActiveSection('gallery');
               }}
             >
               Gallery
             </Link>
             <Link
-              href="#explore"
+              href="/home/explore"
               className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
               onClick={(e) => {
                 e.preventDefault();
-                globalThis.location.hash = '#explore';
+                globalThis.history.pushState(null, '', '/home/explore');
                 setActiveSection('explore');
               }}
             >
@@ -133,11 +133,11 @@ export default function HeaderPanel({
             </Link>
             {!isLoggedIn && (
               <Link
-                href="#testimonials"
+                href="/home/testimonials"
                 className={`nav-link-btn ${activeSection === 'testimonials' ? 'active text-black' : ''}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  globalThis.location.hash = '#testimonials';
+                  globalThis.history.pushState(null, '', '/home/testimonials');
                   setActiveSection('testimonials');
                 }}
               >

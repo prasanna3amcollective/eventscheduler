@@ -51,6 +51,10 @@ function HomeContent() {
       setActiveSection('about-us');
     } else if (pathname === '/home/testimonials') {
       setActiveSection('testimonials');
+    } else if (pathname === '/home/explore') {
+      setActiveSection('explore');
+    } else if (pathname === '/home/gallery') {
+      setActiveSection('gallery');
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
