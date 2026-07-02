@@ -362,7 +362,7 @@ function HomeContent() {
 
           {activeSection === 'participate' && (
             <section id="participate" style={{ textAlign: 'left', padding: '40px' }}>
-              <p>Join our events, volunteer, or become a member of the community.</p>
+
 
               {/* Decorative Banner Slideshow */}
               <BannerSlideshow />
