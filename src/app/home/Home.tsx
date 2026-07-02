@@ -14,6 +14,9 @@ import BannerSlideshow from '@/components/BannerSlideshow';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import HolidayDetailModal from '@/components/HolidayDetailModal';
+import EventDetailModal from '@/components/EventDetailModal';
+import EventForm from '@/components/EventForm';
+import FooterPanel from '@/components/FooterPanel';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
@@ -110,6 +113,29 @@ function HomeContent() {
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+  // New Event creation states
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isEventDetailOpen, setIsEventDetailOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+
+  const onCreateEvent = () => {
+    setIsEventModalOpen(true);
+  };
+
+  const refreshEventDetails = async () => {
+    if (!selectedEvent?.id) return;
+    try {
+      const res = await fetch('/api/events');
+      if (res.ok) {
+        const events = await res.json();
+        const updated = events.find((e: any) => e.id === selectedEvent.id);
+        if (updated) setSelectedEvent(updated);
+      }
+    } catch(e) {
+      console.error("Failed to refresh event", e);
+    }
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -399,6 +425,13 @@ function HomeContent() {
                           Create Activity
                         </button>
                       )}
+                      <button
+                        className="neo-btn-primary"
+                        onClick={onCreateEvent}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        Create Event
+                      </button>
                     </div>
                   ) : null
                 }
@@ -534,7 +567,41 @@ function HomeContent() {
             currentUser={currentUser}
             onProfileUpdate={setCurrentUser}
           />
-        </div >
+
+          {/* Create Event Modal */}
+          <ActivityModal
+            isOpen={isEventModalOpen}
+            onClose={() => setIsEventModalOpen(false)}
+            title="Create New Event"
+          >
+            <EventForm
+              onSuccess={(newEvent) => {
+                setIsEventModalOpen(false);
+                setSelectedEvent(newEvent);
+                setIsEventDetailOpen(true);
+              }}
+              onCancel={() => setIsEventModalOpen(false)}
+            />
+          </ActivityModal>
+
+          {/* Event Detail Modal (for managing activities/responsibilities inside the event) */}
+          <EventDetailModal 
+            isOpen={isEventDetailOpen}
+            event={selectedEvent}
+            onClose={() => setIsEventDetailOpen(false)}
+            currentUser={currentUser}
+            onRefresh={refreshEventDetails}
+          />
+        </div>
+
+        <FooterPanel
+          isLoggedIn={isLoggedIn}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+          setShowSignInPanel={setShowSignInPanel}
+          setShowRegisterModal={setShowRegisterModal}
+          onAboutUsClick={() => transitionRef.current?.trigger()}
+        />
       </>
     );
 }

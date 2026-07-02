@@ -103,43 +103,47 @@ export default function HeaderPanel({
             >
               Participate
             </Link>
-            <Link
-              href="/home/aboutus"
-              className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                if (onAboutUsClick) {
-                  onAboutUsClick();
-                } else {
-                  globalThis.history.pushState(null, '', '/home/aboutus');
-                  setActiveSection('about-us');
-                }
-              }}
-            >
-              About Us
-            </Link>
-            <Link
-              href="/home/gallery"
-              className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home/gallery');
-                setActiveSection('gallery');
-              }}
-            >
-              Gallery
-            </Link>
-            <Link
-              href="/home/explore"
-              className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home/explore');
-                setActiveSection('explore');
-              }}
-            >
-              Explore
-            </Link>
+            {!isLoggedIn && (
+              <>
+                <Link
+                  href="/home/aboutus"
+                  className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onAboutUsClick) {
+                      onAboutUsClick();
+                    } else {
+                      globalThis.history.pushState(null, '', '/home/aboutus');
+                      setActiveSection('about-us');
+                    }
+                  }}
+                >
+                  About Us
+                </Link>
+                <Link
+                  href="/home/gallery"
+                  className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    globalThis.history.pushState(null, '', '/home/gallery');
+                    setActiveSection('gallery');
+                  }}
+                >
+                  Gallery
+                </Link>
+                <Link
+                  href="/home/explore"
+                  className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    globalThis.history.pushState(null, '', '/home/explore');
+                    setActiveSection('explore');
+                  }}
+                >
+                  Explore
+                </Link>
+              </>
+            )}
             {isLoggedIn && (
               <Link
                 href="/calendar"

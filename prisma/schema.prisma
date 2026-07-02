@@ -30,21 +30,21 @@ enum RecurrenceStatus {
 }
 
 model Activity {
-  id             String   @id @default(uuid()) // sys_id
-  description    String?  @db.Text // Optional description up to 1000 chars
-  name           String
-  startDateTime  DateTime
-  endDateTime    DateTime
-  duration       Int      // in minutes
-  isRecurring    Boolean  @default(false)
-  recurrenceRule String?
+  id                      String       @id @default(uuid()) // sys_id
+  description             String?      @db.Text // Optional description up to 1000 chars
+  name                    String
+  startDateTime           DateTime
+  endDateTime             DateTime
+  duration                Int // in minutes
+  isRecurring             Boolean      @default(false)
+  recurrenceRule          String?
   recurrenceTemplateId    String?
   generatedFromTemplateId String?
   detachReason            DetachReason @default(none)
 
-  category       String   @default("General")
-  state          String   @default("Scheduled")
-  participants   Participant[]
+  category     String        @default("General")
+  state        String        @default("Scheduled")
+  participants Participant[]
 
   recurrenceTemplate    RecurrenceTemplate? @relation("RecurrenceTemplate_Activities", fields: [recurrenceTemplateId], references: [id], onDelete: SetNull)
   generatedFromTemplate RecurrenceTemplate? @relation("RecurrenceTemplate_GeneratedFrom", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
@@ -60,22 +60,22 @@ model Activity {
 }
 
 model Responsibility {
-  id             String   @id @default(uuid()) // sys_id
-  description    String?  @db.Text // Optional description up to 1000 chars
-  name           String
-  startDateTime  DateTime
-  endDateTime    DateTime
-  duration       Int      // in minutes
-  isRecurring    Boolean  @default(false)
-  recurrenceRule String?
+  id                      String       @id @default(uuid()) // sys_id
+  description             String?      @db.Text // Optional description up to 1000 chars
+  name                    String
+  startDateTime           DateTime
+  endDateTime             DateTime
+  duration                Int // in minutes
+  isRecurring             Boolean      @default(false)
+  recurrenceRule          String?
   recurrenceTemplateId    String?
   generatedFromTemplateId String?
   detachReason            DetachReason @default(none)
 
-  category       String   @default("General")
-  state          String   @default("Scheduled")
-  owner          String?
-  ownerId        String?
+  category String  @default("General")
+  state    String  @default("Scheduled")
+  owner    String?
+  ownerId  String?
 
   recurrenceTemplate    RecurrenceTemplate? @relation("RecurrenceTemplate_Responsibilities", fields: [recurrenceTemplateId], references: [id], onDelete: SetNull)
   generatedFromTemplate RecurrenceTemplate? @relation("RecurrenceTemplate_GeneratedFrom_Resp", fields: [generatedFromTemplateId], references: [id], onDelete: SetNull)
@@ -92,14 +92,14 @@ model Responsibility {
 }
 
 model Participant {
-  id         String   @id @default(uuid())
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  activityId String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  type       String   @default("Participant") // Leader, Guide, Observer, Participant
-  attendance Int? // 0=Present, 1=Half, 2=Absent
-  payAsYouWish Float   @default(0)
+  id           String   @id @default(uuid())
+  activity     Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activityId   String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  type         String   @default("Participant") // Leader, Guide, Observer, Participant
+  attendance   Int? // 0=Present, 1=Half, 2=Absent
+  payAsYouWish Float    @default(0)
 
   // System Columns
   sys_created_by String?
@@ -113,17 +113,18 @@ model Participant {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  username String @unique
-  phone    String @unique
-  email    String @unique
-  password String
-  groups   UserGroupM2M[]
-  roles    UserRole[]
-  activities Participant[]
+  id              String             @id @default(uuid())
+  name            String
+  username        String             @unique
+  phone           String             @unique
+  email           String             @unique
+  password        String
+  groups          UserGroupM2M[]
+  roles           UserRole[]
+  activities      Participant[]
+  eventActivities EventParticipant[]
 
-  skills   String[] @default([])
+  skills String[] @default([])
 
   // System Columns
   sys_created_by String?
@@ -135,7 +136,7 @@ model User {
 }
 
 model Group {
-  id          String @id @default(uuid())
+  id          String         @id @default(uuid())
   name        String
   description String
   category    String
@@ -168,7 +169,7 @@ model UserGroupM2M {
 }
 
 model Role {
-  id          String @id @default(uuid())
+  id          String              @id @default(uuid())
   name        String
   description String
   groups      RoleGroupM2M[]
@@ -219,10 +220,10 @@ model RoleGroupM2M {
 }
 
 model AccessControlList {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   table       String
   operation   String // read, write, create, delete
-  role        Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role        Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
   roleId      String
   description String?
 
@@ -237,33 +238,33 @@ model AccessControlList {
 }
 
 model RecurrenceTemplate {
-  id                 String   @id @default(uuid())
-  templateType       RecurrenceTemplateType @default(activity)
-  name               String?
-  description        String?  @db.Text
-  duration           Int      @default(60)
-  category           String   @default("General")
-  recurrenceRule     String
-  startDate          DateTime
-  endDate            DateTime?
-  lastGeneratedAt    DateTime?
-  generatedUntil     DateTime?
+  id              String                 @id @default(uuid())
+  templateType    RecurrenceTemplateType @default(activity)
+  name            String?
+  description     String?                @db.Text
+  duration        Int                    @default(60)
+  category        String                 @default("General")
+  recurrenceRule  String
+  startDate       DateTime
+  endDate         DateTime?
+  lastGeneratedAt DateTime?
+  generatedUntil  DateTime?
 
   // Versioning
-  versionSeriesId    String
-  version            Int      @default(1)
-  status             RecurrenceStatus @default(active)
+  versionSeriesId String
+  version         Int              @default(1)
+  status          RecurrenceStatus @default(active)
 
   // System columns
-  sys_created_by     String?
-  sys_updated_by     String?
-  sys_created_at     DateTime @default(now())
-  sys_updated_at     DateTime @updatedAt
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
 
   // Reverse relations (populated when Activity/Responsibility rows reference this template via their FKs)
-  activities                  Activity[]       @relation("RecurrenceTemplate_Activities")
-  generatedFromActivities     Activity[]       @relation("RecurrenceTemplate_GeneratedFrom")
-  responsibilities            Responsibility[] @relation("RecurrenceTemplate_Responsibilities")
+  activities                    Activity[]       @relation("RecurrenceTemplate_Activities")
+  generatedFromActivities       Activity[]       @relation("RecurrenceTemplate_GeneratedFrom")
+  responsibilities              Responsibility[] @relation("RecurrenceTemplate_Responsibilities")
   generatedFromResponsibilities Responsibility[] @relation("RecurrenceTemplate_GeneratedFrom_Resp")
 
   @@unique([versionSeriesId, version])
@@ -274,9 +275,9 @@ model RecurrenceTemplate {
 }
 
 model Photo {
-  id          String   @id @default(uuid())
-  filename    String   @unique
-  description String?  @db.Text
+  id          String  @id @default(uuid())
+  filename    String  @unique
+  description String? @db.Text
 
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
@@ -285,13 +286,115 @@ model Photo {
 }
 
 model Testimonial {
-  id          String @id @default(uuid())
-  description String @db.Text // HTML content, mandatory
-  name        String?   // optional name
+  id          String  @id @default(uuid())
+  description String  @db.Text // HTML content, mandatory
+  name        String? // optional name
 
   // System columns (optional, follow existing pattern)
   sys_created_at DateTime @default(now())
   sys_updated_at DateTime @updatedAt
 
   @@map("testimonials")
+}
+
+model Event {
+  id            String   @id @default(uuid()) // sys_id
+  name          String
+  description   String?  @db.Text
+  startDateTime DateTime
+  endDateTime   DateTime
+  eventPlace    String
+  eventLocation String?
+
+  activities       EventActivity[]
+  responsibilities EventResponsibility[]
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+}
+
+model EventActivity {
+  id                      String       @id @default(uuid()) // sys_id
+  description             String?      @db.Text
+  name                    String
+  startDateTime           DateTime
+  endDateTime             DateTime
+  duration                Int // in minutes
+  isRecurring             Boolean      @default(false)
+  recurrenceRule          String?
+  recurrenceTemplateId    String?
+  generatedFromTemplateId String?
+  detachReason            DetachReason @default(none)
+
+  category String @default("General")
+  state    String @default("Scheduled")
+
+  eventId      String
+  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participants EventParticipant[]
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([recurrenceTemplateId, startDateTime])
+  @@index([startDateTime, detachReason])
+}
+
+model EventResponsibility {
+  id                      String       @id @default(uuid()) // sys_id
+  description             String?      @db.Text
+  name                    String
+  startDateTime           DateTime
+  endDateTime             DateTime
+  duration                Int // in minutes
+  isRecurring             Boolean      @default(false)
+  recurrenceRule          String?
+  recurrenceTemplateId    String?
+  generatedFromTemplateId String?
+  detachReason            DetachReason @default(none)
+
+  category String  @default("General")
+  state    String  @default("Scheduled")
+  owner    String?
+  ownerId  String?
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([recurrenceTemplateId, startDateTime])
+  @@index([startDateTime, detachReason])
+  @@index([ownerId])
+}
+
+model EventParticipant {
+  id              String        @id @default(uuid())
+  eventActivity   EventActivity @relation(fields: [eventActivityId], references: [id], onDelete: Cascade)
+  eventActivityId String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  type            String        @default("Participant") // Leader, Guide, Observer, Participant
+  attendance      Int? // 0=Present, 1=Half, 2=Absent
+  payAsYouWish    Float         @default(0)
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([eventActivityId, userId])
+  @@index([userId])
+  @@map("event_participants")
 }
