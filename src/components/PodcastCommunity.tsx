@@ -7,7 +7,7 @@ export default function PodcastCommunity() {
     const router = useRouter();
 
     const handleBack = () => {
-        router.push('/home#explore');
+        router.push('/home/explore');
     };
 
     const themes = [
