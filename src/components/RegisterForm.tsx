@@ -202,7 +202,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
       }
 
       try {
-        const payload = { ...formData, phone: `${selectedDialCode}${formData.phone}`, mcaptcha__token: mcaptchaToken };
+        const payload = { ...formData, phone: formData.phone, mcaptcha__token: mcaptchaToken };
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

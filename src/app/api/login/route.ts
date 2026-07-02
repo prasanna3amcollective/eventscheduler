@@ -11,9 +11,15 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { phone, password } = loginSchema.parse(body);
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { phone }
     });
+
+    if (!user && phone.length === 10) {
+      user = await prisma.user.findUnique({
+        where: { phone: `+91${phone}` }
+      });
+    }
 
     if (!user) {
        return NextResponse.json({ error: 'Invalid phone number or password' }, { status: 401 });
