@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { User, ChevronDown, LogOut } from '@/components/Icons';
 
 const LS_KEY_USER = 'signin_saved_username';
 const LS_KEY_PASS = 'signin_saved_password';
@@ -9,6 +11,12 @@ const LS_KEY_REMEMBER = 'signin_remember_me';
 
 export default function HeaderPanel({
   isLoggedIn,
+  currentUser,
+  userRoles = [],
+  handleLogout,
+  showProfileDropdown,
+  setShowProfileDropdown,
+  setIsProfileOpen,
   showSignInPanel,
   setShowSignInPanel,
   setShowRegisterModal,
@@ -25,6 +33,7 @@ export default function HeaderPanel({
   hideNav,
   onAboutUsClick,
 }: any) {
+  const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
 
   // On mount: restore saved credentials if "remember me" was previously checked
@@ -131,6 +140,31 @@ export default function HeaderPanel({
             >
               Explore
             </Link>
+            {isLoggedIn && (
+              <Link
+                href="/calendar"
+                className={`nav-link-btn ${activeSection === 'calendar' ? 'active text-black' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/calendar');
+                }}
+              >
+                Calendar
+              </Link>
+            )}
+            {isLoggedIn && userRoles.includes('developer') && (
+              <Link
+                href="/home/admin"
+                className={`nav-link-btn ${activeSection === 'admin' ? 'active text-black' : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  globalThis.history.pushState(null, '', '/home/admin');
+                  setActiveSection('admin');
+                }}
+              >
+                Developer Panel
+              </Link>
+            )}
             {!isLoggedIn && (
               <Link
                 href="/home/testimonials"
@@ -150,7 +184,7 @@ export default function HeaderPanel({
 
       {/* Right section - Auth buttons */}
       <div className="flex-1 flex flex-row items-center justify-end gap-4 relative flex-shrink-0 flex-nowrap">
-        {!isLoggedIn && (
+        {!isLoggedIn ? (
           <div className="flex items-center gap-4 relative">
             <button
               onClick={() => {
@@ -271,6 +305,43 @@ export default function HeaderPanel({
                 </form>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-4 relative">
+            <div className="user-menu-container" style={{ position: 'relative' }}>
+              <button
+                className="user-trigger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileDropdown(!showProfileDropdown);
+                }}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              >
+                <div className="user-avatar" style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000' }}>
+                  <User size={18} />
+                </div>
+                <ChevronDown size={14} />
+              </button>
+              {showProfileDropdown && (
+                <div className="user-dropdown" onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px', minWidth: '160px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', zIndex: 100 }}>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      setIsProfileOpen(true);
+                    }}
+                    style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', padding: '8px', borderRadius: '4px' }}
+                  >
+                    <span style={{ fontWeight: 600 }}>{currentUser?.name}</span> <br />
+                    <br />
+                    Edit Profile
+                  </button>
+                </div>
+              )}
+            </div>
+            <button onClick={handleLogout} className="btn-logout" title="Logout" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LogOut size={20} />
+            </button>
           </div>
         )}
       </div>
