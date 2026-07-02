@@ -252,7 +252,7 @@ body {
   background-color: var(--bg-color);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
   font-size: 15px;
   line-height: 1.6;
 }

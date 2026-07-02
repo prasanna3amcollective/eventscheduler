@@ -83,7 +83,7 @@ export default function HeaderPanel({
   };
 
   return (
-    <nav className="header-panel bg-[var(--surface-color)] pl-4 py-2 sticky top-0 z-40 flex flex-row items-center justify-between w-full" style={{ paddingRight: '2.5rem' }}>
+    <nav className="header-panel bg-[var(--surface-color)] pl-4 py-2 relative z-40 flex flex-row items-center justify-between w-full" style={{ paddingRight: '2.5rem' }}>
 
       {/* Left section - Empty spacer for true centering */}
       <div className="flex-1 hidden md:block"></div>
