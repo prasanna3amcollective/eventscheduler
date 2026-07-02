@@ -7,7 +7,7 @@ export default function WritersCommunity() {
     const router = useRouter();
 
     const handleBack = () => {
-        router.back();
+        router.push('/home#explore');
     };
 
     return (
