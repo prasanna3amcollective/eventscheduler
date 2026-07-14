@@ -279,6 +279,7 @@ async function handleUpdateDrifting(
   for (const row of driftCandidates) {
     if (
       row.name !== (template.name ?? 'Untitled') ||
+      row.description !== (template.description ?? null) ||
       row.duration !== template.duration ||
       row.category !== template.category
     ) {
@@ -294,6 +295,7 @@ async function handleUpdateDrifting(
       where: { id },
       data: {
         name: template.name ?? 'Untitled',
+        description: template.description ?? null,
         duration: template.duration,
         category: template.category,
         generatedFromTemplateId: newVersionId,
@@ -358,7 +360,7 @@ export async function reconcileFutureOccurrences(
         startDateTime: { gte: asOf },
         detachReason: 'none',
       },
-      select: { id: true, startDateTime: true, name: true, duration: true, category: true },
+      select: { id: true, startDateTime: true, name: true, description: true, duration: true, category: true },
       ...(ctx ? { _context: ctx } : {}),
     });
 
@@ -455,6 +457,7 @@ async function loadTemplateSnapshot(
     id: row.id,
     templateType: row.templateType,
     name: row.name,
+    description: row.description ?? null,
     duration: row.duration,
     category: row.category,
     recurrenceRule: row.recurrenceRule,
@@ -476,6 +479,7 @@ function buildOccurrenceCreatePayload(
   const end = computeEndDateTime(start, template.duration);
   const base = {
     name: template.name ?? 'Untitled Recurring',
+    description: template.description ?? null,
     startDateTime: start,
     endDateTime: end,
     duration: template.duration,

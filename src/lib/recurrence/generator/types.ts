@@ -76,6 +76,7 @@ export interface TemplateSnapshot {
   id: string;
   templateType: RecurrenceTemplateType;
   name: string | null;
+  description: string | null;
   duration: number;
   category: string;
   recurrenceRule: string;

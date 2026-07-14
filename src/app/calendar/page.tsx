@@ -209,6 +209,9 @@ function CalendarPageContent() {
                     <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
                         <CalendarDays size={18} /> Calendar View
                     </button>
+                    <button className="nav-link-btn" onClick={() => router.push('/home#explore')}>
+                        Explore
+                    </button>
                     {userRoles.includes('developer') && (
                         <button className="nav-link-btn" onClick={() => router.push('/home')}>
                             <ShieldCheck size={18} /> Developer Panel
