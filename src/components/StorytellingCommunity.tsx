@@ -7,7 +7,7 @@ export default function StorytellingCommunity() {
     const router = useRouter();
 
     const handleBack = () => {
-        router.push('/home#explore');
+        router.push('/explore');
     };
 
     return (

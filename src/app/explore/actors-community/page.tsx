@@ -3,5 +3,5 @@
 import ActorsCommunity from '@/components/ActorsCommunity';
 
 export default function ActorsCommunityPage() {
-    return <ActorsCommunity />;
+  return <ActorsCommunity />;
 }

@@ -49,8 +49,6 @@ function HomeContent() {
     }
     if (pathname === '/home/aboutus') {
       setActiveSection('about-us');
-    } else if (pathname === '/home/testimonials') {
-      setActiveSection('testimonials');
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -412,23 +410,19 @@ function HomeContent() {
                   Stay updated with the newest activities and community highlights.
                 </p> */}
                 <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
-                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
+                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
-                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
-                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
+                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
+                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
+                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
                 </div>
               </section>
             </section>
           )}
 
-          {activeSection === 'testimonials' && (
-            <div style={{ width: '100%', minHeight: '100vh' }}>
-              <Testimonials onBackClick={() => { globalThis.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
-            </div>
-          )}
+
 
           <ActivityDetailModal
             activity={detailActivity}
@@ -501,11 +495,11 @@ function HomeContent() {
             <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
               <CalendarDays size={18} /> Calendar View
             </button>
-            <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => setActiveTab('explore')}>
+            <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => router.push('/explore')}>
               <Search size={18} /> Explore
             </button>
             {userRoles.includes('developer') && (
-              <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
+              <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => router.push('/developer-panel')}>
                 <ShieldCheck size={18} /> Developer Panel
               </button>
             )}
@@ -591,20 +585,18 @@ function HomeContent() {
                   Stay updated with the newest activities and community highlights.
                 </p> */}
                 <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
-                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
+                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
                   <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Cinemat Community</button>
                   <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Music Community</button>
-                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
-                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
-                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
+                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
+                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
+                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
                 </div>
               </section>
             </section>
           )}
-          {activeTab === 'admin' && (
-            <AdminDashboard currentUser={currentUser} />
-          )}
+          {/* AdminDashboard removed as it is now its own page at /developer-panel */}
         </main>
 
         <ActivityDetailModal

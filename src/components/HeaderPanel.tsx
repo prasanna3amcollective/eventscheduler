@@ -121,25 +121,15 @@ export default function HeaderPanel({
               Gallery
             </Link>
             <Link
-              href="/home#explore"
+              href="/explore"
               className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home#explore');
-                setActiveSection('explore');
-              }}
             >
               Explore
             </Link>
             {!isLoggedIn && (
               <Link
-                href="/home#testimonials"
+                href="/guest-book"
                 className={`nav-link-btn ${activeSection === 'testimonials' ? 'active text-black' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  globalThis.history.pushState(null, '', '/home#testimonials');
-                  setActiveSection('testimonials');
-                }}
               >
                 Guest Book
               </Link>

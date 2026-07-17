@@ -41,8 +41,6 @@ export default function Home_mobile() {
   useEffect(() => {
     if (pathname === '/home/aboutus') {
       setActiveSection('about-us');
-    } else if (pathname === '/home/testimonials') {
-      setActiveSection('testimonials');
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -342,11 +340,7 @@ export default function Home_mobile() {
             </div>
           )}
 
-          {activeSection === 'testimonials' && (
-            <div style={{ width: '100%', minHeight: '100vh' }}>
-              <Testimonials onBackClick={() => { globalThis.history.pushState(null, '', '/home'); setActiveSection('participate'); }} />
-            </div>
-          )}
+
 
           {activeSection === 'participate' && (
             <>
@@ -416,13 +410,13 @@ export default function Home_mobile() {
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
                 <h2 className="section-title">Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
-                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
-                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
                 </div>
               </section>
             </section>
@@ -558,11 +552,11 @@ export default function Home_mobile() {
           <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
             <CalendarDays size={18} /> Calendar View
           </button>
-          <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => setActiveTab('explore')}>
+          <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => router.push('/explore')}>
             Explore
           </button>
           {userRoles.includes('developer') && (
-            <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => setActiveTab('admin')}>
+            <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => router.push('/developer-panel')}>
               <ShieldCheck size={18} /> Developer Panel
             </button>
           )}
@@ -610,20 +604,18 @@ export default function Home_mobile() {
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
                 <h2 className="section-title">Explore our Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/home/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
-                  <div className="post-card post-card--writers" onClick={() => router.push('/home/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card">Cinemat Community</div>
                   <div className="post-card">Music Community</div>
-                  <div className="post-card post-card--tech" onClick={() => router.push('/home/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
-                  <div className="post-card post-card--podcast" onClick={() => router.push('/home/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/home/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
+                  <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
                 </div>
               </section>
             </section>
           )}
-          {activeTab === 'admin' && (
-            <AdminDashboard currentUser={currentUser} />
-          )}
+          {/* AdminDashboard removed as it is now its own page at /developer-panel */}
         </main>
 
         <ActivityModal
