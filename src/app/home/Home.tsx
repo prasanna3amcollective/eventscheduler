@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import HeaderPanel from '@/components/HeaderPanel';
+import { useAuth } from '@/components/AuthProvider';
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
@@ -17,9 +17,9 @@ import HolidayDetailModal from '@/components/HolidayDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
-import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
+import { triggerStaggeredTransition, triggerStaggeredTransitionBackwards, isStaggeredTransitionBusy } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
-import Gallery from '@/components/Gallery';
+
 import { CalendarDays, LogOut, ShieldCheck, User, ChevronDown, Search, Home as HomeIcon } from '@/components/Icons';
 import './Home.css';
 
@@ -27,11 +27,30 @@ function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
-  const [userPermissions, setUserPermissions] = useState({ canCreateActivity: false, canCreateResponsibility: false });
-  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const {
+    isLoggedIn,
+    currentUser,
+    setCurrentUser,
+    userRoles,
+    setUserRoles,
+    userPermissions,
+    setUserPermissions,
+    isLoadingSession,
+    showSignInPanel,
+    setShowSignInPanel,
+    showRegisterModal,
+    setShowRegisterModal,
+    signinPhone,
+    setSigninPhone,
+    signinPassword,
+    setSigninPassword,
+    signinError,
+    setSigninError,
+    signinSubmitting,
+    setSigninSubmitting,
+    handlePanelSignIn,
+    handleLoginSuccess,
+  } = useAuth();
 
   const [activeSection, setActiveSection] = useState('participate');
   const [activeTab, setActiveTab] = useState('home');
@@ -47,8 +66,11 @@ function HomeContent() {
         return;
       }
     }
-    if (pathname === '/home/aboutus') {
+    if (pathname === '/about-us') {
       setActiveSection('about-us');
+      if (!isStaggeredTransitionBusy()) {
+        triggerStaggeredTransition();
+      }
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -58,16 +80,6 @@ function HomeContent() {
 
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // New top auth UI states
-  const [showSignInPanel, setShowSignInPanel] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-
-  // Local state for compact sign-in panel
-  const [signinPhone, setSigninPhone] = useState('');
-  const [signinPassword, setSigninPassword] = useState('');
-  const [signinError, setSigninError] = useState<string | null>(null);
-  const [signinSubmitting, setSigninSubmitting] = useState(false);
 
   // Theme switcher removed; using permanent dark theme
   useEffect(() => {
@@ -103,101 +115,10 @@ function HomeContent() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-          setUserRoles(data.roles || []);
-          setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
-          setIsLoggedIn(true);
-        }
-      } catch (e) {
-        console.error("Session check failed: " + e);
-      } finally {
-        setIsLoadingSession(false);
-      }
-    };
-    checkSession();
-  }, []);
 
-  const transitionRef = useRef<StaggeredTransitionRef>(null);
 
-  const handleTransitionMidpoint = () => {
-    setActiveSection('about-us');
-    globalThis.history.pushState(null, '', '/home/aboutus');
-  };
 
-  const handleBackwardMidpoint = () => {
-    setActiveSection('participate');
-    globalThis.history.pushState(null, '', '/home');
-  };
 
-  const handleLoginSuccess = async (user: any) => {
-    setCurrentUser(user);
-    setIsLoggedIn(true);
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('joinTechCommunity') === 'true') {
-      fetch('/api/groups/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupName: 'tech community' })
-      }).then(() => {
-        localStorage.removeItem('joinTechCommunity');
-      }).catch(console.error);
-    }
-    // Fetch roles after login
-    try {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setUserRoles(data.roles || []);
-        setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
-      }
-    } catch (e) {
-      console.error("Failed to fetch user roles:", e);
-    }
-    setPendingEventId(null);
-  };
-
-  const handlePanelSignIn = async () => {
-    if (!signinPhone.trim() || !signinPassword) {
-      setSigninError('Please enter phone number and password');
-      return;
-    }
-    setSigninSubmitting(true);
-    setSigninError(null);
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: signinPhone.trim(), password: signinPassword }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        handleLoginSuccess(data.user);
-        setShowSignInPanel(false);
-        setSigninPhone('');
-        setSigninPassword('');
-        setSigninError(null);
-      } else {
-        setSigninError(data.error || 'Login failed');
-      }
-    } catch (err) {
-      console.error("Login exception:", err);
-      setSigninError('An unexpected error occurred');
-    } finally {
-      setSigninSubmitting(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-    setUserRoles([]);
-  };
 
   const handleActivityCreated = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -312,292 +233,70 @@ function HomeContent() {
     return () => { cancelled = true; };
   }, [isDetailOpen, isLoggedIn, detailActivity?.id]);
 
-  if (isLoadingSession) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
-        <div className="spinner" style={{ width: 40, height: 40, border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <>
-        <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
-        <div className="landing-page fade-in">
-          {activeSection !== 'about-us' && <MarqueeBanner />}
-          {activeSection !== 'about-us' && (
-            <HeaderPanel
-              isLoggedIn={isLoggedIn}
-              showSignInPanel={showSignInPanel}
-              setShowSignInPanel={setShowSignInPanel}
-              setShowRegisterModal={setShowRegisterModal}
-              signinUsername={signinPhone}
-              setSigninUsername={setSigninPhone}
-              signinPassword={signinPassword}
-              setSigninPassword={setSigninPassword}
-              signinSubmitting={signinSubmitting}
-              setSigninSubmitting={setSigninSubmitting}
-              signinError={signinError}
-              setSigninError={setSigninError}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              handlePanelSignIn={handlePanelSignIn}
-              onAboutUsClick={() => transitionRef.current?.trigger()}
-            />
-          )}
-
-
-          {activeSection === 'about-us' && (
-            <div style={{ width: '100%', minHeight: '100vh' }}>
-              <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
-            </div>
-          )}
-
-          {activeSection === 'participate' && (
-            <section id="participate" style={{ textAlign: 'left', padding: '40px' }}>
-              <p>Join our events, volunteer, or become a member of the community.</p>
-
-              {/* Decorative Banner Slideshow */}
-              <BannerSlideshow />
-
-              <ActivityCarousel
-                refreshTrigger={refreshTrigger}
-                onActivityClick={handleCarouselClick}
-                isLoggedIn={isLoggedIn}
-                headerRight={
-                  isLoggedIn ? (
-                    <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
-                      {userPermissions.canCreateResponsibility && (
-                        <button
-                          onClick={onOwnResponsibility}
-                          className="pink-btn"
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          Own Responsibility
-                        </button>
-                      )}
-                      {userPermissions.canCreateActivity && (
-                        <button
-                          className="yellow-btn"
-                          onClick={onCreateActivity}
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          Create Activity
-                        </button>
-                      )}
-                    </div>
-                  ) : null
-                }
-              />
-            </section>
-          )}
-
-          {activeSection === 'gallery' && (
-            <section id="gallery">
-              <Gallery />
-            </section>
-          )}
-
-          {activeSection === 'explore' && (
-            <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
-              {/* <h2>Explore</h2>
-              <p>Discover new projects and community initiatives.</p> */}
-              {/* Latest Posts Section */}
-              <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-                <h2 className="section-title">Nested Communities</h2>
-                {/* <p className="section-description">
-                  Stay updated with the newest activities and community highlights.
-                </p> */}
-                <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
-                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
-                  <div className="post-card">Cinemat Community</div>
-                  <div className="post-card">Music Community</div>
-                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
-                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
-                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
-                </div>
-              </section>
-            </section>
-          )}
-
-
-
-          <ActivityDetailModal
-            activity={detailActivity}
-            isOpen={isDetailOpen}
-            onClose={() => setIsDetailOpen(false)}
-            isLoggedIn={false}
-            currentUser={null}
-            onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
-            onSwitchToRegister={() => {
-              setPendingEventId(detailActivity.id);
-              setIsDetailOpen(false);
-              setShowRegisterModal(true);
-            }}
-          />
-
-          {/* Register popup modal */}
-          {
-            showRegisterModal && (
-              // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-              <div
-                className="modal-overlay"
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) {
-                    setShowRegisterModal(false);
-                  }
-                }}
-                style={{ zIndex: 2000 }}
-              >
-                <div
-                  className="modal-content register-modal"
-                  style={{ maxWidth: '560px', padding: '32px' }}
-                >
-                  <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
-                    <button
-                      onClick={() => setShowRegisterModal(false)}
-                      style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <RegisterForm
-                    onSuccess={(user) => {
-                      handleLoginSuccess(user);
-                      setShowRegisterModal(false);
-                    }}
-                    pendingEventId={pendingEventId}
-                    hideTitle
-                    submitText="Join"
-                  />
-                </div>
-              </div>
-            )
-          }
-        </div >
-      </>
-    );
-  }
-
   return (
-
-      <div className="dashboard-layout fade-in">
-        <MarqueeBanner />
-
-        <nav className="nav-container">
-          <div className="nav-left-spacer"></div>
-          <div className="nav-buttons">
-            <button className={`nav-link-btn ${activeTab === 'home' ? 'active text-black' : ''}`} onClick={() => setActiveTab('home')}>
-              <HomeIcon size={18} /> Home
-            </button>
-            <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
-              <CalendarDays size={18} /> Calendar View
-            </button>
-            <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => router.push('/explore')}>
-              <Search size={18} /> Explore
-            </button>
-            {userRoles.includes('developer') && (
-              <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => router.push('/developer-panel')}>
-                <ShieldCheck size={18} /> Developer Panel
-              </button>
-            )}
+    <>
+      <main className={`app-container ${activeSection === 'about-us' ? 'about-us-container' : ''}`}>
+        {activeSection === 'about-us' && (
+          <div style={{ width: '100%', minHeight: '100vh' }}>
+            <AboutUs onBackClick={() => {
+              if (isStaggeredTransitionBusy()) return;
+              triggerStaggeredTransitionBackwards(() => {
+                router.push('/home');
+              });
+            }} />
           </div>
-          <div className="nav-right">
-            <div className="user-menu-container">
-              <button
-                className="user-trigger"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowProfileDropdown(!showProfileDropdown);
-                }}
-              >
-                <div className="user-avatar">
-                  <User size={20} />
-                </div>
-                <ChevronDown size={14} />
-              </button>
-              {showProfileDropdown && (
-                // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      setIsProfileOpen(true);
-                    }}
-                  >
-                    <span>{currentUser?.name}</span>
-                    <br />
-                    <br />
-                    Edit Profile
-                  </button>
-                </div>
-              )}
-            </div>
-            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
-          </div>
-        </nav>
+        )}
 
-        <main className="app-container">
-          {activeTab === 'home' && (
-            <section style={{ textAlign: 'left' }}>
-              <BannerSlideshow />
-              <ActivityCarousel
-                refreshTrigger={refreshTrigger}
-                onActivityClick={handleCarouselClick}
-                isLoggedIn={isLoggedIn}
-                headerRight={
-                  isLoggedIn ? (
-                    <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
-                      {userPermissions.canCreateResponsibility && (
-                        <button
-                          onClick={onOwnResponsibility}
-                          className="pink-btn"
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          Own Responsibility
-                        </button>
-                      )}
-                      {userPermissions.canCreateActivity && (
-                        <button
-                          className="yellow-btn"
-                          onClick={onCreateActivity}
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                        >
-                          Create Activity
-                        </button>
-                      )}
-                    </div>
-                  ) : null
-                }
-              />
+        {activeSection === 'participate' && (
+          <section id="participate" style={{ textAlign: 'left', padding: '40px' }}>
+            <p>Join our events, volunteer, or become a member of the community.</p>
+            <BannerSlideshow />
+            <ActivityCarousel
+              refreshTrigger={refreshTrigger}
+              onActivityClick={handleCarouselClick}
+              isLoggedIn={isLoggedIn}
+              headerRight={
+                isLoggedIn ? (
+                  <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
+                    {userPermissions.canCreateResponsibility && (
+                      <button
+                        onClick={onOwnResponsibility}
+                        className="pink-btn"
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        Own Responsibility
+                      </button>
+                    )}
+                    {userPermissions.canCreateActivity && (
+                      <button
+                        className="yellow-btn"
+                        onClick={onCreateActivity}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                      >
+                        Create Activity
+                      </button>
+                    )}
+                  </div>
+                ) : null
+              }
+            />
+          </section>
+        )}
+
+        {activeSection === 'explore' && (
+          <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
+            <section className="latest-posts-section" style={{ marginTop: '48px' }}>
+              <h2 className="section-title">Nested Communities</h2>
+              <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
+                <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
+                <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
+                <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
+                <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
+              </div>
             </section>
-          )}
-          {activeTab === 'explore' && (
-            <section id="explore" style={{ textAlign: 'center', padding: '40px 0' }}>
-              {/* <h2>Explore</h2>
-              <p>Discover new projects and community initiatives.</p> */}
-              <section className="latest-posts-section" style={{ marginTop: '48px' }}>
-                <h2 className="section-title">Explore our Nested Communities</h2>
-                {/* <p className="section-description">
-                  Stay updated with the newest activities and community highlights.
-                </p> */}
-                <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                  <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
-                  <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
-                  <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Cinemat Community</button>
-                  <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Music Community</button>
-                  <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
-                  <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
-                  <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
-                </div>
-              </section>
-            </section>
-          )}
-          {/* AdminDashboard removed as it is now its own page at /developer-panel */}
-        </main>
+          </section>
+        )}
 
         <ActivityDetailModal
           activity={detailActivity}
@@ -607,7 +306,11 @@ function HomeContent() {
           currentUser={currentUser}
           userRoles={userRoles}
           onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
-          onSwitchToRegister={() => { }}
+          onSwitchToRegister={() => {
+            setPendingEventId(detailActivity.id);
+            setIsDetailOpen(false);
+            setShowRegisterModal(true);
+          }}
         />
 
         <ActivityModal
@@ -615,14 +318,21 @@ function HomeContent() {
           onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
           title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
         >
-          {selectedActivity && (
-            <ActivityForm
-              initialData={selectedActivity}
-              onActivityCreated={handleActivityCreated}
-              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-            />
-          )}
+          <ActivityForm
+            initialData={selectedActivity || undefined}
+            onActivityCreated={handleActivityCreated}
+            onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          />
         </ActivityModal>
+
+        <ResponsibilityDetailModal
+          responsibility={responsibilityDetail}
+          isOpen={isResponsibilityDetailOpen}
+          onClose={() => { setIsResponsibilityDetailOpen(false); setResponsibilityDetail(null); }}
+          onStateChange={(id, newState) => {
+            setResponsibilityDetail((prev: any) => prev && prev.id === id ? { ...prev, state: newState } : prev);
+          }}
+        />
 
         <ActivityModal
           isOpen={isResponsibilityModalOpen}
@@ -642,14 +352,16 @@ function HomeContent() {
           )}
         </ActivityModal>
 
-        <ProfileModal
-          isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
-          currentUser={currentUser}
-          onProfileUpdate={setCurrentUser}
+        <HolidayDetailModal
+          holiday={selectedHoliday}
+          isOpen={isHolidayModalOpen}
+          onClose={() => {
+            setIsHolidayModalOpen(false);
+            setSelectedHoliday(null);
+          }}
         />
-      </div >
-
+      </main>
+    </>
   );
 }
 

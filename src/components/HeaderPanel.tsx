@@ -86,37 +86,24 @@ export default function HeaderPanel({
             <Link
               href="/home"
               className={`nav-link-btn ${activeSection === 'participate' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', globalThis.location.pathname);
-                setActiveSection('participate');
-              }}
             >
               Participate
             </Link>
             <Link
-              href="/home/aboutus"
-              className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
+              href="/about-us"
               onClick={(e) => {
-                e.preventDefault();
                 if (onAboutUsClick) {
+                  e.preventDefault();
                   onAboutUsClick();
-                } else {
-                  globalThis.history.pushState(null, '', '/home/aboutus');
-                  setActiveSection('about-us');
                 }
               }}
+              className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
             >
               About Us
             </Link>
             <Link
-              href="/home#gallery"
+              href="/gallery"
               className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home#gallery');
-                setActiveSection('gallery');
-              }}
             >
               Gallery
             </Link>

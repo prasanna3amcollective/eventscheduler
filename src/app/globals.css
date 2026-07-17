@@ -358,6 +358,25 @@ h4 {
   }
 }
 
+/* Zero out padding, margin, max-width and set black background when showing AboutUs */
+body:has(.about-us-layout-root),
+body:has(.about-us-container),
+html:has(.about-us-layout-root),
+html:has(.about-us-container) {
+  background: #080808 !important;
+  background-color: #080808 !important;
+}
+
+.about-us-layout-root,
+.about-us-container {
+  background: #080808 !important;
+  background-color: #080808 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
 .content-section {
   animation: fadeIn 0.4s ease-out;
   width: 100%;

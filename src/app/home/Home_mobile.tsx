@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '@/components/AuthProvider';
 
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
@@ -17,9 +18,9 @@ import HolidayDetailModal from '@/components/HolidayDetailModal';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBannerMobile from '@/components/MarqueeBanner_mobile';
-import StaggeredTransition, { StaggeredTransitionRef } from '@/components/StaggeredTransition';
+import { triggerStaggeredTransition, triggerStaggeredTransitionBackwards, isStaggeredTransitionBusy } from '@/components/StaggeredTransition';
 import Testimonials from '@/components/Testimonials';
-import Gallery from '@/components/Gallery';
+
 import { CalendarDays, PlusCircle, LogOut, Info, ShieldCheck, User, ChevronDown, Home as HomeIcon } from '@/components/Icons';
 
 import './Home_mobile.css';
@@ -28,19 +29,41 @@ export default function Home_mobile() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
-  const [userPermissions, setUserPermissions] = useState({ canCreateActivity: false, canCreateResponsibility: false });
-  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const {
+    isLoggedIn,
+    currentUser,
+    setCurrentUser,
+    userRoles,
+    setUserRoles,
+    userPermissions,
+    setUserPermissions,
+    isLoadingSession,
+    showSignInPanel,
+    setShowSignInPanel,
+    showRegisterModal,
+    setShowRegisterModal,
+    signinPhone,
+    setSigninPhone,
+    signinPassword,
+    setSigninPassword,
+    signinError,
+    setSigninError,
+    signinSubmitting,
+    setSigninSubmitting,
+    handlePanelSignIn,
+    handleLoginSuccess,
+  } = useAuth();
 
   const [activeSection, setActiveSection] = useState('participate');
   const [activeTab, setActiveTab] = useState('home');
 
   // Initialize activeSection from URL path/hash on mount
   useEffect(() => {
-    if (pathname === '/home/aboutus') {
+    if (pathname === '/about-us') {
       setActiveSection('about-us');
+      if (!isStaggeredTransitionBusy()) {
+        triggerStaggeredTransition();
+      }
     } else {
       const hash = globalThis.location.hash.replace('#', '') || 'participate';
       setActiveSection(hash);
@@ -48,16 +71,6 @@ export default function Home_mobile() {
   }, [pathname]);
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // New top auth UI states
-  const [showSignInPanel, setShowSignInPanel] = useState(false);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-
-  // Local state for compact sign-in panel
-  const [signinPhone, setSigninPhone] = useState('');
-  const [signinPassword, setSigninPassword] = useState('');
-  const [signinError, setSigninError] = useState<string | null>(null);
-  const [signinSubmitting, setSigninSubmitting] = useState(false);
 
   // Theme switcher removed; using permanent dark theme
   useEffect(() => {
@@ -107,100 +120,10 @@ export default function Home_mobile() {
     };
   }, [isAnyModalOpen]);
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const res = await fetch('/api/auth/me');
-        if (res.ok) {
-          const data = await res.json();
-          setCurrentUser(data.user);
-          setUserRoles(data.roles || []);
-          setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
-          setIsLoggedIn(true);
-        }
-      } catch (e) {
-        console.error("Session check failed");
-      } finally {
-        setIsLoadingSession(false);
-      }
-    };
-    checkSession();
-  }, []);
 
-  const transitionRef = useRef<StaggeredTransitionRef>(null);
 
-  const handleTransitionMidpoint = () => {
-    setActiveSection('about-us');
-    globalThis.history.pushState(null, '', '/home/aboutus');
-  };
 
-  const handleBackwardMidpoint = () => {
-    setActiveSection('participate');
-    globalThis.history.pushState(null, '', '/home');
-  };
 
-  const handleLoginSuccess = async (user: any) => {
-    setCurrentUser(user);
-    setIsLoggedIn(true);
-
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('joinTechCommunity') === 'true') {
-      fetch('/api/groups/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupName: 'tech community' })
-      }).then(() => {
-        localStorage.removeItem('joinTechCommunity');
-      }).catch(console.error);
-    }
-
-    // Fetch roles after login
-    try {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setUserRoles(data.roles || []);
-        setUserPermissions(data.permissions || { canCreateActivity: false, canCreateResponsibility: false });
-      }
-    } catch (e) { /* ignore */ }
-    setPendingEventId(null);
-  };
-
-  const handlePanelSignIn = async () => {
-    if (!signinPhone.trim() || !signinPassword) {
-      setSigninError('Please enter phone number and password');
-      return;
-    }
-    setSigninSubmitting(true);
-    setSigninError(null);
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: signinPhone.trim(), password: signinPassword }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        handleLoginSuccess(data.user);
-        setShowSignInPanel(false);
-        setSigninPhone('');
-        setSigninPassword('');
-        setSigninError(null);
-      } else {
-        setSigninError(data.error || 'Login failed');
-      }
-    } catch (_err) {
-      setSigninError('An unexpected error occurred');
-    } finally {
-      setSigninSubmitting(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
-    setIsLoggedIn(false);
-    setCurrentUser(null);
-    setUserRoles([]);
-  };
 
   const handleActivityCreated = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -312,97 +235,45 @@ export default function Home_mobile() {
     return () => { cancelled = true; };
   }, [isDetailOpen, isLoggedIn, detailActivity?.id]);
 
-  if (isLoadingSession) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
-        <div className="spinner" style={{ width: 40, height: 40, border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-      </div>
-    );
-  }
-
   if (!isLoggedIn) {
     return (
       <>
-        <StaggeredTransition ref={transitionRef} onMidpoint={handleTransitionMidpoint} />
-        <div className="mobile-app-container landing-page fade-in">
-          {activeSection !== 'about-us' && (
-            <MarqueeBannerMobile
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              onLoginClick={() => setShowSignInPanel(true)}
-              onAboutUsClick={() => transitionRef.current?.trigger()}
-            />
-          )}
-
+        <div className={`mobile-app-container ${activeSection === 'about-us' ? 'about-us-container' : ''}`}>
           {activeSection === 'about-us' && (
             <div style={{ width: '100%', minHeight: '100vh' }}>
-              <AboutUs onBackClick={() => transitionRef.current?.triggerBackwards(handleBackwardMidpoint)} />
+              <AboutUs onBackClick={() => {
+                if (isStaggeredTransitionBusy()) return;
+                triggerStaggeredTransitionBackwards(() => {
+                  router.push('/home');
+                });
+              }} />
             </div>
           )}
 
-
-
           {activeSection === 'participate' && (
             <>
-              {/* Mission Text */}
               <div className="mobile-mission-text">
                 The 3am independent film community is transforming into a creators' collective. We are building a decentralized structure to achieve autonomy and serve a unified mission.
               </div>
 
-              {/* Auth Buttons */}
               <div className="mobile-join-the-circle" style={{ marginTop: '32px' }}>
                 <button
-                  onClick={() => {
-                    setShowRegisterModal(true);
-                  }}
+                  onClick={() => setShowRegisterModal(true)}
                   className="yellow-btn"
                 >
                   Join the circle
                 </button>
               </div>
 
-              {/* Decorative Banner Slideshow */}
               <BannerSlideshow_mobile />
-
-              {/* Upcoming Activities */}
-              <div style={{ marginTop: '48px', padding: '0 8px', paddingBottom: '60px' }}>
+              <div style={{ marginTop: '32px' }}>
                 <ActivityCarousel_mobile
                   refreshTrigger={refreshTrigger}
                   onActivityClick={handleCarouselClick}
                   isLoggedIn={isLoggedIn}
-                  headerRight={
-                    isLoggedIn ? (
-                      <div style={{ display: 'flex', gap: '12px', marginRight: '8px' }}>
-                        {userPermissions.canCreateResponsibility && (
-                          <button
-                            onClick={onOwnResponsibility}
-                            className="pink-btn"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                          >
-                            Own Responsibility
-                          </button>
-                        )}
-                        {userPermissions.canCreateActivity && (
-                          <button
-                            className="yellow-btn"
-                            onClick={onCreateActivity}
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                          >
-                            Create Activity
-                          </button>
-                        )}
-                      </div>
-                    ) : null
-                  }
                 />
               </div>
             </>
-          )}
-
-          {activeSection === 'gallery' && (
-            <div style={{ width: '100%', minHeight: '100vh', paddingBottom: '80px' }}>
-              <Gallery />
-            </div>
           )}
 
           {activeSection === 'explore' && (
@@ -412,89 +283,12 @@ export default function Home_mobile() {
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
                   <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
-                  <div className="post-card">Cinemat Community</div>
-                  <div className="post-card">Music Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
                   <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
                 </div>
               </section>
             </section>
-          )}
-
-          {/* Top Login Banner */}
-          {showSignInPanel && (
-            <div className="mobile-login-banner fade-in">
-              <div className="login-banner-header">
-                <button onClick={() => setShowSignInPanel(false)}>×</button>
-              </div>
-              <div className="login-banner-body">
-                <div className="login-field">
-                  <label>Phone Number</label>
-                  <input
-                    type="tel"
-                    value={signinPhone}
-                    onChange={e => setSigninPhone(e.target.value)}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-                <div className="login-field">
-                  <label>Password</label>
-                  <input
-                    type="password"
-                    value={signinPassword}
-                    onChange={e => setSigninPassword(e.target.value)}
-                  />
-                </div>
-                {signinError && <div className="login-error">{signinError}</div>}
-                <div className="login-banner-footer">
-                  <div className="login-remember">
-                    <input type="checkbox" id="rememberMe" />
-                    <label htmlFor="rememberMe" style={{ margin: 0 }}>Remember</label>
-                    <span className="forgotten-link">Forgotten?</span>
-                  </div>
-                  <button
-                    className="signin-submit"
-                    onClick={handlePanelSignIn}
-                    disabled={signinSubmitting}
-                  >
-                    {signinSubmitting ? '...' : 'SIGN IN'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showRegisterModal && (
-            <div
-              className="modal-overlay"
-              onClick={() => setShowRegisterModal(false)}
-              style={{ zIndex: 2000 }}
-            >
-              <div
-                className="modal-content register-modal"
-                style={{ maxWidth: '560px', padding: '32px' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="modal-header" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '16px' }}>
-                  <button
-                    onClick={() => setShowRegisterModal(false)}
-                    style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}
-                  >
-                    ×
-                  </button>
-                </div>
-                <RegisterForm
-                  onSuccess={(user) => {
-                    handleLoginSuccess(user);
-                    setShowRegisterModal(false);
-                  }}
-                  pendingEventId={pendingEventId}
-                  hideTitle
-                  submitText="Join"
-                />
-              </div>
-            </div>
           )}
         </div>
       </>
@@ -503,67 +297,19 @@ export default function Home_mobile() {
 
   return (
     <>
-      <div className="mobile-app-container dashboard-layout fade-in">
-        <MarqueeBannerMobile
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          onAboutUsClick={() => transitionRef.current?.trigger()}
-        />
-
-        <header className="dashboard-header" style={{ display: 'flex' }}>
-          <div className="header-user">
-            <div className="user-menu-container">
-              <button
-                className="user-trigger"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowProfileDropdown(!showProfileDropdown);
-                }}
-              >
-                <div className="user-avatar">
-                  <User size={20} />
-                </div>
-                <ChevronDown size={14} />
-              </button>
-              {showProfileDropdown && (
-                <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      setIsProfileOpen(true);
-                    }}
-                  >
-                    <span >{currentUser?.name}</span> <br />
-                    <br />
-                    Edit Profile
-                  </button>
-                </div>
-              )}
+      <div className={`mobile-app-container ${activeSection === 'about-us' ? 'about-us-container' : ''}`}>
+        <main className={`app-container ${activeSection === 'about-us' ? 'about-us-container' : ''}`}>
+          {activeSection === 'about-us' && (
+            <div style={{ width: '100%', minHeight: '100vh' }}>
+              <AboutUs onBackClick={() => {
+                if (isStaggeredTransitionBusy()) return;
+                triggerStaggeredTransitionBackwards(() => {
+                  router.push('/home');
+                });
+              }} />
             </div>
-            <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
-          </div>
-        </header >
-
-        <nav className="nav-container">
-          <button className={`nav-link-btn ${activeTab === 'home' ? 'active text-black' : ''}`} onClick={() => setActiveTab('home')}>
-            <HomeIcon size={18} /> Home
-          </button>
-          <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
-            <CalendarDays size={18} /> Calendar View
-          </button>
-          <button className={`nav-link-btn ${activeTab === 'explore' ? 'active text-black' : ''}`} onClick={() => router.push('/explore')}>
-            Explore
-          </button>
-          {userRoles.includes('developer') && (
-            <button className={`nav-link-btn ${activeTab === 'admin' ? 'active text-black' : ''}`} onClick={() => router.push('/developer-panel')}>
-              <ShieldCheck size={18} /> Developer Panel
-            </button>
           )}
-        </nav>
-
-        <main className="app-container">
-          {activeTab === 'home' && (
+          {activeSection !== 'about-us' && activeTab === 'home' && (
             <>
               <BannerSlideshow_mobile />
               <div style={{ marginTop: '24px', padding: '0 8px', paddingBottom: '60px' }}>
@@ -599,15 +345,13 @@ export default function Home_mobile() {
               </div>
             </>
           )}
-          {activeTab === 'explore' && (
+          {activeSection !== 'about-us' && activeTab === 'explore' && (
             <section id="explore" style={{ textAlign: 'center', padding: '40px 16px 80px' }}>
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
-                <h2 className="section-title">Explore our Nested Communities</h2>
+                <h2 className="section-title">Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
                   <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
-                  <div className="post-card">Cinemat Community</div>
-                  <div className="post-card">Music Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
                   <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
@@ -615,7 +359,6 @@ export default function Home_mobile() {
               </section>
             </section>
           )}
-          {/* AdminDashboard removed as it is now its own page at /developer-panel */}
         </main>
 
         <ActivityModal
@@ -623,13 +366,11 @@ export default function Home_mobile() {
           onClose={() => { setIsModalOpen(false); setSelectedActivity(null); }}
           title={selectedActivity?.id ? "Edit Activity" : "Create New Activity"}
         >
-          {selectedActivity && (
-            <ActivityForm
-              initialData={selectedActivity}
-              onActivityCreated={handleActivityCreated}
-              onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
-            />
-          )}
+          <ActivityForm
+            initialData={selectedActivity || undefined}
+            onActivityCreated={handleActivityCreated}
+            onCancel={() => { setIsModalOpen(false); setSelectedActivity(null); }}
+          />
         </ActivityModal>
 
         <ActivityModal
@@ -674,13 +415,6 @@ export default function Home_mobile() {
           holiday={selectedHoliday}
           isOpen={isHolidayModalOpen}
           onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
-        />
-
-        <ProfileModal
-          isOpen={isProfileOpen}
-          onClose={() => setIsProfileOpen(false)}
-          currentUser={currentUser}
-          onProfileUpdate={setCurrentUser}
         />
       </div >
     </>

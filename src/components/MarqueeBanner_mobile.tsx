@@ -1,5 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User } from '@/components/Icons';
 import './MarqueeBanner_mobile.css';
 import { logoFiles } from '../lib/logos';
@@ -12,6 +14,7 @@ interface MarqueeBannerMobileProps {
 }
 
 export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileProps>) {
+  const router = useRouter();
   const { activeSection, setActiveSection, onLoginClick, onAboutUsClick } = props;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [logoSrc, setLogoSrc] = useState<string>('');
@@ -25,7 +28,7 @@ export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileP
     { id: 'about-us', label: 'About Us' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'explore', label: 'Explore' },
-    { id: 'testimonials', label: 'Testimonials' }
+    { id: 'testimonials', label: 'Guest Book' }
   ];
 
   const handleNav = (id: string) => {
@@ -36,15 +39,19 @@ export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileP
     }
     if (setActiveSection) {
       setActiveSection(id);
-      if (id === 'participate') {
-        globalThis.history.pushState(null, '', globalThis.location.pathname);
-      } else if (id === 'about-us') {
-        globalThis.history.pushState(null, '', '/home/aboutus');
-      } else if (id === 'testimonials') {
-        globalThis.history.pushState(null, '', '/home/testimonials');
-      } else {
-        globalThis.location.hash = id;
-      }
+    }
+    if (id === 'participate') {
+      router.push('/home');
+    } else if (id === 'about-us') {
+      router.push('/about-us');
+    } else if (id === 'testimonials') {
+      router.push('/guest-book');
+    } else if (id === 'gallery') {
+      router.push('/gallery');
+    } else if (id === 'explore') {
+      router.push('/explore');
+    } else {
+      router.push(`/home#${id}`);
     }
     setIsMenuOpen(false);
   };
@@ -53,11 +60,16 @@ export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileP
     <div className="mobile-banner-wrapper">
       <div className="mobile-banner-content">
         <div className="mobile-banner-left">
-          {logoSrc && <img
-            src={logoSrc}
-            alt="Logo"
-            className="mobile-center-fist"
-            style={{ width: "82px", height: "82px" }} />}
+          {logoSrc && (
+            <Link href="/home" style={{ display: 'inline-block', cursor: 'pointer', zIndex: 50, position: 'relative' }}>
+              <img
+                src={logoSrc}
+                alt="Logo"
+                className="mobile-center-fist center-fist"
+                style={{ width: "82px", height: "82px", pointerEvents: 'auto' }}
+              />
+            </Link>
+          )}
         </div>
 
         <div className="mobile-banner-center">

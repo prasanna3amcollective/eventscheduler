@@ -2,10 +2,9 @@ import { NextResponse } from 'next/server';
 import { withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 
-export async function POST(request: Request, context: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    const { params } = context;
-    const eventId = await Promise.resolve(params.id);
+    const { id: eventId } = await context.params;
     const body = await request.json();
     const { name, description, startDateTime, endDateTime, duration, category, owner, ownerId } = body;
 
@@ -25,7 +24,7 @@ export async function POST(request: Request, context: { params: { id: string } }
           endDateTime: new Date(endDateTime),
           duration: Number(duration),
           category: category || 'General',
-          owner: owner || securityContext.name,
+          owner: owner || (securityContext as any).name || securityContext.id,
           ownerId: ownerId || securityContext.id,
           eventId: eventId,
           sys_created_by: securityContext.id

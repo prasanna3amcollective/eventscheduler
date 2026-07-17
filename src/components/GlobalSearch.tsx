@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { triggerStaggeredTransition, isStaggeredTransitionBusy } from './StaggeredTransition';
 
 export interface CommandMapping {
   phrase: string;
@@ -14,8 +15,8 @@ export const SEARCH_MAPPINGS: CommandMapping[] = [
   { phrase: 'submit project', path: '/projectsubmission', description: 'Submit a new project to the collective' },
   { phrase: 'calendar view', path: '/home?tab=calendar', description: 'View collective calendar and schedule' },
   { phrase: 'developer panel', path: '/home?tab=admin', description: 'Access developer panel' },
-  { phrase: 'about us', path: '/home/aboutus', description: 'Learn more about 3AM Collective' },
-  { phrase: 'testimonials', path: '/home/testimonials', description: 'Read testimonials from our community' },
+  { phrase: 'about us', path: '/about-us', description: 'Learn more about 3AM Collective' },
+  { phrase: 'testimonials', path: '/guest-book', description: 'Read testimonials from our community' },
 ];
 
 export default function GlobalSearch() {
@@ -66,6 +67,12 @@ export default function GlobalSearch() {
 
   const handleSelect = (path: string) => {
     setIsOpen(false);
+    if (path === '/about-us' && !isStaggeredTransitionBusy()) {
+      triggerStaggeredTransition(() => {
+        router.push(path);
+      });
+      return;
+    }
     router.push(path);
   };
 

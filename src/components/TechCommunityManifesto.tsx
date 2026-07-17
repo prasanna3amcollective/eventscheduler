@@ -24,7 +24,7 @@ export default function TechCommunityManifesto() {
     }, []);
 
     const handleBack = () => {
-        router.push('/home/explore');
+        router.push('/explore');
     };
 
     const toggleAccordion = (id: string) => {

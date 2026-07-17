@@ -61,7 +61,7 @@ export default function ActorsCommunity() {
     );
 
     const handleBack = () => {
-        router.push('/home/explore');
+        router.push('/explore');
     };
 
     useEffect(() => {

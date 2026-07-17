@@ -6,9 +6,9 @@ import Link from 'next/link';
 interface FooterPanelProps {
   isLoggedIn: boolean;
   activeSection: string;
-  setActiveSection: (section: string) => void;
-  setShowSignInPanel: (val: boolean) => void;
-  setShowRegisterModal: (val: boolean) => void;
+  setActiveSection?: (section: string) => void;
+  setShowSignInPanel?: (val: boolean) => void;
+  setShowRegisterModal?: (val: boolean) => void;
   onAboutUsClick?: () => void;
 }
 
@@ -35,39 +35,26 @@ export default function FooterPanel({
         {isLoggedIn ? (
           <>
             <Link
-              href="/home/aboutus"
+              href="/about-us"
               className={`nav-link-btn ${activeSection === 'about-us' ? 'active text-black' : ''}`}
               onClick={(e) => {
-                e.preventDefault();
                 if (onAboutUsClick) {
+                  e.preventDefault();
                   onAboutUsClick();
-                } else {
-                  globalThis.history.pushState(null, '', '/home/aboutus');
-                  setActiveSection('about-us');
                 }
               }}
             >
               About Us
             </Link>
             <Link
-              href="/home/gallery"
+              href="/gallery"
               className={`nav-link-btn ${activeSection === 'gallery' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home/gallery');
-                setActiveSection('gallery');
-              }}
             >
               Gallery
             </Link>
             <Link
-              href="/home/explore"
+              href="/explore"
               className={`nav-link-btn ${activeSection === 'explore' ? 'active text-black' : ''}`}
-              onClick={(e) => {
-                e.preventDefault();
-                globalThis.history.pushState(null, '', '/home/explore');
-                setActiveSection('explore');
-              }}
             >
               Explore
             </Link>
@@ -80,8 +67,8 @@ export default function FooterPanel({
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => {
-                  setShowRegisterModal(true);
-                  setShowSignInPanel(false);
+                  setShowRegisterModal?.(true);
+                  setShowSignInPanel?.(false);
                 }}
                 className="yellow-btn"
               >
@@ -89,8 +76,8 @@ export default function FooterPanel({
               </button>
               <button
                 onClick={() => {
-                  setShowSignInPanel(true);
-                  setShowRegisterModal(false);
+                  setShowSignInPanel?.(true);
+                  setShowRegisterModal?.(false);
                 }}
                 className="neo-btn-secondary"
               >
