@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, type JSX } from 'react';
 import { Calendar, dateFnsLocalizer, type ToolbarProps, type View, type ViewsProps, Views } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, isToday, addYears } from 'date-fns';
+import { format, parse, startOfWeek, getDay, addMonths, isAfter, isBefore, startOfDay, endOfDay, isToday, addYears } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { type Holiday, getHolidays } from '@/lib/holidays';
 import { Umbrella, CalendarFill as ChevronLeft, ChevronRight, Eye, EyeSlash } from '@/components/Icons';
@@ -54,6 +54,8 @@ interface ApiActivity {
   recurrenceTemplateId?: string | null;
   generatedFromTemplateId?: string | null;
   detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
+  eventName?: string;
+  isEventActivity?: boolean;
 }
 
 /** The shape used internally by react-big-calendar */
@@ -71,6 +73,10 @@ interface CalendarActivity {
   category?: string;
   state?: string;
   isResponsibility?: boolean;
+  isEventActivity?: boolean;
+  isEventResponsibility?: boolean;
+  eventName?: string;
+  eventId?: string;
   recurrenceTemplateId?: string | null;
   generatedFromTemplateId?: string | null;
   detachReason?: 'none' | 'edited' | 'cancelled' | 'rescheduled' | 'manually_created';
@@ -328,8 +334,13 @@ function CustomAgenda({ activities, onSelectActivity, currentUser }: CustomAgend
                           title="Registered"
                         />
                       )}
-                      <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--primary-color)' }}>
-                        {activity.title}
+                      <div>
+                        {activity.isEventActivity && activity.eventName && (
+                          <div style={{ fontSize: '10px', color: '#0891b2', fontWeight: 600, lineHeight: 1.2 }}>{activity.eventName}</div>
+                        )}
+                        <div style={{ fontWeight: 700, fontSize: '13px', color: activity.isEventActivity ? '#0891b2' : 'var(--primary-color)' }}>
+                          {activity.title}
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -387,6 +398,7 @@ export default function CalendarView({
 }: CalendarViewProps) {
   const [activities, setActivities] = useState<CalendarActivity[]>([]);
   const [responsibilities, setResponsibilities] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showResponsibilities, setShowResponsibilities] = useState<boolean>(true);
   const [view, setView] = useState<View>(Views.MONTH);
@@ -402,9 +414,10 @@ export default function CalendarView({
 
     const fetchData = async () => {
       try {
-        const [actRes, respRes] = await Promise.all([
+        const [actRes, respRes, eventsRes] = await Promise.all([
           fetch(`/api/activities?start=${FETCH_WINDOW.start}&end=${FETCH_WINDOW.end}`),
           fetch('/api/responsibilities'),
+          fetch('/api/events'),
         ]);
 
         if (!cancelled) {
@@ -422,12 +435,19 @@ export default function CalendarView({
               participants: e.participants,
               category: e.category,
               state: e.state,
+              isEventActivity: e.isEventActivity || false,
+              eventName: e.eventName,
+              eventId: (e as any).eventId || undefined,
             }));
             setActivities(formatted);
           }
           if (respRes.ok) {
             const data = await respRes.json();
             setResponsibilities(data);
+          }
+          if (eventsRes.ok) {
+            const data = await eventsRes.json();
+            setEvents(data);
           }
         }
       } catch (err) {
@@ -452,7 +472,7 @@ export default function CalendarView({
     return () => { cancelled = true; };
   }, []);
 
-  // Combine regular activities with holiday events
+  // Combine regular activities, event responsibilities, responsibilities, and holidays
   const calendarActivities = useMemo<CalendarActivity[]>(
     () => [
       ...activities.filter((a) => a.state?.toLowerCase() !== 'cancelled'),
@@ -471,6 +491,27 @@ export default function CalendarView({
             state: r.state,
           }))
         : []),
+      // Include event responsibilities (responsibilities within events) on the calendar
+      ...(showResponsibilities
+        ? events.flatMap((evt) =>
+          (evt.responsibilities || [])
+            .filter((r: any) => r.state?.toLowerCase() !== 'cancelled')
+            .map((r: any) => ({
+              id: r.id,
+              title: r.name,
+              start: new Date(r.startDateTime),
+              end: new Date(r.endDateTime),
+              isHoliday: false,
+              isResponsibility: true,
+              isEventResponsibility: true,
+              eventName: evt.name,
+              eventId: evt.id,
+              owner: r.owner,
+              category: r.category,
+              state: r.state,
+            }))
+        )
+        : []),
       ...holidays.map((h) => ({
         id: h.id,
         title: h.name,
@@ -481,13 +522,13 @@ export default function CalendarView({
         category: 'Holiday',
       })),
     ],
-    [activities, responsibilities, holidays, showResponsibilities],
+    [activities, responsibilities, events, holidays, showResponsibilities],
   );
 
   const onView = useCallback((newView: View) => setView(newView), []);
   const onNavigate = useCallback((newDate: Date) => setDate(newDate), []);
 
-  // style individual day cells (holidays + weekends get a green tint)
+  // style individual day cells (holidays + weekends get green tint, events get indigo highlight)
   const dayPropGetter = useCallback(
     (date: Date) => {
       const dateStr = format(date, 'yyyy-MM-dd');
@@ -496,6 +537,25 @@ export default function CalendarView({
         (h) => format(new Date(h.date), 'yyyy-MM-dd') === dateStr,
       );
       const isWeekend = day === 0 || day === 6;
+
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
+
+      const hasEvent = events.some((e) => {
+        const eStart = new Date(e.startDateTime);
+        const eEnd = new Date(e.endDateTime);
+        return eStart <= dayEnd && eEnd >= dayStart;
+      });
+
+      if (hasEvent) {
+        return {
+          style: {
+            backgroundColor: 'rgba(99, 102, 241, 0.35)',
+            boxShadow: 'inset 0 0 0 2px #6366f1',
+          } as const,
+          className: 'rbc-event-day',
+        };
+      }
 
       if (isHoliday || isWeekend) {
         return {
@@ -506,7 +566,7 @@ export default function CalendarView({
       }
       return {};
     },
-    [holidays],
+    [holidays, events],
   );
 
   // style individual activity event blocks on the calendar grid
@@ -529,6 +589,16 @@ export default function CalendarView({
           border: 'none',
         } as const,
         className: 'rbc-responsibility',
+      };
+    }
+    if (activity.isEventActivity) {
+      return {
+        style: {
+          backgroundColor: '#0891b2',
+          color: 'white',
+          border: 'none',
+        } as const,
+        className: 'rbc-event-activity',
       };
     }
     return {
@@ -574,15 +644,18 @@ export default function CalendarView({
       );
     }
     const isRegistered = currentUser && event.participants?.some(p => p.userId === currentUser.id);
+    const eventLabel = event.isEventActivity && event.eventName
+      ? <span style={{ fontSize: '0.75em', opacity: 0.85, marginRight: '4px' }}>[{event.eventName}]</span>
+      : null;
     if (isRegistered && !event.isResponsibility) {
       return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4CE819', flexShrink: 0 }} title="Registered" />
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{eventLabel}{event.title}</span>
         </div>
       );
     }
-    return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{event.title}</span>;
+    return <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{eventLabel}{event.title}</span>;
   }, [currentUser]);
 
   // Custom components override for toolbar and event rendering

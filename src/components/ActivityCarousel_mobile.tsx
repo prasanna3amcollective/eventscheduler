@@ -14,8 +14,9 @@ interface Activity {
   participantCount?: number;
   category?: string;
   recurrenceTemplateId?: string | null;
-  generatedFromTemplateId?: string | null;
   detachReason?: string;
+  eventName?: string;
+  isEventActivity?: boolean;
 }
 
 interface ActivityCarouselProps {
@@ -144,6 +145,20 @@ export default function ActivityCarousel_mobile({ refreshTrigger, onActivityClic
 
                 <div className="card-mobile-content">
                   <div className="card-mobile-info">
+                    {activity.eventName && (
+                      <span style={{
+                        display: 'inline-block',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        background: '#0891b2',
+                        color: '#fff',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        marginBottom: '4px',
+                      }}>{activity.eventName}</span>
+                    )}
                     <h4>{activity.name}</h4>
                     <div className="card-mobile-meta">
                       <span><Clock size={12} /> {format(new Date(activity.startDateTime), 'hh:mm aa')}</span>

@@ -305,6 +305,7 @@ model Event {
   endDateTime   DateTime
   eventPlace    String
   eventLocation String?
+  state         String   @default("Scheduled")
 
   activities       EventActivity[]
   responsibilities EventResponsibility[]
@@ -397,4 +398,21 @@ model EventParticipant {
   @@unique([eventActivityId, userId])
   @@index([userId])
   @@map("event_participants")
+}
+
+model Announcement {
+  id      String @id @default(uuid())
+  title   String
+  content String @db.Text
+  type    String @default("General Info")
+
+  // Visibility
+  publishAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  // Metadata
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
 }

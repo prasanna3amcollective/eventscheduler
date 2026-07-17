@@ -2,33 +2,32 @@ import { NextResponse } from 'next/server';
 import { prisma, withAuth } from '@/lib/prisma';
 import { getSessionContext } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     const securityContext = await getSessionContext();
     
-    // Fetch events with their activities and responsibilities
-    const events = await withAuth(securityContext, () => ({
-      model: 'event',
+    const now = new Date();
+
+    // Fetch announcements that haven't expired yet
+    const announcements = await withAuth(securityContext, () => ({
+      model: 'announcement',
       operation: 'findMany',
       args: {
-        where: { state: 'Scheduled' },
-        include: {
-          activities: {
-            include: {
-              participants: {
-                include: { user: true }
-              }
-            }
-          },
-          responsibilities: true
+        where: {
+          OR: [
+            { expiresAt: null },
+            { expiresAt: { gt: now } }
+          ]
         },
-        orderBy: { startDateTime: 'asc' }
+        orderBy: { publishAt: 'desc' }
       }
     }));
 
-    return NextResponse.json(events);
+    return NextResponse.json(announcements);
   } catch (error: any) {
-    console.error("Error fetching events:", error);
+    console.error("Error fetching announcements:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }
@@ -40,34 +39,30 @@ export async function POST(request: Request) {
   try {
     const securityContext = await getSessionContext();
     
-    // Only users with developer or relevant roles might be able to create events, 
-    // or we just rely on standard auth for now.
     if (!securityContext) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { name, description, startDateTime, endDateTime, eventPlace, eventLocation } = body;
+    const { title, content, type, expiresAt } = body;
 
-    const newEvent = await withAuth(securityContext, () => ({
-      model: 'event',
+    const newAnnouncement = await withAuth(securityContext, () => ({
+      model: 'announcement',
       operation: 'create',
       args: {
         data: {
-          name,
-          description,
-          startDateTime: new Date(startDateTime),
-          endDateTime: new Date(endDateTime),
-          eventPlace,
-          eventLocation,
-          sys_created_by: securityContext.id
+          title,
+          content,
+          type: type || 'General Info',
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+          publishAt: new Date(),
         }
       }
     }));
 
-    return NextResponse.json(newEvent);
+    return NextResponse.json(newAnnouncement);
   } catch (error: any) {
-    console.error("Error creating event:", error);
+    console.error("Error creating announcement:", error);
     if (error.message?.includes('Security Restricted')) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

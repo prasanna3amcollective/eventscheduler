@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader, Edit, XCircle } from '@/components/Icons';
+import { X, CalendarFill as Calendar, Clock, User as UserIcon, Tag, CheckCircle, Loader, Edit, XCircle, Share2 } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 import { buildGoogleCalendarUrl } from '@/lib/calendar';
 
@@ -21,8 +21,9 @@ interface ResponsibilityData {
 interface ResponsibilityDetailModalProps {
   responsibility: ResponsibilityData | null;
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   onStateChange?: (id: string, newState: string) => void;
+  inline?: boolean;
 }
 
 export default function ResponsibilityDetailModal({
@@ -30,11 +31,42 @@ export default function ResponsibilityDetailModal({
   isOpen,
   onClose,
   onStateChange,
+  inline = false,
 }: ResponsibilityDetailModalProps) {
   const googleCalendarUrl = useMemo(
     () => (responsibility ? buildGoogleCalendarUrl(responsibility) : ''),
     [responsibility],
   );
+
+  const [showShareModal, setShowShareModal] = useState(false);
+  const shareLink = typeof window !== 'undefined' && responsibility ? `${window.location.origin}/responsibility/${responsibility.id}` : '';
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      alert('Link copied to clipboard!');
+      setShowShareModal(false);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
+
+  const handleShareTo = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Responsibility: ${responsibility?.name}`,
+          url: shareLink
+        });
+        setShowShareModal(false);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('Error sharing:', err);
+      }
+    } else {
+      alert('Share API is not supported in this browser. Please copy the link instead.');
+    }
+  };
 
   const router = useRouter();
 
@@ -50,7 +82,7 @@ export default function ResponsibilityDetailModal({
       });
       if (res.ok) {
         onStateChange?.(responsibility.id, 'Cancelled');
-        onClose();
+        onClose?.();
       } else {
         const data = await res.json();
         alert(data.error || 'Failed to  ponsibility');
@@ -95,23 +127,32 @@ export default function ResponsibilityDetailModal({
     }
   }, [googleCalendarUrl]);
 
-  if (!isOpen || !responsibility) return null;
+  if ((!isOpen && !inline) || !responsibility) return null;
 
   return (
-    <div className="modal-overlay fade-in" onClick={onClose}>
+    <div className={inline ? '' : 'modal-overlay fade-in'} onClick={inline ? undefined : onClose}>
       <div
-        className="modal-content activity-detail-card"
+        className={`modal-content activity-detail-card ${inline ? 'inline-mode' : ''}`}
         onClick={(e) => e.stopPropagation()}
+        style={inline ? { width: '100%', maxWidth: '800px', margin: '0 auto', position: 'relative', top: 'auto', left: 'auto', transform: 'none' } : {}}
       >
-        <div className="modal-header-actions">
-          <button onClick={() => { onClose(); router.push(`/responsibilities/${responsibility.id}/edit`); }} className="edit-btn-flat" title="Edit responsibility">
-            <Edit size={20} />
-          </button>
-          {/* <button onClick={handleCancel} className="cancel-button" title="Cancel responsibility">
-            <XCircle size={20} />
-          </button> */}
-          <button onClick={onClose} className="modal-close" title="Close">
-            <X size={20} />
+        <div className="modal-header-actions" style={inline ? { position: 'static', marginBottom: '24px', justifyContent: 'flex-start' } : {}}>
+          {inline ? (
+            <button className="btn-outline" onClick={() => router.push('/')} style={{ fontSize: '14px', padding: '6px 12px' }}>
+              ← Back to Home
+            </button>
+          ) : (
+            <button onClick={onClose} className="modal-close" title="Close">
+              <X size={20} />
+            </button>
+          )}
+          {!inline && (
+            <button onClick={() => { onClose?.(); router.push(`/responsibilities/${responsibility.id}/edit`); }} className="edit-btn-flat" title="Edit responsibility">
+              <Edit size={20} />
+            </button>
+          )}
+          <button onClick={() => setShowShareModal(true)} className="edit-btn-flat" title="Share responsibility" style={{ marginLeft: '8px' }}>
+            <Share2 size={20} />
           </button>
         </div>
 
@@ -197,6 +238,33 @@ export default function ResponsibilityDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="modal-overlay fade-in" style={{ zIndex: 3000 }} onClick={() => setShowShareModal(false)}>
+          <div className="modal-content activity-detail-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', padding: '24px' }}>
+            <div className="modal-header-actions">
+              <button onClick={() => setShowShareModal(false)} className="modal-close" title="Close">
+                <X size={20} />
+              </button>
+            </div>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'var(--mono-font)', fontWeight: 800, textTransform: 'uppercase' }}>Share Responsibility</h3>
+            
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--surface-color)', border: '2px solid #000', padding: '8px 12px', marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', fontSize: '14px', fontFamily: 'var(--mono-font)' }}>
+              {shareLink}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={handleCopyLink} className="btn-primary-brutal" style={{ flex: 1, padding: '10px', fontSize: '14px' }}>
+                Copy Link
+              </button>
+              <button onClick={handleShareTo} className="btn-secondary-brutal" style={{ flex: 1, padding: '10px', fontSize: '14px' }}>
+                Share To...
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

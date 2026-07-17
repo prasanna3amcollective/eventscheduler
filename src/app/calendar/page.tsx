@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
 import ResponsibilityForm from '@/components/ResponsibilityForm';
 import ActivityModal from '@/components/ActivityModal';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
+import EventActivityDetailModal from '@/components/EventActivityDetailModal';
+import EventResponsibilityDetailModal from '@/components/EventResponsibilityDetailModal';
 import HolidayDetailModal from '@/components/HolidayDetailModal';
-import MarqueeBanner from '@/components/MarqueeBanner';
-import { LogOut, User, ChevronDown, Home as HomeIcon, CalendarDays, ShieldCheck } from '@/components/Icons';
 import ProfileModal from '@/components/ProfileModal';
 
 function CalendarPageContent() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [userRoles, setUserRoles] = useState<string[]>([]);
@@ -35,7 +34,12 @@ function CalendarPageContent() {
     const [selectedHoliday, setSelectedHoliday] = useState<{ id: string; name: string; date: string } | null>(null);
     const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
+    // Event-scoped item modals
+    const [selectedEventActivity, setSelectedEventActivity] = useState<any>(null);
+    const [isEventActivityDetailOpen, setIsEventActivityDetailOpen] = useState(false);
+    const [selectedEventResponsibility, setSelectedEventResponsibility] = useState<any>(null);
+    const [isEventResponsibilityDetailOpen, setIsEventResponsibilityDetailOpen] = useState(false);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -56,12 +60,6 @@ function CalendarPageContent() {
         checkSession();
     }, []);
 
-    const handleLogout = async () => {
-        await fetch('/api/logout', { method: 'POST' });
-        setCurrentUser(null);
-        setUserRoles([]);
-        router.push('/home');
-    };
 
     const handleActivityCreated = () => {
         setRefreshTrigger(prev => prev + 1);
@@ -70,6 +68,44 @@ function CalendarPageContent() {
     };
 
     const handleSelectActivity = (activity: any) => {
+        // Event activities → open EventActivityDetailModal
+        if (activity.isEventActivity) {
+            setSelectedEventActivity({
+                id: activity.id,
+                name: activity.title,
+                startDateTime: activity.start instanceof Date ? activity.start.toISOString() : activity.start,
+                endDateTime: activity.end instanceof Date ? activity.end.toISOString() : activity.end,
+                duration: activity.duration,
+                category: activity.category,
+                state: activity.state,
+                leaders: activity.leaders,
+                guides: activity.guides,
+                observers: activity.observers,
+                participants: activity.participants,
+                eventId: activity.eventId,
+            });
+            setIsEventActivityDetailOpen(true);
+            return;
+        }
+
+        // Event responsibilities → open EventResponsibilityDetailModal
+        if (activity.isEventResponsibility) {
+            setSelectedEventResponsibility({
+                id: activity.id,
+                name: activity.title,
+                startDateTime: activity.start instanceof Date ? activity.start.toISOString() : activity.start,
+                endDateTime: activity.end instanceof Date ? activity.end.toISOString() : activity.end,
+                duration: activity.duration,
+                category: activity.category,
+                state: activity.state,
+                owner: activity.owner,
+                eventId: activity.eventId,
+            });
+            setIsEventResponsibilityDetailOpen(true);
+            return;
+        }
+
+        // Regular responsibilities → ResponsibilityDetailModal
         if (activity.isResponsibility) {
             setResponsibilityDetail({
                 id: activity.id,
@@ -85,6 +121,7 @@ function CalendarPageContent() {
             return;
         }
 
+        // Regular activities → ActivityDetailModal
         const mappedActivity = {
             id: activity.id,
             name: activity.title,
@@ -186,7 +223,7 @@ function CalendarPageContent() {
         setIsResponsibilityModalOpen(true);
     };
 
-    const activeTab = 'calendar';
+
 
     if (isLoadingSession) {
         return (
@@ -197,63 +234,7 @@ function CalendarPageContent() {
     }
 
     return (
-        <div className="dashboard-layout fade-in" style={{ minHeight: '100vh' }}>
-            {/* Navigation — user controls live in nav-right, same row as nav buttons */}
-            <MarqueeBanner />
-            <nav className="nav-container">
-                <div className="nav-left-spacer"></div>
-                <div className="nav-buttons">
-                    <button className="nav-link-btn" onClick={() => router.push('/home')}>
-                        <HomeIcon size={18} /> Home
-                    </button>
-                    <button className={`nav-link-btn ${activeTab === 'calendar' ? 'active text-black' : ''}`} onClick={() => router.push('/calendar')}>
-                        <CalendarDays size={18} /> Calendar View
-                    </button>
-                    <button className="nav-link-btn" onClick={() => router.push('/explore')}>
-                        Explore
-                    </button>
-                    {userRoles.includes('developer') && (
-                        <button className="nav-link-btn" onClick={() => router.push('/developer-panel')}>
-                            <ShieldCheck size={18} /> Developer Panel
-                        </button>
-                    )}
-                </div>
-                <div className="nav-right">
-                    <div className="user-menu-container">
-                        <button
-                            className="user-trigger"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowProfileDropdown(!showProfileDropdown);
-                            }}
-                        >
-                            <div className="user-avatar">
-                                <User size={20} />
-                            </div>
-                            <ChevronDown size={14} />
-                        </button>
-                        {showProfileDropdown && (
-                            // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-                            <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                    className="dropdown-item"
-                                    onClick={() => {
-                                        setShowProfileDropdown(false);
-                                        setIsProfileOpen(true);
-                                    }}
-                                >
-                                    <span>{currentUser?.name}</span>
-                                    <br />
-                                    <br />
-                                    Edit Profile
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                    <button onClick={handleLogout} className="btn-logout" title="Logout"><LogOut size={18} /></button>
-                </div>
-            </nav>
-
+        <div className="fade-in">
             {/* Calendar Content */}
             <main className="app-container" style={{ padding: '0 24px' }}>
                 <div className="content-section">
@@ -322,6 +303,22 @@ function CalendarPageContent() {
                 onStateChange={(id, newState) => {
                     setResponsibilityDetail((prev: any) => prev?.id === id ? { ...prev, state: newState } : prev);
                 }}
+            />
+
+            <EventActivityDetailModal
+                eventActivity={selectedEventActivity}
+                isOpen={isEventActivityDetailOpen}
+                onClose={() => { setIsEventActivityDetailOpen(false); setSelectedEventActivity(null); }}
+                currentUser={currentUser}
+                onRegisterSuccess={() => setRefreshTrigger(prev => prev + 1)}
+                eventId={selectedEventActivity?.eventId}
+            />
+
+            <EventResponsibilityDetailModal
+                eventResponsibility={selectedEventResponsibility}
+                isOpen={isEventResponsibilityDetailOpen}
+                onClose={() => { setIsEventResponsibilityDetailOpen(false); setSelectedEventResponsibility(null); }}
+                currentUser={currentUser}
             />
 
             <HolidayDetailModal

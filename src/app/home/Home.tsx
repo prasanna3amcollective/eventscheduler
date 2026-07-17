@@ -14,6 +14,7 @@ import BannerSlideshow from '@/components/BannerSlideshow';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import HolidayDetailModal from '@/components/HolidayDetailModal';
+import EventForm from '@/components/EventForm';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBanner from '@/components/MarqueeBanner';
@@ -113,7 +114,7 @@ function HomeContent() {
   const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
 
 
@@ -276,6 +277,15 @@ function HomeContent() {
                         Create Activity
                       </button>
                     )}
+                    {userPermissions.canCreateActivity && (
+                      <button
+                        className="yellow-btn"
+                        onClick={() => setIsEventModalOpen(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#0891b2' }}
+                      >
+                        Create Event
+                      </button>
+                    )}
                   </div>
                 ) : null
               }
@@ -360,6 +370,20 @@ function HomeContent() {
             setSelectedHoliday(null);
           }}
         />
+
+        <ActivityModal
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+          title="Create New Event"
+        >
+          <EventForm
+            onSuccess={() => {
+              setIsEventModalOpen(false);
+              setRefreshTrigger(prev => prev + 1);
+            }}
+            onCancel={() => setIsEventModalOpen(false)}
+          />
+        </ActivityModal>
       </main>
     </>
   );

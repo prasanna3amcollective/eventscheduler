@@ -11,6 +11,7 @@ interface MarqueeBannerMobileProps {
   readonly setActiveSection?: (section: string) => void;
   readonly onLoginClick?: () => void;
   readonly onAboutUsClick?: () => void;
+  readonly isLoggedIn?: boolean;
 }
 
 export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileProps>) {
@@ -28,6 +29,7 @@ export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileP
     { id: 'about-us', label: 'About Us' },
     { id: 'gallery', label: 'Gallery' },
     { id: 'explore', label: 'Explore' },
+    ...(props.isLoggedIn ? [{ id: 'weave', label: 'Weave' }] : []),
     { id: 'testimonials', label: 'Guest Book' }
   ];
 
@@ -50,6 +52,8 @@ export default function MarqueeBannerMobile(props: Readonly<MarqueeBannerMobileP
       router.push('/gallery');
     } else if (id === 'explore') {
       router.push('/explore');
+    } else if (id === 'weave') {
+      router.push('/weave');
     } else {
       router.push(`/home#${id}`);
     }

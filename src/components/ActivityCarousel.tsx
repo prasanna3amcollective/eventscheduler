@@ -13,8 +13,9 @@ interface Activity {
   participantCount?: number;
   category?: string;
   recurrenceTemplateId?: string | null;
-  generatedFromTemplateId?: string | null;
   detachReason?: string;
+  eventName?: string;
+  isEventActivity?: boolean;
 }
 
 interface ActivityCarouselProps {
@@ -180,6 +181,20 @@ export default function ActivityCarousel({ refreshTrigger, onActivityClick, isLo
           <span className="neo-card-month">{format(new Date(activity.startDateTime), 'MMM')}</span>
         </div>
         <div className="neo-card-body">
+          {activity.eventName && (
+            <span style={{
+              display: 'inline-block',
+              fontSize: '9px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              background: 'rgba(0,0,0,0.25)',
+              color: '#fff',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              marginBottom: '4px',
+            }}>{activity.eventName}</span>
+          )}
           <h4 className="neo-card-title">{activity.name}</h4>
           <div className="neo-card-meta">
             <span className="neo-meta-item">

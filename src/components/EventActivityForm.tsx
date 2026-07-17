@@ -56,7 +56,7 @@ export default function EventActivityForm({ eventId, onSuccess, onCancel }: Even
   return (
     <form onSubmit={handleSubmit} className="neo-form">
       {error && (
-        <div className="neo-form-group" style={{ background: 'rgba(255, 60, 60, 0.1)', padding: '12px', borderLeft: '4px solid #ff3c3c', borderRadius: '4px', color: '#ff3c3c' }}>
+        <div className="neo-form-group" style={{ background: 'rgba(255, 60, 60, 0.1)', padding: '12px', borderLeft: '4px solid #ff3c3c', borderRadius: '0', color: '#ff3c3c', border: '2px solid #000' }}>
           {error}
         </div>
       )}

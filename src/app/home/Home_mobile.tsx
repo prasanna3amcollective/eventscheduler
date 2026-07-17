@@ -15,6 +15,7 @@ import BannerSlideshow_mobile from '@/components/BannerSlideshow_mobile';
 import ActivityDetailModal from '@/components/ActivityDetailModal';
 import ResponsibilityDetailModal from '@/components/ResponsibilityDetailModal';
 import HolidayDetailModal from '@/components/HolidayDetailModal';
+import EventForm from '@/components/EventForm';
 import AdminDashboard from '@/components/AdminDashboard';
 import ProfileModal from '@/components/ProfileModal';
 import MarqueeBannerMobile from '@/components/MarqueeBanner_mobile';
@@ -106,9 +107,10 @@ export default function Home_mobile() {
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
   // Freeze background scrolling when any modal is open
-  const isAnyModalOpen = showRegisterModal || isModalOpen || isResponsibilityModalOpen || isDetailOpen || isResponsibilityDetailOpen || isHolidayModalOpen || isProfileOpen || showSignInPanel;
+  const isAnyModalOpen = showRegisterModal || isModalOpen || isResponsibilityModalOpen || isDetailOpen || isResponsibilityDetailOpen || isHolidayModalOpen || isProfileOpen || showSignInPanel || isEventModalOpen;
   useEffect(() => {
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -338,6 +340,15 @@ export default function Home_mobile() {
                             Create Activity
                           </button>
                         )}
+                        {userPermissions.canCreateActivity && (
+                          <button
+                            className="yellow-btn"
+                            onClick={() => setIsEventModalOpen(true)}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#0891b2' }}
+                          >
+                            Create Event
+                          </button>
+                        )}
                       </div>
                     ) : null
                   }
@@ -416,6 +427,20 @@ export default function Home_mobile() {
           isOpen={isHolidayModalOpen}
           onClose={() => { setIsHolidayModalOpen(false); setSelectedHoliday(null); }}
         />
+
+        <ActivityModal
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+          title="Create New Event"
+        >
+          <EventForm
+            onSuccess={() => {
+              setIsEventModalOpen(false);
+              setRefreshTrigger(prev => prev + 1);
+            }}
+            onCancel={() => setIsEventModalOpen(false)}
+          />
+        </ActivityModal>
       </div >
     </>
   );

@@ -166,6 +166,12 @@ async function syncUserRoles(userId: string, p: any) {
   }
 }
 
+// If the dev server has been running since before npx prisma generate, globalForPrisma.prisma might be stale and missing new models like .event
+if (globalForPrisma.prisma && (!(globalForPrisma.prisma as any).event || !(globalForPrisma.prisma as any).eventActivity)) {
+  console.warn("Stale Prisma client detected on globalThis (missing .event model). Recreating client...");
+  globalForPrisma.prisma = createPrismaClient();
+}
+
 export const prisma = globalForPrisma.prisma || createPrismaClient();
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
@@ -180,18 +186,17 @@ export function withAuth<T>(
   // We inject _context instead of relying on AsyncLocalStorage because the Prisma
   // extended client ($allOperations) runs in a different async context.
   if (raw && typeof raw === 'object' && raw.model && raw.operation && raw.args !== undefined) {
-    // Prisma model names are capitalized (e.g., "User", "Role") while descriptors
-    // use lowercase (e.g., "user", "role"). Capitalize the first letter.
     let modelName = raw.model as string;
-    modelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
+    const capitalizedModelName = modelName.charAt(0).toUpperCase() + modelName.slice(1);
 
     const op = raw.operation as string;
     const args = raw.args;
-    const prismaModel = (prisma as any)[modelName];
+    const prismaModel = (prisma as any)[raw.model] || (prisma as any)[capitalizedModelName] || (prisma as any)[raw.model.toLowerCase()];
     if (prismaModel && typeof prismaModel[op] === 'function') {
       const finalArgs = user ? { ...args, _context: user } : args;
       return prismaModel[op](finalArgs) as Promise<T>;
     }
+    throw new Error(`Prisma model '${raw.model}' or operation '${op}' not found on Prisma client.`);
   }
 
   return (raw as any) as Promise<T>;

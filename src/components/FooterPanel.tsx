@@ -21,13 +21,13 @@ export default function FooterPanel({
   onAboutUsClick
 }: FooterPanelProps) {
   return (
-    <footer className="footer-panel" style={{ 
-      background: 'var(--surface-color)', 
-      borderTop: '1px solid var(--border-color)', 
-      padding: '24px 40px', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
+    <footer className="footer-panel" style={{
+      background: 'var(--surface-color)',
+      borderTop: '1px solid var(--border-color)',
+      padding: '24px 40px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
       gap: '16px',
       marginTop: 'auto'
     }}>
@@ -58,6 +58,12 @@ export default function FooterPanel({
             >
               Explore
             </Link>
+            <Link
+              href="/weave"
+              className={`nav-link-btn ${activeSection === 'weave' ? 'active text-black' : ''}`}
+            >
+              Weave
+            </Link>
           </>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
@@ -87,9 +93,9 @@ export default function FooterPanel({
           </div>
         )}
       </div>
-      
+
       <div style={{ color: 'var(--text-color-muted)', fontSize: '13px', marginTop: '12px' }}>
-        © {new Date().getFullYear()} Event Scheduler. All rights reserved.
+        No rights reserved.! Feel free to organise based on our ideas.
       </div>
     </footer>
   );

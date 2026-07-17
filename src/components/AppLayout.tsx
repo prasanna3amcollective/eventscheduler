@@ -10,7 +10,7 @@ import ProfileModal from './ProfileModal';
 import FooterPanel from './FooterPanel';
 import MarqueeBannerMobile from './MarqueeBanner_mobile';
 import StaggeredTransition, { triggerStaggeredTransition, isStaggeredTransitionBusy } from './StaggeredTransition';
-import { LogOut, User, ChevronDown, Home as HomeIcon, CalendarDays, Search, ShieldCheck } from './Icons';
+import { LogOut, User, ChevronDown, Home as HomeIcon, CalendarDays, Search, ShieldCheck, Layers } from './Icons';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -61,9 +61,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     : pathname === '/about-us' ? 'about-us'
     : pathname === '/explore' ? 'explore'
     : pathname === '/guest-book' ? 'testimonials'
+    : pathname === '/weave' ? 'weave'
     : 'participate';
 
   const isAboutUs = pathname === '/about-us';
+  const isStandaloneDetail = pathname.startsWith('/activity/') ||
+                             pathname.startsWith('/responsibility/') ||
+                             pathname.startsWith('/event/') ||
+                             pathname.startsWith('/event-activity/') ||
+                             pathname.startsWith('/event-responsibility/');
+  const isExploreCommunity = pathname.startsWith('/explore/') && pathname !== '/explore';
+  const hideChrome = isAboutUs || isStandaloneDetail || isExploreCommunity;
 
   const handleAboutUsClick = () => {
     if (isAboutUs || isStaggeredTransitionBusy()) return;
@@ -87,8 +95,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
       <>
         <StaggeredTransition />
-        <div className={`landing-page fade-in ${isAboutUs ? 'about-us-layout-root' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-          {!isAboutUs && (
+        <div className={`landing-page fade-in ${isAboutUs ? 'about-us-layout-root' : isStandaloneDetail ? 'standalone-detail-root' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          {!hideChrome && (
             isMobile ? (
               <MarqueeBannerMobile
                 activeSection={activeSection}
@@ -123,7 +131,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div style={{ flex: 1 }}>
             {children}
           </div>
-          {!isAboutUs && (
+          {!hideChrome && (
             <FooterPanel
               isLoggedIn={isLoggedIn}
               activeSection={activeSection}
@@ -177,6 +185,47 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
+        {/* Global Login Modal for Standalone Pages where HeaderPanel is hidden */}
+        {hideChrome && showSignInPanel && !isMobile && (
+          <div
+            className="modal-overlay"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowSignInPanel(false); }}
+            style={{ zIndex: 2000 }}
+          >
+            <div className="modal-content activity-detail-card" style={{ maxWidth: '400px', padding: '32px' }}>
+              <div className="modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: 0 }}>Sign In</h3>
+                <button onClick={() => setShowSignInPanel(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', lineHeight: 1 }}>×</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={signinPhone}
+                  onChange={e => setSigninPhone(e.target.value)}
+                  style={{ border: '2px solid var(--border-color)', borderRadius: '4px', padding: '12px', fontSize: '16px', outline: 'none' }}
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={signinPassword}
+                  onChange={e => setSigninPassword(e.target.value)}
+                  style={{ border: '2px solid var(--border-color)', borderRadius: '4px', padding: '12px', fontSize: '16px', outline: 'none' }}
+                />
+                {signinError && <p style={{ color: '#ff4444', margin: 0, fontSize: '14px' }}>{signinError}</p>}
+                <button
+                  className="yellow-btn"
+                  onClick={handlePanelSignIn}
+                  disabled={signinSubmitting}
+                  style={{ width: '100%', padding: '12px', fontSize: '16px', marginTop: '8px' }}
+                >
+                  {signinSubmitting ? 'Signing in...' : 'Sign In'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showRegisterModal && (
           <div
             className="modal-overlay"
@@ -207,14 +256,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <StaggeredTransition />
-      <div className={`dashboard-layout fade-in ${isAboutUs ? 'about-us-layout-root' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {!isAboutUs && (
+      <div className={`dashboard-layout fade-in ${isAboutUs ? 'about-us-layout-root' : isStandaloneDetail ? 'standalone-detail-root' : ''}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {!hideChrome && (
           isMobile ? (
             <>
               <MarqueeBannerMobile
                 activeSection={activeSection}
                 setActiveSection={() => {}}
                 onAboutUsClick={handleAboutUsClick}
+                isLoggedIn={true}
               />
               <header className="dashboard-header" style={{ display: 'flex' }}>
                 <div className="header-user">
@@ -262,6 +312,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <button className={`nav-link-btn ${pathname === '/explore' ? 'active text-black' : ''}`} onClick={() => router.push('/explore')}>
                   Explore
                 </button>
+                <button className={`nav-link-btn ${pathname === '/weave' ? 'active text-black' : ''}`} onClick={() => router.push('/weave')}>
+                  <Layers size={18} /> Weave
+                </button>
                 {userRoles.includes('developer') && (
                   <button className={`nav-link-btn ${pathname === '/developer-panel' ? 'active text-black' : ''}`} onClick={() => router.push('/developer-panel')}>
                     <ShieldCheck size={18} /> Developer Panel
@@ -283,6 +336,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </button>
                   <button className={`nav-link-btn ${pathname === '/explore' ? 'active' : ''}`} onClick={() => router.push('/explore')}>
                     <Search size={18} /> Explore
+                  </button>
+                  <button className={`nav-link-btn ${pathname === '/weave' ? 'active' : ''}`} onClick={() => router.push('/weave')}>
+                    <Layers size={18} /> Weave
                   </button>
                   {userRoles.includes('developer') && (
                     <button className={`nav-link-btn ${pathname === '/developer-panel' ? 'active' : ''}`} onClick={() => router.push('/developer-panel')}>
@@ -332,7 +388,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
 
-        {!isAboutUs && (
+        {!hideChrome && (
           <FooterPanel
             isLoggedIn={isLoggedIn}
             activeSection={activeSection}

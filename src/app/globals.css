@@ -377,6 +377,22 @@ html:has(.about-us-container) {
   width: 100% !important;
 }
 
+/* Standalone Detail Pages (blue background) */
+body:has(.standalone-detail-root),
+html:has(.standalone-detail-root) {
+  background: var(--primary-color) !important;
+  background-color: var(--primary-color) !important;
+}
+
+.standalone-detail-root {
+  background: var(--primary-color) !important;
+  background-color: var(--primary-color) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
 .content-section {
   animation: fadeIn 0.4s ease-out;
   width: 100%;
@@ -672,6 +688,24 @@ input:not([type="checkbox"]):focus {
 /* Today cell highlight */
 .rbc-today {
   background-color: rgba(235, 255, 0, 0.06) !important;
+}
+
+/* Event day highlight (overrides today and weekend cells) */
+.rbc-event-day,
+.rbc-day-bg.rbc-event-day,
+.rbc-today.rbc-event-day,
+.rbc-allday-cell.rbc-event-day,
+.rbc-day-slot.rbc-event-day {
+  background-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: inset 0 0 0 2px #6366f1 !important;
+}
+.rbc-event-day + .rbc-date-cell,
+.rbc-day-bg.rbc-event-day ~ .rbc-date-cell {
+  font-weight: 800;
+  color: #fff !important;
+  background-color: #6366f1 !important;
+  border-radius: 4px;
+  padding: 0 4px;
 }
 
 .rbc-responsibility {
@@ -1358,6 +1392,60 @@ input:not([type="checkbox"]):focus {
   background: radial-gradient(ellipse at 60% 70%, #5C2700 0%, #2D1600 65%, #1C0A00 100%);
 }
 
+
+/* Music Community card — dark revolutionary vibe, matching the music page */
+.latest-posts-section .post-card.post-card--music {
+  background: #0a0a0a !important;
+  color: #e8e0d4 !important;
+  border: 2px solid #c0392b;
+  border-radius: 0;
+  box-shadow: 0 0 0 1px rgba(192, 57, 43, 0.2), 6px 6px 0 rgba(192, 57, 43, 0.3);
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-size: 1.1rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.3s ease;
+}
+
+/* Ember glow at bottom */
+.latest-posts-section .post-card.post-card--music::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(192, 57, 43, 0.45) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Music note accent */
+.latest-posts-section .post-card.post-card--music::before {
+  content: '♪';
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 2.2rem;
+  color: #c0392b;
+  opacity: 0.35;
+  pointer-events: none;
+  line-height: 1;
+  z-index: 1;
+  filter: drop-shadow(0 0 6px rgba(192, 57, 43, 0.5));
+}
+
+.latest-posts-section .post-card.post-card--music:hover {
+  transform: translate(-3px, -3px);
+  background: #111 !important;
+  box-shadow:
+    0 0 0 1px rgba(192, 57, 43, 0.5),
+    8px 8px 0 rgba(192, 57, 43, 0.4),
+    0 0 30px rgba(192, 57, 43, 0.15);
+}
 
 @media (max-width: 768px) {
   .latest-posts-section .post-card {

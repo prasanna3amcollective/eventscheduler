@@ -2,12 +2,11 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminDashboard from '@/components/AdminDashboard';
+import LoomSection from '@/components/LoomSection';
 
-function DeveloperPanelContent() {
+function WeavePageContent() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userRoles, setUserRoles] = useState<string[]>([]);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
 
   // Theme
@@ -22,7 +21,6 @@ function DeveloperPanelContent() {
         if (res.ok) {
           const data = await res.json();
           setCurrentUser(data.user);
-          setUserRoles(data.roles || []);
         } else {
           router.replace('/home');
         }
@@ -36,12 +34,12 @@ function DeveloperPanelContent() {
     checkSession();
   }, [router]);
 
-  // Guard: must be logged in AND have developer role
+  // Guard: must be logged in
   useEffect(() => {
-    if (!isLoadingSession && (!currentUser || !userRoles.includes('developer'))) {
+    if (!isLoadingSession && !currentUser) {
       router.replace('/home');
     }
-  }, [isLoadingSession, currentUser, userRoles, router]);
+  }, [isLoadingSession, currentUser, router]);
 
   if (isLoadingSession) {
     return (
@@ -51,29 +49,27 @@ function DeveloperPanelContent() {
     );
   }
 
-
-
-  if (!currentUser || !userRoles.includes('developer')) {
+  if (!currentUser) {
     return null;
   }
 
   return (
     <div className="fade-in">
       <main className="app-container">
-        <AdminDashboard currentUser={currentUser} />
+        <LoomSection currentUser={currentUser} />
       </main>
     </div>
   );
 }
 
-export default function DeveloperPanelPage() {
+export default function WeavePage() {
   return (
     <Suspense fallback={
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg-color)' }}>
         <div className="spinner" style={{ width: 40, height: 40, border: '3px solid var(--border-color)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     }>
-      <DeveloperPanelContent />
+      <WeavePageContent />
     </Suspense>
   );
 }

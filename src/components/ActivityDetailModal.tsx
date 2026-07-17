@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, CheckCircle, Edit } from '@/components/Icons';
+import { X, CalendarFill as Calendar, Clock, User as UserIcon, Users, Eye, CheckCircle, Edit, Share2 } from '@/components/Icons';
 import { secureFetch } from '@/lib/fetch';
 import { GOOGLE_MAPS_LINK } from '@/lib/constants';
 import { buildGoogleCalendarUrl } from '@/lib/calendar';
+import { useAuth } from '@/components/AuthProvider';
 import EditActivityModal from '@/components/EditActivityModal';
 
 // ---------------------------------------------------------------------------
@@ -50,7 +51,7 @@ interface ActivityDetailModalProps {
   /** Controls modal visibility */
   isOpen: boolean;
   /** Called to close the modal */
-  onClose: () => void;
+  onClose?: () => void;
   /** Whether the current user is authenticated */
   isLoggedIn: boolean;
   /** The current user's profile data */
@@ -58,9 +59,10 @@ interface ActivityDetailModalProps {
   /** Roles of the current user */
   userRoles?: string[];
   /** Called after a successful registration */
-  onRegisterSuccess: () => void;
-  /** Called to switch UI to the registration form */
-  onSwitchToRegister: () => void;
+  onRegisterSuccess?: () => void;
+  /** Called to switch to register view */
+  onSwitchToRegister?: () => void;
+  inline?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -90,9 +92,11 @@ const ERROR_MESSAGES = {
 function ErrorBanner({
   error,
   onSwitchToRegister,
+  onSwitchToLogin,
 }: {
   error: string;
   onSwitchToRegister: () => void;
+  onSwitchToLogin: () => void;
 }) {
   const isLoginPrompt = error === ERROR_MESSAGES.NOT_LOGGED_IN;
 
@@ -100,7 +104,7 @@ function ErrorBanner({
     <p className="error-message" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       {isLoginPrompt ? (
         <>
-          {error}{' '}
+          Please <button type="button" onClick={onSwitchToLogin} style={{ background: 'none', border: 'none', color: 'var(--primary-color)', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit', fontWeight: 'bold' }}>login</button> to register.{' '}
           <button
             type="button"
             onClick={onSwitchToRegister}
@@ -167,11 +171,53 @@ export default function ActivityDetailModal({
   userRoles = [],
   onRegisterSuccess,
   onSwitchToRegister,
+  inline = false,
 }: ActivityDetailModalProps) {
   const router = useRouter();
+  const { setShowRegisterModal, setShowSignInPanel } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isLoggedIn && currentUser && activity?.id) {
+      const autoId = sessionStorage.getItem('autoRegisterActivityId');
+      if (autoId === activity.id) {
+        sessionStorage.removeItem('autoRegisterActivityId');
+        handleRegister();
+      }
+    }
+  }, [isLoggedIn, currentUser, activity?.id]);
+
+  const shareLink = typeof window !== 'undefined' && activity ? `${window.location.origin}/activity/${activity.id}` : '';
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareLink);
+      alert('Link copied to clipboard!');
+      setShowShareModal(false);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
+
+  const handleShareTo = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Activity: ${activity?.name}`,
+          url: shareLink
+        });
+        setShowShareModal(false);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('Error sharing:', err);
+      }
+    } else {
+      alert('Share API is not supported in this browser. Please copy the link instead.');
+    }
+  };
 
   // The activity ID to use for API calls (real UUID post-PHASE 6)
   const activityId = activity ? activity.id : '';
@@ -222,12 +268,12 @@ export default function ActivityDetailModal({
         body: JSON.stringify({ userId: currentUser!.id }),
       });
       if (res.ok) {
-        onRegisterSuccess();
+        onRegisterSuccess?.();
         setSuccessMessage('Registered successfully!');
         succeeded = true;
         setIsSubmitting(false);
         setTimeout(() => {
-          onClose();
+          onClose?.();
         }, 1500);
       } else {
         const data = await res.json();
@@ -254,12 +300,12 @@ export default function ActivityDetailModal({
         method: 'POST',
       });
       if (res.ok) {
-        onRegisterSuccess();
+        onRegisterSuccess?.();
         setSuccessMessage('Unregistered successfully!');
         succeeded = true;
         setIsSubmitting(false);
         setTimeout(() => {
-          onClose();
+          onClose?.();
         }, 1500);
       } else {
         const data = await res.json();
@@ -278,7 +324,7 @@ export default function ActivityDetailModal({
   // Open the edit modal inline without navigation
   const [showEditModal, setShowEditModal] = useState(false);
   const handleEdit = useCallback(() => {
-    onClose(); // close the activity detail modal first
+    onClose?.(); // close the activity detail modal first
     setShowEditModal(true); // open the edit modal
   }, [onClose]);
 
@@ -290,21 +336,29 @@ export default function ActivityDetailModal({
   }, [googleCalendarUrl]);
 
   if (!activity) return null;
-  if (!isOpen && !showEditModal) return null;
-
+  if (!isOpen && !showEditModal && !inline) return null;
   return (
     <>
-      {isOpen && (
-        <div className="modal-overlay fade-in" onClick={onClose}>
-          <div className="modal-content activity-detail-card" onClick={e => e.stopPropagation()}>
-            <div className="modal-header-actions">
-              {canEdit && (
+      {(isOpen || inline) && (
+        <div className={inline ? '' : 'modal-overlay fade-in'} onClick={inline ? undefined : onClose}>
+          <div className={`modal-content activity-detail-card ${inline ? 'inline-mode' : ''}`} onClick={e => e.stopPropagation()} style={inline ? { width: '100%', maxWidth: '800px', margin: '0 auto', position: 'relative', top: 'auto', left: 'auto', transform: 'none' } : {}}>
+            <div className="modal-header-actions" style={inline ? { position: 'static', marginBottom: '24px', justifyContent: 'flex-start' } : {}}>
+              {inline ? (
+                <button className="btn-outline" onClick={() => router.push('/')} style={{ fontSize: '14px', padding: '6px 12px' }}>
+                  ← Back to Home
+                </button>
+              ) : (
+                <button className="modal-close" onClick={onClose} aria-label="Close modal">
+                  <X size={20} />
+                </button>
+              )}
+              {canEdit && !inline && (
                 <button onClick={handleEdit} className="edit-btn-flat" title="Edit Activity">
                   <Edit size={20} />
                 </button>
               )}
-              <button className="modal-close" onClick={onClose}>
-                <X size={20} />
+              <button onClick={() => setShowShareModal(true)} className="edit-btn-flat" title="Share activity" style={{ marginLeft: '8px' }}>
+                <Share2 size={20} />
               </button>
             </div>
             <div className="detail-header-flat">
@@ -409,8 +463,14 @@ export default function ActivityDetailModal({
                   </div>
                 )}
               </div>
-
-              {error && <ErrorBanner error={error} onSwitchToRegister={onSwitchToRegister} />}
+              {error && <ErrorBanner error={error} onSwitchToRegister={() => {
+                sessionStorage.setItem('autoRegisterActivityId', activity.id);
+                if (onSwitchToRegister) onSwitchToRegister();
+                else setShowRegisterModal(true);
+              }} onSwitchToLogin={() => {
+                sessionStorage.setItem('autoRegisterActivityId', activity.id);
+                setShowSignInPanel(true);
+              }} />}
             </div>
 
             {/* ---------- Footer / actions ---------- */}
@@ -485,8 +545,35 @@ export default function ActivityDetailModal({
       {showEditModal && (
         <EditActivityModal
           activityId={activityId}
-          onClose={() => setShowEditModal(false)}
+          onClose={() => { onClose?.(); setShowEditModal(false); }}
         />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="modal-overlay fade-in" style={{ zIndex: 3000 }} onClick={() => setShowShareModal(false)}>
+          <div className="modal-content activity-detail-card" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', padding: '24px' }}>
+            <div className="modal-header-actions">
+              <button onClick={() => setShowShareModal(false)} className="modal-close" title="Close">
+                <X size={20} />
+              </button>
+            </div>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'var(--mono-font)', fontWeight: 800, textTransform: 'uppercase' }}>Share Activity</h3>
+            
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--surface-color)', border: '2px solid #000', padding: '8px 12px', marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', fontSize: '14px', fontFamily: 'var(--mono-font)' }}>
+              {shareLink}
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={handleCopyLink} className="btn-primary-brutal" style={{ flex: 1, padding: '10px', fontSize: '14px' }}>
+                Copy Link
+              </button>
+              <button onClick={handleShareTo} className="btn-secondary-brutal" style={{ flex: 1, padding: '10px', fontSize: '14px' }}>
+                Share To...
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

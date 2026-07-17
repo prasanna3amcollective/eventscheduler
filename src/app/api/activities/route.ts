@@ -64,7 +64,46 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json(enrichedActivities);
+    // Also fetch EventActivity records (activities scoped to an Event)
+    const dbEventActivities: any[] = await prisma.eventActivity.findMany({
+      where: {
+        startDateTime: { lte: rangeEnd },
+        endDateTime: { gte: rangeStart },
+        detachReason: { not: 'cancelled' },
+        state: { not: 'Cancelled' },
+      },
+      include: {
+        event: { select: { name: true } },
+        participants: { include: { user: true } },
+      },
+    });
+
+    const enrichedEventActivities: any[] = dbEventActivities.map((ea: any) => {
+      const leaders = ea.participants.filter((p: any) => p.type === 'Leader').map((p: any) => p.user?.name).filter(Boolean);
+      const guides = ea.participants.filter((p: any) => p.type === 'Guide').map((p: any) => p.user?.name).filter(Boolean);
+      const observers = ea.participants.filter((p: any) => p.type === 'Observer').map((p: any) => p.user?.name).filter(Boolean);
+
+      const participantUserNames = new Set<string>();
+      for (const p of ea.participants) {
+        if (p.user) participantUserNames.add(p.user.name);
+      }
+      for (const name of [...leaders, ...guides, ...observers]) {
+        if (name) participantUserNames.add(name);
+      }
+
+      return {
+        ...ea,
+        eventName: ea.event.name,
+        eventId: ea.eventId,
+        isEventActivity: true,
+        participantCount: participantUserNames.size,
+        leaders,
+        guides,
+        observers,
+      };
+    });
+
+    return NextResponse.json([...enrichedActivities, ...enrichedEventActivities]);
   } catch (error: any) {
     console.error("Error fetching activities:", error);
     if ((error as Error).message?.includes('Security Restricted')) {
