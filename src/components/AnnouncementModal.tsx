@@ -53,7 +53,7 @@ export default function AnnouncementModal({ announcement, isOpen, onClose, allow
                   color: '#000', 
                   padding: '3px 10px', 
                   fontWeight: 'bold', 
-                  border: '1px solid #000', 
+                  border: '2px solid #000', 
                   textTransform: 'uppercase', 
                   letterSpacing: '0.5px',
                   display: 'inline-block',

@@ -112,7 +112,7 @@ export default function LoomSection({ currentUser }: LoomSectionProps) {
           className={activeTab === 'gallery' ? 'yellow-btn' : 'btn-outline'}
           style={{ fontSize: '15px', padding: '10px 24px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          <User size={18} /> Shared Tapestry (Gallery)
+          Gallery
         </button>
       </div>
 
@@ -514,7 +514,7 @@ export default function LoomSection({ currentUser }: LoomSectionProps) {
         <div>
           <div style={{ marginBottom: '24px' }}>
             <h2 style={{ fontFamily: 'var(--heading-font)', fontSize: '24px', margin: '0 0 8px 0', color: 'var(--text-primary)' }}>
-              Shared Tapestry (Community Gallery)
+              Maintain gallery
             </h2>
             <p style={{ fontSize: '15px', color: 'var(--text-secondary)', margin: 0 }}>
               Click on any polaroid photo to open the lightbox and collaboratively update its description.

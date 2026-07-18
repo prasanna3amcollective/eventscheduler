@@ -36,7 +36,19 @@ export default function ExplorePage() {
             </button>
             <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
             <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
-            <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</button>
+            <button type="button" className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>
+              <div className="card-hearth-top">
+                <span className="card-pledge-badge">◉ DECENTRALIZED // NO ALGORITHMS</span>
+                <span className="card-hearth-icon">◈</span>
+              </div>
+              <div className="card-story-quote">
+                &quot;ஒவ்வொருவருக்கும் ஒரு கதை உள்ளது...&quot;
+              </div>
+              <div className="card-label-row">
+                <span className="tamil-badge storytelling-badge">க</span>
+                <span className="card-title-text">Storytelling Community</span>
+              </div>
+            </button>
           </div>
         </section>
       </section>

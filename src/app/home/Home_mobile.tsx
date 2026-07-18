@@ -287,7 +287,19 @@ export default function Home_mobile() {
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>
+                    <div className="card-hearth-top">
+                      <span className="card-pledge-badge">◉ DECENTRALIZED // NO ALGORITHMS</span>
+                      <span className="card-hearth-icon">◈</span>
+                    </div>
+                    <div className="card-story-quote">
+                      &quot;ஒவ்வொருவருக்கும் ஒரு கதை உள்ளது...&quot;
+                    </div>
+                    <div className="card-label-row">
+                      <span className="tamil-badge storytelling-badge">க</span>
+                      <span className="card-title-text">Storytelling Community</span>
+                    </div>
+                  </div>
                 </div>
               </section>
             </section>
@@ -365,7 +377,19 @@ export default function Home_mobile() {
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
-                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>Storytelling Community</div>
+                  <div className="post-card post-card--storytelling" onClick={() => router.push('/explore/storytelling-community')} style={{ cursor: 'pointer' }}>
+                    <div className="card-hearth-top">
+                      <span className="card-pledge-badge">◉ DECENTRALIZED // NO ALGORITHMS</span>
+                      <span className="card-hearth-icon">◈</span>
+                    </div>
+                    <div className="card-story-quote">
+                      &quot;ஒவ்வொருவருக்கும் ஒரு கதை உள்ளது...&quot;
+                    </div>
+                    <div className="card-label-row">
+                      <span className="tamil-badge storytelling-badge">க</span>
+                      <span className="card-title-text">Storytelling Community</span>
+                    </div>
+                  </div>
                 </div>
               </section>
             </section>

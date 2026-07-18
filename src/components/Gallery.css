@@ -170,7 +170,7 @@
 .photo-card-variant-film {
     padding: 6px;
     background: #222;
-    border-radius: 2px;
+    border-radius: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
@@ -205,14 +205,14 @@
 /* ── 7. Instant Mini ────────────────────────────── */
 .photo-card-variant-instant {
     padding: 10px 10px 45px 10px;
-    border-radius: 12px;
+    border-radius: 0;
     background: #f8f8f8;
     border: 8px solid #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 0 1px #e0e0e0;
 }
 
 .photo-card-variant-instant img {
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 /* ── 8. Pinned ──────────────────────────────────── */
@@ -247,7 +247,7 @@
     width: 30px;
     height: 8px;
     background: #ffeb3b;
-    border-radius: 0 0 2px 2px;
+    border-radius: 0;
     opacity: 0.5;
 }
 
@@ -275,7 +275,7 @@
 .photo-card-variant-notebook {
     padding: 10px 12px 35px 12px;
     border-left: 20px solid #f0f0f0;
-    border-radius: 0 4px 4px 0;
+    border-radius: 0;
     background: linear-gradient(to right, #f9f9f9 0%, #fff 10%);
 }
 
@@ -398,8 +398,8 @@
 .gallery-desc-textarea {
     width: 100%;
     padding: 10px 12px;
-    border: 2px solid #ccc;
-    border-radius: 4px;
+    border: 3px solid #000;
+    border-radius: 0;
     font-family: var(--handwriting-font, 'Caveat', cursive);
     font-size: 20px;
     color: #333;
@@ -411,7 +411,7 @@
 }
 
 .gallery-desc-textarea:focus {
-    border-color: #666;
+    border-color: #000;
 }
 
 .gallery-desc-actions {
@@ -429,10 +429,11 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.1s ease;
+    border-radius: 0;
 }
 
 .gallery-desc-save-btn:hover {
-    transform: translate(1px, 1px);
+    transform: translate(2px, 2px);
     box-shadow: 2px 2px 0 #000;
 }
 
@@ -440,7 +441,7 @@
 .gallery-lightbox-variant-film {
     padding: 12px;
     background: #222;
-    border-radius: 2px;
+    border-radius: 0;
 }
 
 .gallery-lightbox-variant-film img {
@@ -466,23 +467,26 @@
     right: -40px;
     width: 36px;
     height: 36px;
-    border: 2px solid rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
+    border: 3px solid #ffffff;
+    border-radius: 0;
+    background: #000000;
+    color: #ffffff;
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
+    transition: all 0.1s ease;
+    box-shadow: 3px 3px 0px 0px var(--primary-color);
 }
 
 .gallery-lightbox-close:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: #fff;
-    transform: scale(1.1);
+    background: var(--primary-color);
+    color: #000000;
+    border-color: #ffffff;
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0px 0px var(--primary-color);
 }
 
 .gallery-loading,

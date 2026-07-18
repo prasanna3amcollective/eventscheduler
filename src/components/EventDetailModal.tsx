@@ -217,6 +217,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
                   fontWeight: 'bold',
                   background: 'var(--bg-color)',
                   border: '2px solid var(--primary-color)',
+                  borderRadius: '0',
                   color: 'var(--text-color)',
                   padding: '6px 10px',
                   fontFamily: 'var(--heading-font)',
@@ -234,7 +235,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
               color: event.state === 'Scheduled' ? '#000' : '#fff',
               padding: '3px 10px',
               fontWeight: 'bold',
-              border: '1px solid #000',
+              border: '2px solid #000',
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}>
@@ -253,7 +254,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
 
         {/* Save Error */}
         {saveError && (
-          <div style={{ background: 'rgba(255, 68, 68, 0.15)', color: '#ff4444', padding: '10px 16px', border: '1px solid #ff4444', marginBottom: '16px', fontSize: '14px' }}>
+          <div style={{ background: 'rgba(255, 68, 68, 0.15)', color: '#ff4444', padding: '10px 16px', border: '2px solid #ff4444', borderRadius: '0', marginBottom: '16px', fontSize: '14px' }}>
             {saveError}
           </div>
         )}
@@ -370,7 +371,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
 
         {/* Forms */}
         {showActivityForm && (
-          <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+          <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '0', border: '3px solid var(--border-color)', marginBottom: '24px' }}>
             <h3 style={{ marginTop: 0 }}>New Activity</h3>
             <EventActivityForm
               eventId={event.id}
@@ -381,7 +382,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
         )}
 
         {showResponsibilityForm && (
-          <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '24px' }}>
+          <div style={{ background: 'var(--bg-color)', padding: '16px', borderRadius: '0', border: '3px solid var(--border-color)', marginBottom: '24px' }}>
             <h3 style={{ marginTop: 0 }}>New Responsibility</h3>
             <EventResponsibilityForm
               eventId={event.id}
@@ -394,13 +395,13 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
 
         {/* Lists */}
         <div>
-          <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Activities</h3>
+          <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px' }}>Activities</h3>
           {event.activities?.length > 0 ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {event.activities.map((act: any) => {
                 const isRegistered = act.participants?.some((p: any) => p.userId === currentUser?.id);
                 return (
-                  <li key={act.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <li key={act.id} style={{ padding: '12px', border: '2px solid var(--border-color)', borderRadius: '0', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <strong>{act.name}</strong> - {new Date(act.startDateTime).toLocaleTimeString()}
                       <p style={{ fontSize: '0.85em', color: 'var(--text-color-muted)', margin: '4px 0 0 0' }}>{act.participants?.length || 0} participants</p>
@@ -411,7 +412,7 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
                       <button
                         onClick={() => handleRegister(act.id)}
                         disabled={registering === act.id}
-                        style={{ padding: '6px 12px', background: 'var(--primary-color)', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                        style={{ padding: '6px 12px', background: 'var(--primary-color)', color: '#000', border: '2px solid #000', borderRadius: '0', cursor: 'pointer', fontWeight: 'bold' }}
                       >
                         {registering === act.id ? 'Registering...' : 'Register'}
                       </button>
@@ -424,11 +425,11 @@ export default function EventDetailModal({ event, isOpen, onClose, currentUser, 
         </div>
 
         <div style={{ marginTop: '32px' }}>
-          <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Responsibilities</h3>
+          <h3 style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '8px' }}>Responsibilities</h3>
           {event.responsibilities?.length > 0 ? (
             <ul style={{ listStyle: 'none', padding: 0 }}>
               {event.responsibilities.map((resp: any) => (
-                <li key={resp.id} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '8px' }}>
+                <li key={resp.id} style={{ padding: '12px', border: '2px solid var(--border-color)', borderRadius: '0', marginBottom: '8px' }}>
                   <strong>{resp.name}</strong> - {new Date(resp.startDateTime).toLocaleTimeString()}
                   <p style={{ fontSize: '0.85em', color: 'var(--text-color-muted)', margin: '4px 0 0 0' }}>Owner: {resp.owner || 'Unassigned'}</p>
                 </li>
