@@ -1,223 +1,183 @@
 /* ==========================================================
-   WritersCommunity — Handwritten / Zine / Notebook Aesthetic
+   WritersCommunity — Raw Clay & Palm Leaf Scripture Aesthetic
+   An anti-hierarchical, un-colonial design inspired by clay slates,
+   carved stones, and collaborative palm leaf manuscripts (olaichuvadi).
    ========================================================== */
 
-@keyframes ink-scratch {
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Dawning+of+a+New+Day&family=Caveat:wght@400;700&display=swap');
 
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
+:root {
+    --bg-clay: #dfd7c6;        /* Sun-baked mud/clay pigment */
+    --text-charcoal: #1c1714;  /* Raw wood charcoal */
+    --color-terracotta: #9a3a29; /* Ochre/terracotta red dye */
+    --color-indigo: #264356;    /* Cooperatively-sourced indigo dye */
+    --color-palm-leaf: #f4eae0; /* Dried, pressed palm leaf fiber */
+    
+    --border-rough: 2px solid rgba(28, 23, 20, 0.4);
+    --border-dashed-thin: 1.5px dashed rgba(28, 23, 20, 0.3);
 }
 
-@keyframes float-quill {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(-2deg);
+@keyframes float-stylus {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
     }
-
     50% {
-        transform: translateY(-6px) rotate(2deg);
+        transform: translate(-1px, -3px) rotate(-4deg);
     }
 }
 
 .writers-wrapper {
-    background: #f5f0e8;
+    background: 
+        radial-gradient(circle at 12% 25%, rgba(28, 23, 20, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 88% 75%, rgba(154, 58, 41, 0.03) 0%, transparent 35%),
+        var(--bg-clay);
     min-height: 100vh;
-    font-family: 'Courier New', 'Georgia', 'Times New Roman', serif;
-    color: #2c1810;
+    font-family: 'EB Garamond', Georgia, serif;
+    color: var(--text-charcoal);
     padding: 0;
     position: relative;
     overflow-x: hidden;
 }
 
-/* Notebook ruled lines background */
-.writers-wrapper::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: repeating-linear-gradient(transparent,
-            transparent 28px,
-            rgba(180, 200, 220, 0.3) 28px,
-            rgba(180, 200, 220, 0.3) 29px);
-    pointer-events: none;
-    z-index: 0;
-}
-
-/* Fixed red margin line */
-.writers-wrapper::after {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 60px;
-    width: 2px;
-    height: 100vh;
-    background: rgba(220, 80, 80, 0.25);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.writers-wrapper>* {
+.writers-wrapper * {
     position: relative;
     z-index: 1;
 }
 
-/* Back button */
+/* Back button - unadorned, simple woodblock-cut style */
 .writers-back {
     position: fixed;
-    top: 1.2rem;
-    left: 1.2rem;
+    top: 1.5rem;
+    left: 1.5rem;
     z-index: 100;
     background: transparent;
-    color: #2c1810;
-    border: 2px solid #2c1810;
-    font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
-    padding: 0.5rem 1.2rem;
+    color: var(--text-charcoal);
+    border: var(--border-rough);
+    border-radius: 4px;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.4rem 1.1rem;
     cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    transition: all 0.2s ease;
+    letter-spacing: 1px;
 }
 
 .writers-back:hover {
-    background: #2c1810;
-    color: #f5f0e8;
+    background: var(--text-charcoal);
+    color: var(--bg-clay);
 }
 
 .writers-container {
-    max-width: 780px;
+    max-width: 720px;
     margin: 0 auto;
-    padding: 4rem 2rem 6rem;
+    padding: 5rem 1.5rem 6rem;
 }
 
-/* HEADER */
+/* HEADER - Human-scale, un-authoritative */
 .writers-header {
     text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 2px solid #2c1810;
-    position: relative;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1.5px solid rgba(28, 23, 20, 0.2);
 }
 
 .writers-header h1 {
-    font-family: 'Georgia', 'Times New Roman', serif;
-    font-size: 3.5rem;
-    text-transform: uppercase;
-    letter-spacing: 6px;
-    color: #2c1810;
-    line-height: 1.2;
-    margin-bottom: 0.5rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--color-terracotta);
+    line-height: 1.15;
+    margin-bottom: 0.8rem;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.6), -0.5px -0.5px 0px rgba(0, 0, 0, 0.15);
 }
 
 .writers-header .tagline {
-    font-family: 'Courier New', monospace;
-    font-size: 1rem;
-    font-style: italic;
-    color: #666;
-    letter-spacing: 2px;
+    font-family: 'Dawning of a New Day', cursive;
+    font-size: 1.8rem;
+    color: var(--color-indigo);
+    letter-spacing: 1px;
 }
 
-/* Stamp style quote */
+/* Stamp style quote - styled as a piece of rough bark or slate */
 .stamp-quote {
     text-align: center;
-    padding: 2rem;
-    margin-bottom: 3rem;
-    border: 3px solid #2c1810;
-    background: rgba(255, 255, 255, 0.4);
-    position: relative;
-    transform: rotate(-0.5deg);
-    box-shadow: 6px 6px 0 rgba(44, 24, 16, 0.08);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+    border: var(--border-rough);
+    border-radius: 12px 18px 10px 15px / 15px 12px 18px 10px;
+    background: rgba(255, 255, 255, 0.25);
+    transform: rotate(-0.8deg);
+    box-shadow: 3px 3px 0px rgba(28, 23, 20, 0.08);
 }
 
 .stamp-quote p {
-    font-family: 'Georgia', serif;
-    font-size: 1.3rem;
-    font-style: italic;
-    line-height: 1.6;
-    color: #2c1810;
+    font-family: 'Dawning of a New Day', cursive;
+    font-size: 1.9rem;
+    line-height: 1.4;
+    color: var(--text-charcoal);
     margin: 0;
 }
 
-/* Sections */
+/* Sections - Hand-cut Palm Leaf script boards */
 .writers-section {
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(44, 24, 16, 0.15);
-    position: relative;
-}
-
-.writers-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #2c1810, transparent);
-    opacity: 0.2;
+    margin-bottom: 2.5rem;
+    padding: 2.2rem 2rem;
+    background: var(--color-palm-leaf);
+    border: var(--border-rough);
+    /* Irregular border radius makes the sections resemble natural leaves */
+    border-radius: 80px 12px 90px 15px / 15px 95px 12px 90px;
+    box-shadow: 2px 3px 8px rgba(28, 23, 20, 0.04);
 }
 
 .writers-section h2 {
-    font-family: 'Georgia', serif;
+    font-family: 'EB Garamond', serif;
     font-size: 1.8rem;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-    margin-bottom: 1.5rem;
-    color: #2c1810;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1.2rem;
+    color: var(--color-terracotta);
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.8rem;
+    text-shadow: 0.5px 0.5px 0px rgba(255, 255, 255, 0.7);
 }
 
 .writers-section h2 .ink-icon {
     display: inline-block;
-    font-size: 1.5rem;
-    animation: float-quill 3s ease-in-out infinite;
+    color: var(--color-indigo);
+    animation: float-stylus 3.5s ease-in-out infinite;
 }
 
+/* Interactive soot/ochre paragraph highlight */
 .writers-section p {
-    line-height: 1.9;
-    font-size: 1.05rem;
+    line-height: 1.75;
+    font-size: 1.15rem;
     margin-bottom: 1rem;
-    color: #333;
+    color: rgba(28, 23, 20, 0.92);
+    background-image: linear-gradient(120deg, rgba(154, 58, 41, 0.06) 0%, rgba(154, 58, 41, 0.06) 100%);
+    background-repeat: no-repeat;
+    background-size: 0% 100%;
+    background-position: 0 92%;
+    transition: background-size 0.4s ease-out;
+    padding-bottom: 2px;
 }
 
-.writers-section ul {
-    list-style: none;
-    padding: 0;
+.writers-section p:hover {
+    background-size: 100% 100%;
 }
 
-.writers-section ul li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-    line-height: 1.7;
-    font-size: 1rem;
-    color: #333;
-    border-bottom: 1px dashed rgba(44, 24, 16, 0.08);
+.writers-section p:last-of-type {
+    margin-bottom: 0;
 }
 
-.writers-section ul li::before {
-    content: '—';
-    position: absolute;
-    left: 0;
-    color: #2c1810;
-    opacity: 0.4;
-}
-
-/* Writer types grid */
+/* Writer types - horizontal equality */
 .writer-types {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 1rem;
+    gap: 1.2rem;
+    margin-top: 1.5rem;
 }
 
 @media (max-width: 600px) {
@@ -226,60 +186,51 @@
     }
 }
 
+/* Styled like equal slate stones side-by-side */
 .writer-type-card {
-    border: 2px solid rgba(44, 24, 16, 0.2);
+    border: var(--border-rough);
+    border-radius: 8px 12px;
     padding: 1.25rem;
     text-align: center;
-    background: rgba(255, 255, 255, 0.6);
-    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.35);
+    transition: all 0.3s ease;
 }
 
 .writer-type-card:hover {
-    border-color: #2c1810;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.6);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(44, 24, 16, 0.08);
+    box-shadow: 0 4px 10px rgba(28, 23, 20, 0.05);
 }
 
 .writer-type-card h4 {
-    font-family: 'Georgia', serif;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #2c1810;
+    font-family: 'EB Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-indigo);
+    margin-top: 0;
     margin-bottom: 0.4rem;
 }
 
 .writer-type-card p {
-    font-size: 0.85rem;
-    color: #666;
+    font-size: 1rem;
+    color: rgba(28, 23, 20, 0.8);
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.45;
+    background: none !important; /* Strip text highlight effect from card descriptions */
 }
 
-/* Bottom quote */
+/* Bottom quote - raw and collective end statement */
 .bottom-quote {
     text-align: center;
-    padding: 3rem 2rem;
-    margin-top: 3rem;
-    border-top: 2px solid #2c1810;
-    position: relative;
+    padding: 2.5rem 1.5rem;
+    margin-top: 2rem;
+    border-top: 1.5px solid rgba(28, 23, 20, 0.2);
 }
 
 .bottom-quote p {
-    font-family: 'Georgia', serif;
-    font-size: 1.4rem;
-    font-style: italic;
-    color: #2c1810;
-    line-height: 1.6;
+    font-family: 'Dawning of a New Day', cursive;
+    font-size: 2rem;
+    color: var(--text-charcoal);
+    line-height: 1.35;
     margin: 0;
-}
-
-.bottom-quote .attribution {
-    font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
-    color: #888;
-    margin-top: 1rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
 }
