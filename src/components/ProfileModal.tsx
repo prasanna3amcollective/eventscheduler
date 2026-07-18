@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, type FormEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, User, Mail, Phone, Save, Loader, Tag, Lock } from '@/components/Icons';
 import { type Skill } from '@/lib/constants';
 import SkillPicker from '@/components/SkillPicker';
@@ -61,7 +61,7 @@ export default function ProfileModal({
   onClose,
   currentUser,
   onProfileUpdate,
-}: ProfileModalProps) {
+}: Readonly<ProfileModalProps>) {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', skills: [] as Skill[] });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -105,38 +105,40 @@ export default function ProfileModal({
   };
 
   /** Submits the updated profile via PUT to /api/user/profile */
-  const handleSubmit = useCallback(
-    async (e: FormEvent) => {
-      e.preventDefault();
-      setIsSaving(true);
-      setError('');
+/** Submits the updated profile via PUT to /api/user/profile */
+const handleSubmit = useCallback(
+  async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setError('');
 
-      try {
-        const response = await fetch('/api/user/profile', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-        if (response.ok) {
-          const updatedUser: UserData = await response.json();
-          onProfileUpdate(updatedUser);
-          onClose();
-        } else {
-          const err = await response.json();
-          setError(err.error ?? ERROR_MESSAGES.UPDATE_FAILED);
-        }
-      } catch (_err) {
-        setError(ERROR_MESSAGES.NETWORK_ERROR);
-      } finally {
-        setIsSaving(false);
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        const updatedUser: UserData = await response.json();
+        onProfileUpdate(updatedUser);
+        onClose();
+      } else {
+        const err = await response.json();
+        setError(err.error ?? ERROR_MESSAGES.UPDATE_FAILED);
       }
-    },
-    [formData, onProfileUpdate, onClose],
-  );
+    } catch (err) {
+      // Use the error message if available, otherwise fallback to a generic network error.
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || ERROR_MESSAGES.NETWORK_ERROR);
+    } finally {
+      setIsSaving(false);
+    }
+  },
+  [formData, onProfileUpdate, onClose],
+);
 
   /** Handles password reset form submission */
-  const handlePasswordReset = useCallback(
-    async (e: FormEvent) => {
+  const handlePasswordReset = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setPasswordError('');
 
@@ -192,11 +194,18 @@ export default function ProfileModal({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay fade-in" style={{ alignItems: 'flex-start', paddingTop: '5vh' }} onClick={onClose}>
+    <div
+      role="button"
+      className="modal-overlay fade-in"
+      style={{ alignItems: 'flex-start', paddingTop: '5vh', background: 'none', border: 'none', width: '100%', height: '100%', cursor: 'pointer' }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      aria-label="Close modal"
+    >
       <div
+        role="dialog"
+        aria-modal="true"
         className="modal-content"
         style={{ maxWidth: '500px', padding: '40px' }}
-        onClick={(e) => e.stopPropagation()}
       >
 
         {/* <div className="form-header"> */}
@@ -348,7 +357,7 @@ export default function ProfileModal({
         )}
 
         {error && <div className="error-banner" style={{ margin: 0 }}>{error}</div>}
-      </div>
+      </div> {/* close dialog-content */}
       <button className="modal-close" onClick={onClose} style={{ position: 'fixed', top: 'calc(5vh - 12px)', right: 'max(16px, calc(50% - 250px - 12px))', zIndex: 1150 }}>
         <X size={20} />
       </button>

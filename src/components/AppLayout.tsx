@@ -51,7 +51,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   // Close dropdown on outside click
   useEffect(() => {
-    const handleClick = () => setShowProfileDropdown(false);
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setShowProfileDropdown(false);
+      }
+    };
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, []);
@@ -281,6 +286,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       </div>
                       <ChevronDown size={14} />
                     </button>
+                    {/* Direct button to open Profile Modal */}
+                    <button
+                      className="btn-edit-profile"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsProfileOpen(true);
+                      }}
+                      style={{
+                        marginLeft: '8px',
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--primary-color)',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                      }}
+                    >
+                      Edit Profile
+                    </button>
                     {showProfileDropdown && (
                       <div className="user-dropdown" onClick={(e) => e.stopPropagation()}>
                         <button
@@ -294,6 +317,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                           <br />
                           <br />
                           Edit Profile
+                        </button>
+                        <button
+                          className="dropdown-item"
+                          onClick={() => {
+                            setShowProfileDropdown(false);
+                            handleLogout();
+                          }}
+                        >
+                          Logout
                         </button>
                       </div>
                     )}

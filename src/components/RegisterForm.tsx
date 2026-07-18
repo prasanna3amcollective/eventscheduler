@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, type FormEvent } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { User, Mail, Phone, Lock, Tag, UserPlus, CheckCircle } from '@/components/Icons';
 import SkillPicker from '@/components/SkillPicker';
 import { type Skill } from '@/lib/constants';
@@ -182,7 +182,7 @@ export default function RegisterForm({ onSuccess, pendingEventId, hideTitle = fa
    * then optionally auto-enrolls and calls onSuccess.
    */
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       setIsSubmitting(true);
       setError(null);

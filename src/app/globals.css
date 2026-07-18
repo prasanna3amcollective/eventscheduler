@@ -3196,6 +3196,8 @@ input:not([type="checkbox"]):focus {
   margin-bottom: 32px;
   border-bottom: 2px solid var(--border-color);
   padding-bottom: 0;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .admin-nav button {
@@ -3286,17 +3288,7 @@ input:not([type="checkbox"]):focus {
   color: var(--text-secondary);
 }
 
-.role-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--primary-glow);
-  color: var(--primary-color);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+
 
 .admin-form {
   display: flex;
@@ -3540,10 +3532,6 @@ input:not([type="checkbox"]):focus {
   display: block;
 }
 
-.admin-nav {
-  overflow-x: auto;
-  white-space: nowrap;
-}
 
 /* Admin Table Styles */
 .table-container {
@@ -3726,8 +3714,12 @@ input:not([type="checkbox"]):focus {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 4px;
+  background: var(--primary-glow);
+  color: var(--primary-color);
   font-size: 11px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .hidden-calendar-view .rbc-month-view,
