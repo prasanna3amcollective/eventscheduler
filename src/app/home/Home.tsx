@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import StickParkour from '@/components/StickParkour';
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
 import ActivityForm from '@/components/ActivityForm';
@@ -298,7 +299,10 @@ function HomeContent() {
             <section className="latest-posts-section" style={{ marginTop: '48px' }}>
               <h2 className="section-title">Nested Communities</h2>
               <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
-                <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
+                <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>
+                  <span style={{ position: 'relative', zIndex: 10 }}>Actors Community</span>
+                  <StickParkour />
+                </button>
                 <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
                 <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
                 <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>

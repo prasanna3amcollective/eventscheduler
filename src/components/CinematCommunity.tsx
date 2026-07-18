@@ -206,9 +206,9 @@ export default function CinematCommunity() {
                                     with fellow creators.
                                 </p>
                                 <p className="cm-body cm-body--loud">
-                                    We don&rsquo;t consume content.
+                                    We don&rsquo;t create content.
                                     <br />
-                                    We create it. Together.
+                                    We create art. Together.
                                 </p>
                             </div>
                         </div>

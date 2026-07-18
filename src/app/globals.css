@@ -1400,11 +1400,12 @@ input:not([type="checkbox"]):focus {
 
 /* Podcast Community card — retro tape vibe */
 .latest-posts-section .post-card--podcast {
-  background: #FFF8DC;
-  color: #2c1810;
-  border: 3px solid #2c1810;
-  box-shadow: 6px 6px 0 #d4a574;
-  font-family: 'Georgia', serif;
+  background: #111111;
+  /* Dark background for contrast */
+  color: #FFF8DC;
+  border: 3px solid #FFF8DC;
+  box-shadow: 6px 6px 0 #555555;
+  font-family: 'Courier New', Courier, monospace;
   text-transform: uppercase;
   letter-spacing: 3px;
   position: relative;

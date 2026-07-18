@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense, useCallback, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
+import StickParkour from '@/components/StickParkour';
 
 import AboutUs from '@/components/AboutUs';
 import CalendarView from '@/components/CalendarView';
@@ -283,7 +284,10 @@ export default function Home_mobile() {
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
                 <h2 className="section-title">Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>
+                    <span style={{ position: 'relative', zIndex: 10 }}>Actors Community</span>
+                    <StickParkour />
+                  </div>
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
@@ -373,7 +377,10 @@ export default function Home_mobile() {
               <section className="latest-posts-section" style={{ marginTop: '24px' }}>
                 <h2 className="section-title">Nested Communities</h2>
                 <div className="latest-posts-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</div>
+                  <div className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>
+                    <span style={{ position: 'relative', zIndex: 10 }}>Actors Community</span>
+                    <StickParkour />
+                  </div>
                   <div className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</div>
                   <div className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</div>
                   <div className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</div>
