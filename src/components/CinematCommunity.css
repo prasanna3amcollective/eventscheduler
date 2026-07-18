@@ -1,0 +1,1083 @@
+/* ============================================================
+   CinematCommunity — Neobrutalist Cinematography Aesthetic
+   Anti-capitalist · Raw · DIY · Zine-like
+   Film strip · Contact sheet · Clapperboard · Darkroom · Viewfinder
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* ---------- Variables ---------- */
+.cinemat-wrapper {
+    --black: #0a0a0a;
+    --white: #f0ece4;
+    --red: #cc2200;
+    --darkroom: #2a0000;
+    --darkroom-light: #6b1a1a;
+    --darkroom-text: #e64444;
+    --yellow: #f5c518;
+    --amber: #c5913e;
+    --grey: #666;
+    --grey-dark: #333;
+    --font: 'Space Mono', 'Courier New', 'Courier', monospace;
+    --border: 3px solid var(--white);
+    --border-thick: 4px solid var(--white);
+}
+
+/* ---------- Base ---------- */
+.cinemat-wrapper {
+    background: var(--black);
+    min-height: 100vh;
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.cinemat-wrapper *,
+.cinemat-wrapper *::before,
+.cinemat-wrapper *::after {
+    box-sizing: border-box;
+}
+
+/* ---------- Film Grain Overlay ---------- */
+.film-grain {
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.045;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 256px;
+    animation: grain 0.4s steps(3) infinite;
+}
+
+@keyframes grain {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-3%, 2%); }
+    66% { transform: translate(2%, -3%); }
+    100% { transform: translate(-1%, 1%); }
+}
+
+/* ---------- Back Button ---------- */
+.cinemat-back {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 10001;
+    background: var(--black);
+    color: var(--white);
+    border: 2px solid var(--white);
+    font-family: var(--font);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    transition: background 0.1s, color 0.1s;
+}
+
+.cinemat-back:hover {
+    background: var(--white);
+    color: var(--black);
+}
+
+/* ============================================================
+   SCENE 01 — HERO / ESTABLISHING SHOT
+   ============================================================ */
+.cinemat-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--black);
+    overflow: hidden;
+}
+
+/* Letterbox bars — 2.35:1 cinemascope */
+.letterbox {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 12%;
+    background: #000;
+    z-index: 6;
+}
+.letterbox--top { top: 0; }
+.letterbox--bottom { bottom: 0; }
+
+/* Sprocket strips — 35mm film edges */
+.sprocket-strip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+    background-color: #1a1a1a;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='24'%3E%3Crect x='3' y='6' width='10' height='8' rx='1.5' fill='%230a0a0a'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+    background-position: center;
+    z-index: 7;
+}
+.sprocket-strip--left { left: 0; }
+.sprocket-strip--right { right: 0; }
+
+/* Viewfinder corner marks */
+.vf-mark {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    z-index: 8;
+}
+.vf-mark--tl {
+    top: 14%;
+    left: 40px;
+    border-top: 2px solid rgba(240, 236, 228, 0.45);
+    border-left: 2px solid rgba(240, 236, 228, 0.45);
+}
+.vf-mark--tr {
+    top: 14%;
+    right: 40px;
+    border-top: 2px solid rgba(240, 236, 228, 0.45);
+    border-right: 2px solid rgba(240, 236, 228, 0.45);
+}
+.vf-mark--bl {
+    bottom: 14%;
+    left: 40px;
+    border-bottom: 2px solid rgba(240, 236, 228, 0.45);
+    border-left: 2px solid rgba(240, 236, 228, 0.45);
+}
+.vf-mark--br {
+    bottom: 14%;
+    right: 40px;
+    border-bottom: 2px solid rgba(240, 236, 228, 0.45);
+    border-right: 2px solid rgba(240, 236, 228, 0.45);
+}
+
+/* Hero top overlay — timecode + REC */
+.hero-overlay-top {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    right: 0;
+    padding: 0.75rem 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 9;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+}
+
+.timecode {
+    font-family: var(--font);
+    color: var(--white);
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+}
+
+.rec-dot {
+    color: var(--red);
+    font-weight: 700;
+    animation: rec-blink 1.5s steps(2) infinite;
+}
+
+@keyframes rec-blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.2; }
+}
+
+/* Hero bottom overlay — camera settings */
+.hero-overlay-bottom {
+    position: absolute;
+    bottom: 15%;
+    left: 0;
+    right: 0;
+    padding: 0 56px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 9;
+    font-size: 0.6rem;
+    color: var(--grey);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Hero content */
+.hero-content {
+    text-align: center;
+    z-index: 5;
+    position: relative;
+}
+
+.hero-scene-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: var(--grey);
+    margin-bottom: 2rem;
+    display: block;
+}
+
+.hero-org {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.45em;
+    color: var(--yellow);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.cinemat-hero h1 {
+    font-family: var(--font);
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+    color: var(--white);
+    margin: 0 0 1.5rem;
+}
+
+.hero-tagline {
+    font-size: 0.8rem;
+    color: var(--grey);
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.8;
+    font-weight: 400;
+}
+
+/* ============================================================
+   SLATE / CLAPPERBOARD — reusable component
+   ============================================================ */
+.slate {
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto 3rem;
+    border: 3px solid var(--white);
+    background: var(--white);
+    color: var(--black);
+}
+
+.slate-stripes {
+    height: 16px;
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--black) 0px,
+        var(--black) 6px,
+        var(--white) 6px,
+        var(--white) 12px
+    );
+    border-bottom: 2px solid var(--black);
+}
+
+.slate-meta {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    border-bottom: 2px solid var(--black);
+    font-family: var(--font);
+}
+
+.slate-title {
+    padding: 0.6rem 1rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin: 0;
+    font-family: var(--font);
+}
+
+/* ============================================================
+   SECTIONS — Generic
+   ============================================================ */
+.cinemat-section {
+    padding: 5rem 2rem;
+    border-top: 3px solid rgba(240, 236, 228, 0.15);
+    position: relative;
+}
+
+/* ============================================================
+   VIEWFINDER FRAME — corner brackets around content
+   ============================================================ */
+.vf-frame {
+    position: relative;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.vf-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-top: 2px solid var(--white);
+    border-left: 2px solid var(--white);
+}
+
+.vf-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    border-top: 2px solid var(--white);
+    border-right: 2px solid var(--white);
+}
+
+/* Bottom corners via inner wrapper */
+.vf-frame-inner {
+    position: relative;
+}
+
+.vf-frame-inner::before {
+    content: '';
+    position: absolute;
+    bottom: -2rem;
+    left: -2rem;
+    width: 20px;
+    height: 20px;
+    border-bottom: 2px solid var(--white);
+    border-left: 2px solid var(--white);
+}
+
+.vf-frame-inner::after {
+    content: '';
+    position: absolute;
+    bottom: -2rem;
+    right: -2rem;
+    width: 20px;
+    height: 20px;
+    border-bottom: 2px solid var(--white);
+    border-right: 2px solid var(--white);
+}
+
+/* ============================================================
+   RULE OF THIRDS GRID — visible composition lines
+   ============================================================ */
+.thirds-grid {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 0;
+    min-height: 180px;
+}
+
+.thirds-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            to right,
+            transparent calc(33.33% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(33.33% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(33.33% + 0.5px),
+            transparent calc(33.33% + 0.5px),
+            transparent calc(66.66% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(66.66% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(66.66% + 0.5px),
+            transparent calc(66.66% + 0.5px)
+        ),
+        linear-gradient(
+            to bottom,
+            transparent calc(33.33% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(33.33% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(33.33% + 0.5px),
+            transparent calc(33.33% + 0.5px),
+            transparent calc(66.66% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(66.66% - 0.5px),
+            rgba(240, 236, 228, 0.06) calc(66.66% + 0.5px),
+            transparent calc(66.66% + 0.5px)
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.thirds-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ============================================================
+   BODY TEXT
+   ============================================================ */
+.cm-body {
+    font-size: 0.85rem;
+    line-height: 1.85;
+    color: var(--white);
+    opacity: 0.75;
+    max-width: 560px;
+    margin: 0 auto 1rem;
+    text-align: center;
+}
+
+.cm-body--loud {
+    font-size: 0.95rem;
+    font-weight: 700;
+    opacity: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.6;
+}
+
+/* ============================================================
+   SCENE 03 — DARKROOM (safelight red)
+   ============================================================ */
+.darkroom {
+    background: var(--darkroom);
+    border-top-color: var(--darkroom-light);
+}
+
+/* Safelight glow */
+.darkroom::after {
+    content: '';
+    position: absolute;
+    top: 8%;
+    right: 8%;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(204, 34, 0, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.darkroom .slate {
+    border-color: var(--darkroom-light);
+    background: var(--darkroom);
+    color: var(--darkroom-text);
+}
+
+.darkroom .slate-stripes {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--darkroom-light) 0px,
+        var(--darkroom-light) 6px,
+        var(--darkroom) 6px,
+        var(--darkroom) 12px
+    );
+    border-bottom-color: var(--darkroom-light);
+}
+
+.darkroom .slate-meta {
+    border-bottom-color: var(--darkroom-light);
+    color: var(--darkroom-text);
+}
+
+.darkroom .slate-title {
+    color: var(--darkroom-text);
+}
+
+.darkroom .cm-body {
+    color: var(--darkroom-text);
+    opacity: 0.8;
+}
+
+.darkroom .vf-frame::before,
+.darkroom .vf-frame::after {
+    border-color: var(--darkroom-light);
+}
+
+.darkroom .vf-frame-inner::before,
+.darkroom .vf-frame-inner::after {
+    border-color: var(--darkroom-light);
+}
+
+.darkroom-quote {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--darkroom-text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 3px solid var(--darkroom-light);
+    padding: 1.5rem 2rem;
+    max-width: 560px;
+    margin: 2rem auto 0;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    line-height: 1.5;
+}
+
+.darkroom-quote::before {
+    content: '\201C';
+    position: absolute;
+    top: -0.7rem;
+    left: 1rem;
+    font-size: 2rem;
+    color: var(--darkroom-light);
+    background: var(--darkroom);
+    padding: 0 0.4rem;
+    line-height: 1;
+}
+
+/* ============================================================
+   SCENE 04 — EXPOSURE TRIANGLE
+   ============================================================ */
+.exposure-section {
+    text-align: center;
+}
+
+.exposure-diagram {
+    position: relative;
+    max-width: 380px;
+    margin: 2rem auto 1rem;
+}
+
+.exposure-triangle-svg {
+    width: 100%;
+    height: auto;
+}
+
+.exposure-triangle-svg polygon {
+    fill: none;
+    stroke: var(--yellow);
+    stroke-width: 3;
+    stroke-linejoin: round;
+}
+
+.exposure-triangle-svg text {
+    font-family: 'Space Mono', 'Courier New', monospace;
+    fill: var(--white);
+}
+
+.exposure-triangle-svg .setting-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.exposure-triangle-svg .value-label {
+    font-size: 8px;
+    fill: var(--yellow);
+    letter-spacing: 1.5px;
+}
+
+.exposure-triangle-svg .center-label {
+    font-size: 9px;
+    fill: var(--grey);
+    letter-spacing: 3px;
+}
+
+.exposure-note {
+    font-size: 0.7rem;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 0.5rem;
+}
+
+/* Values detail grid — 2x2 with thick borders */
+.values-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    max-width: 700px;
+    margin: 3rem auto 0;
+    border: 3px solid rgba(240, 236, 228, 0.25);
+}
+
+.value-cell {
+    padding: 1.5rem;
+    border: 1px solid rgba(240, 236, 228, 0.12);
+    text-align: left;
+}
+
+.value-cell-setting {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--yellow);
+    margin-bottom: 0.3rem;
+}
+
+.value-cell-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+    letter-spacing: 0.03em;
+}
+
+.value-cell-desc {
+    font-size: 0.75rem;
+    color: var(--grey);
+    line-height: 1.7;
+}
+
+/* ============================================================
+   SCENE 05 — NEGATIVE / INVERTED SECTION
+   ============================================================ */
+.negative-section {
+    background: var(--white);
+    color: var(--black);
+    border-top: 4px solid var(--black);
+}
+
+.negative-section .cm-body {
+    color: var(--black);
+    opacity: 0.7;
+}
+
+/* Slate inverted */
+.negative-section .slate {
+    background: var(--black);
+    color: var(--white);
+    border-color: var(--black);
+}
+
+.negative-section .slate-stripes {
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--white) 0px,
+        var(--white) 6px,
+        var(--black) 6px,
+        var(--black) 12px
+    );
+    border-bottom-color: rgba(240, 236, 228, 0.3);
+}
+
+.negative-section .slate-meta {
+    color: var(--white);
+    border-bottom-color: rgba(240, 236, 228, 0.25);
+}
+
+.negative-section .slate-title {
+    color: var(--white);
+}
+
+/* Film strip — who can join */
+.film-strip-container {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    width: 100%;
+}
+
+.strip-edge {
+    font-size: 0.45rem;
+    letter-spacing: 0.4em;
+    color: var(--grey);
+    text-align: center;
+    padding: 0.2rem 0;
+    background: var(--black);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.strip-frames {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 3px solid var(--black);
+    border-bottom: 3px solid var(--black);
+}
+
+.strip-frame {
+    flex: 1;
+    min-width: 130px;
+    padding: 0.85rem 0.5rem;
+    border-right: 2px solid var(--black);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #d5cbb5;
+    color: var(--black);
+    font-family: var(--font);
+}
+
+.strip-frame:last-child {
+    border-right: none;
+}
+
+.frame-num {
+    font-size: 0.55rem;
+    color: var(--grey);
+    display: block;
+    margin-bottom: 0.15rem;
+    letter-spacing: 0.15em;
+}
+
+/* Create items — contact sheet frames */
+.create-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    max-width: 660px;
+    margin: 0 auto;
+    border: 3px solid var(--black);
+}
+
+.create-frame {
+    padding: 0.9rem 0.75rem;
+    border-right: 2px solid var(--black);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    position: relative;
+    font-family: var(--font);
+    color: var(--black);
+    letter-spacing: 0.03em;
+}
+
+.create-frame:nth-child(3n) {
+    border-right: none;
+}
+
+.create-frame:nth-child(n+4) {
+    border-top: 2px solid var(--black);
+}
+
+.create-frame-num {
+    font-size: 0.5rem;
+    color: var(--grey);
+    position: absolute;
+    top: 0.2rem;
+    left: 0.4rem;
+    letter-spacing: 0.1em;
+}
+
+/* ============================================================
+   SCENE 06 — CONTACT SHEET / MONTAGE (Activities)
+   ============================================================ */
+.contact-sheet {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    max-width: 960px;
+    margin: 0 auto;
+    border: 3px solid rgba(240, 236, 228, 0.2);
+}
+
+.contact-frame {
+    border-right: 2px solid rgba(240, 236, 228, 0.15);
+    position: relative;
+    text-align: left;
+}
+
+.contact-frame:last-child {
+    border-right: none;
+}
+
+/* Frame edge markers — sprocket-style */
+.frame-edge {
+    font-size: 0.4rem;
+    letter-spacing: 0.25em;
+    color: rgba(240, 236, 228, 0.25);
+    text-align: center;
+    padding: 0.3rem 0;
+    background: rgba(240, 236, 228, 0.02);
+    font-family: var(--font);
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.frame-body {
+    padding: 1.25rem 1rem;
+}
+
+.frame-body h3 {
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 0.6rem;
+    color: var(--white);
+}
+
+.frame-tagline {
+    font-weight: 700;
+    font-style: italic;
+    color: var(--white);
+    margin-bottom: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.frame-body p {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--grey);
+    margin: 0 0 0.6rem;
+}
+
+.frame-highlight {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--yellow);
+    padding-top: 0.6rem;
+    border-top: 1px solid rgba(240, 236, 228, 0.1);
+}
+
+/* Red grease pencil circle — "this frame is selected" */
+.grease-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 65%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%) rotate(-6deg);
+    border: 3px solid var(--red);
+    border-radius: 50%;
+    opacity: 0.18;
+    pointer-events: none;
+}
+
+/* ============================================================
+   END SLATE — Film tail / countdown leader
+   ============================================================ */
+.end-slate {
+    padding: 6rem 2rem;
+    text-align: center;
+    border-top: 3px solid rgba(240, 236, 228, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.end-slate .sprocket-strip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+/* Countdown circle with crosshair */
+.countdown-circle {
+    width: 110px;
+    height: 110px;
+    border: 3px solid var(--white);
+    border-radius: 50%;
+    margin: 0 auto 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.countdown-circle::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: rgba(240, 236, 228, 0.25);
+}
+
+.countdown-circle::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: rgba(240, 236, 228, 0.25);
+}
+
+.countdown-number {
+    font-family: var(--font);
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--white);
+    z-index: 1;
+}
+
+.end-mantra {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+.end-subtitle {
+    font-size: 0.7rem;
+    color: var(--grey);
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+    opacity: 0.6;
+}
+
+.tail-marks {
+    font-size: 0.65rem;
+    color: var(--grey);
+    opacity: 0.25;
+    letter-spacing: 0.25em;
+    margin-bottom: 2rem;
+}
+
+.end-brand {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6em;
+    color: var(--grey);
+    opacity: 0.35;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .sprocket-strip { display: none; }
+    .vf-mark { display: none; }
+
+    .hero-overlay-top {
+        padding: 0.75rem 1.25rem;
+        top: 13%;
+    }
+
+    .hero-overlay-bottom {
+        padding: 0 1.25rem;
+        bottom: 13%;
+        font-size: 0.5rem;
+    }
+
+    .cinemat-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .cinemat-section {
+        padding: 3.5rem 1.25rem;
+    }
+
+    .letterbox {
+        height: 7%;
+    }
+
+    .contact-sheet {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-frame {
+        border-right: none;
+        border-bottom: 2px solid rgba(240, 236, 228, 0.15);
+    }
+
+    .contact-frame:last-child {
+        border-bottom: none;
+    }
+
+    .grease-circle {
+        width: 50%;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .create-strip {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .create-frame:nth-child(3n) {
+        border-right: 2px solid var(--black);
+    }
+
+    .create-frame:nth-child(2n) {
+        border-right: none;
+    }
+
+    .create-frame:nth-child(n+3) {
+        border-top: 2px solid var(--black);
+    }
+
+    .strip-frames {
+        flex-wrap: wrap;
+    }
+
+    .strip-frame {
+        min-width: 100px;
+        flex-basis: calc(33.33% - 2px);
+    }
+
+    .exposure-diagram {
+        max-width: 280px;
+    }
+
+    .slate {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .end-slate .sprocket-strip {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .cinemat-hero h1 {
+        font-size: 2rem;
+        letter-spacing: 0.04em;
+    }
+
+    .hero-tagline {
+        font-size: 0.7rem;
+    }
+
+    .create-strip {
+        grid-template-columns: 1fr;
+    }
+
+    .create-frame {
+        border-right: none !important;
+        border-bottom: 2px solid var(--black);
+    }
+
+    .create-frame:last-child {
+        border-bottom: none;
+    }
+
+    .strip-frame {
+        flex-basis: 50%;
+        border-bottom: 2px solid var(--black);
+    }
+
+    .slate-meta {
+        font-size: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+    }
+
+    .slate-title {
+        font-size: 1.1rem;
+    }
+
+    .darkroom-quote {
+        font-size: 0.9rem;
+        padding: 1.25rem 1rem;
+    }
+
+    .frame-body {
+        padding: 1rem 0.75rem;
+    }
+
+    .vf-frame {
+        padding: 1.5rem;
+    }
+
+    .hero-scene-label {
+        font-size: 0.5rem;
+        letter-spacing: 0.2em;
+    }
+
+    .cm-body--loud {
+        font-size: 0.85rem;
+    }
+}

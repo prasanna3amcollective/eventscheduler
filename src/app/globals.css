@@ -1447,6 +1447,46 @@ input:not([type="checkbox"]):focus {
     0 0 30px rgba(192, 57, 43, 0.15);
 }
 
+/* Cinemat Community card — neobrutalist, raw, monospace */
+.latest-posts-section .post-card--cinemat {
+  background: #0a0a0a;
+  color: #f0ece4;
+  border: 3px solid #f0ece4;
+  box-shadow: none;
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.85em;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  text-shadow: none;
+  transition: background 0.1s, color 0.1s;
+}
+
+.latest-posts-section .post-card--cinemat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #0a0a0a 0px, #0a0a0a 3px,
+    #f0ece4 3px, #f0ece4 6px
+  );
+  pointer-events: none;
+}
+
+.latest-posts-section .post-card--cinemat:hover {
+  background: #f0ece4;
+  color: #0a0a0a;
+  transform: none;
+  box-shadow: none;
+  border-color: #0a0a0a;
+}
+
 @media (max-width: 768px) {
   .latest-posts-section .post-card {
     flex-basis: 100%;

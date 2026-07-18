@@ -12,8 +12,8 @@ export default function ExplorePage() {
           <h2 className="section-title">Nested Communities</h2>
           <div className="latest-posts-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', justifyContent: 'center' }}>
             <button type="button" className="post-card post-card--actors" onClick={() => router.push('/explore/actors-community')} style={{ cursor: 'pointer' }}>Actors Community</button>
-            <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writer's Community</button>
-            <button type="button" className="post-card" style={{ cursor: 'pointer' }}>Cinemat Community</button>
+            <button type="button" className="post-card post-card--writers" onClick={() => router.push('/explore/writers-community')} style={{ cursor: 'pointer' }}>Writers Community</button>
+            <button type="button" className="post-card post-card--cinemat" onClick={() => router.push('/explore/cinemat-community')} style={{ cursor: 'pointer' }}>Cinemat Community</button>
             <button type="button" className="post-card post-card--music" onClick={() => router.push('/explore/music-community')} style={{ cursor: 'pointer' }}>Music Community</button>
             <button type="button" className="post-card post-card--tech" onClick={() => router.push('/explore/tech-community')} style={{ cursor: 'pointer' }}>Tech Community</button>
             <button type="button" className="post-card post-card--podcast" onClick={() => router.push('/explore/podcast-community')} style={{ cursor: 'pointer' }}>Podcast Community</button>
