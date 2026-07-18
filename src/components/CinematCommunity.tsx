@@ -56,12 +56,12 @@ function Slate({
     take,
     shot,
     title,
-}: {
+}: Readonly<{
     scene: string;
     take: string;
     shot: string;
     title: string;
-}) {
+}>) {
     return (
         <div className="slate">
             <div className="slate-stripes" />
