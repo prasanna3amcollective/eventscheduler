@@ -553,3 +553,13 @@ export function ClockFill({ size, ...props }: IconProps) {
     </svg>
   );
 }
+
+/** Map pin icon */
+export function MapPin({ size, ...props }: IconProps) {
+  return (
+    <svg {...base(size)} {...props}>
+      <path d="M12 21s-6-5.686-6-10a6 6 0 1112 0c0 4.314-6 10-6 10z" />
+      <circle cx="12" cy="11" r="2" />
+    </svg>
+  );
+}

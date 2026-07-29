@@ -16,7 +16,7 @@ export async function POST(
     }
 
     const registration = await withAuth(securityContext, () => ({
-      model: 'eventParticipant',
+      model: 'eventActivityParticipant',
       operation: 'create',
       args: {
         data: {

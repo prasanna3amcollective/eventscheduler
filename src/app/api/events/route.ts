@@ -13,6 +13,9 @@ export async function GET(request: Request) {
       args: {
         where: { state: 'Scheduled' },
         include: {
+          participants: {
+            include: { user: true }
+          },
           activities: {
             include: {
               participants: {

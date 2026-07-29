@@ -121,8 +121,9 @@ model User {
   password        String
   groups          UserGroupM2M[]
   roles           UserRole[]
-  activities      Participant[]
-  eventActivities EventParticipant[]
+  activities                Participant[]
+  eventActivityParticipants EventActivityParticipant[]
+  eventParticipants         EventParticipant[]
 
   skills String[] @default([])
 
@@ -309,6 +310,7 @@ model Event {
 
   activities       EventActivity[]
   responsibilities EventResponsibility[]
+  participants     EventParticipant[]
 
   // System Columns
   sys_created_by String?
@@ -334,8 +336,8 @@ model EventActivity {
   state    String @default("Scheduled")
 
   eventId      String
-  event        Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  participants EventParticipant[]
+  event        Event                    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participants EventActivityParticipant[]
 
   // System Columns
   sys_created_by String?
@@ -379,7 +381,7 @@ model EventResponsibility {
   @@index([ownerId])
 }
 
-model EventParticipant {
+model EventActivityParticipant {
   id              String        @id @default(uuid())
   eventActivity   EventActivity @relation(fields: [eventActivityId], references: [id], onDelete: Cascade)
   eventActivityId String
@@ -396,6 +398,27 @@ model EventParticipant {
   sys_updated_at DateTime @updatedAt
 
   @@unique([eventActivityId, userId])
+  @@index([userId])
+  @@map("event_activity_participants")
+}
+
+model EventParticipant {
+  id           String   @id @default(uuid())
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  type         String   @default("Participant") // Leader, Guide, Observer, Participant
+  attendance   Int? // 0=Present, 1=Half, 2=Absent
+  payAsYouWish Float    @default(0)
+
+  // System Columns
+  sys_created_by String?
+  sys_updated_by String?
+  sys_created_at DateTime @default(now())
+  sys_updated_at DateTime @updatedAt
+
+  @@unique([eventId, userId])
   @@index([userId])
   @@map("event_participants")
 }
